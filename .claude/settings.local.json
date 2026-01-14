@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(gh auth status:*)",
+      "Bash(where gh:*)",
+      "Bash(winget install:*)",
+      "Bash(cmd /c \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" --version)",
+      "Bash(cmd /c \"C:\\\\Program Files \\(x86\\)\\\\GitHub CLI\\\\gh.exe\" --version)",
+      "Bash(cmd /c \"%LOCALAPPDATA%\\\\Programs\\\\GitHub CLI\\\\gh.exe\" --version)",
+      "Bash(dir \"C:\\\\Program Files\\\\GitHub CLI\")",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" auth status)",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" auth login --web -h github.com)",
+      "Bash(\"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" repo create tony-toubia/sko-26-sf-planner --public --source=. --remote=origin --push --description \"SKO 26 SF Planner\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit\n\nAdd project files including NBC_V2.pdf, README, and .gitignore.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}
