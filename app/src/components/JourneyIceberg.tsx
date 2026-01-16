@@ -1,4 +1,4 @@
-import { Eye, ShoppingBag, Layers, ChevronDown } from 'lucide-react';
+import { TrendingUp, Database, ChevronDown } from 'lucide-react';
 import { JOURNEY_CATEGORIES } from '../data/constants';
 import type { Capability } from '../types';
 
@@ -11,41 +11,37 @@ export function JourneyIceberg({ capabilities, onCapabilityClick }: JourneyIcebe
   const aboveTheLineCapabilities = capabilities.filter(
     (c) => c.journeyType === 'above-the-line'
   );
-  const transactionalCapabilities = capabilities.filter(
-    (c) => c.journeyType === 'transactional'
-  );
   const belowTheLineCapabilities = capabilities.filter(
     (c) => c.journeyType === 'below-the-line'
   );
 
   const journeyInfo = {
     'above-the-line': JOURNEY_CATEGORIES.find((j) => j.type === 'above-the-line'),
-    transactional: JOURNEY_CATEGORIES.find((j) => j.type === 'transactional'),
     'below-the-line': JOURNEY_CATEGORIES.find((j) => j.type === 'below-the-line'),
   };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">Journey Iceberg</h3>
+        <h3 className="text-lg font-semibold text-gray-900">The Iceberg Concept</h3>
         <p className="text-sm text-gray-500">
-          Visualizing the depth of customer journey capabilities
+          What customers see vs. the data foundation beneath
         </p>
       </div>
 
       <div className="relative">
         {/* Water line indicator */}
-        <div className="absolute left-0 right-0 top-[33%] border-t-2 border-dashed border-blue-400 z-10">
+        <div className="absolute left-0 right-0 top-[45%] border-t-2 border-dashed border-blue-400 z-10">
           <span className="absolute -top-3 left-4 bg-white px-2 text-xs text-blue-500 font-medium">
-            ~ Water Line ~
+            ~ Visibility Line ~
           </span>
         </div>
 
-        {/* Above the Line */}
-        <div className="iceberg-above p-6">
+        {/* Above the Line - Customer Data ACTIVATION */}
+        <div className="bg-gradient-to-b from-sky-50 to-cyan-100 p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center">
-              <Eye className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">
@@ -67,63 +63,26 @@ export function JourneyIceberg({ capabilities, onCapabilityClick }: JourneyIcebe
               </span>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {aboveTheLineCapabilities.map((cap) => (
-              <button
-                key={cap.id}
-                onClick={() => onCapabilityClick?.(cap)}
-                className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors shadow-sm"
-              >
-                {cap.shortName}
-              </button>
-            ))}
-          </div>
+          {aboveTheLineCapabilities.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-cyan-200/50">
+              {aboveTheLineCapabilities.map((cap) => (
+                <button
+                  key={cap.id}
+                  onClick={() => onCapabilityClick?.(cap)}
+                  className="px-3 py-1.5 bg-white rounded-lg text-sm font-medium text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 transition-colors shadow-sm"
+                >
+                  {cap.shortName}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Transactional - at the water line */}
-        <div className="bg-gradient-to-b from-cyan-100 to-blue-200 p-6 border-t border-cyan-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900">
-                {journeyInfo['transactional']?.name}
-              </h4>
-              <p className="text-sm text-gray-600">
-                {transactionalCapabilities.length} capabilities
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-gray-600 mb-4">
-            {journeyInfo['transactional']?.description}
-          </p>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <span className="text-xs text-gray-500 font-medium">Examples:</span>
-            {journeyInfo['transactional']?.examples.map((ex, i) => (
-              <span key={i} className="text-xs bg-white/50 px-2 py-1 rounded-full text-gray-700">
-                {ex}
-              </span>
-            ))}
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {transactionalCapabilities.map((cap) => (
-              <button
-                key={cap.id}
-                onClick={() => onCapabilityClick?.(cap)}
-                className="px-3 py-1.5 bg-white/80 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors shadow-sm"
-              >
-                {cap.shortName}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Below the Line */}
-        <div className="iceberg-below p-6 text-white">
+        {/* Below the Line - Customer Data MANAGEMENT */}
+        <div className="bg-gradient-to-b from-blue-600 to-blue-900 p-6 text-white">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-xl flex items-center justify-center">
-              <Layers className="w-5 h-5 text-white" />
+              <Database className="w-5 h-5 text-white" />
             </div>
             <div>
               <h4 className="font-semibold text-white">
@@ -145,22 +104,24 @@ export function JourneyIceberg({ capabilities, onCapabilityClick }: JourneyIcebe
               </span>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2">
-            {belowTheLineCapabilities.map((cap) => (
-              <button
-                key={cap.id}
-                onClick={() => onCapabilityClick?.(cap)}
-                className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium text-white transition-colors"
-              >
-                {cap.shortName}
-              </button>
-            ))}
-          </div>
+          {belowTheLineCapabilities.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-blue-500/50">
+              {belowTheLineCapabilities.map((cap) => (
+                <button
+                  key={cap.id}
+                  onClick={() => onCapabilityClick?.(cap)}
+                  className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium text-white transition-colors"
+                >
+                  {cap.shortName}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Depth indicator */}
           <div className="mt-6 flex items-center justify-center gap-2 text-blue-200">
             <ChevronDown className="w-4 h-4 animate-bounce" />
-            <span className="text-xs">Deeper data integration required</span>
+            <span className="text-xs">Foundation that powers activation</span>
             <ChevronDown className="w-4 h-4 animate-bounce" />
           </div>
         </div>

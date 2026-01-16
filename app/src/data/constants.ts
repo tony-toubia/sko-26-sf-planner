@@ -148,41 +148,28 @@ export const PHASES: PhaseInfo[] = [
 export const JOURNEY_CATEGORIES: JourneyCategory[] = [
   {
     type: 'above-the-line',
-    name: 'Above the Line',
+    name: 'Customer Data ACTIVATION',
     description:
-      'Visible customer data activation tactics that drive acquisition, retention, and sustained customer engagement. These are the obvious, expected journeys.',
+      'Visible marketing tactics that drive acquisition, retention, and sustained customer engagement. These are the customer-facing activations that people can see and interact with.',
     examples: [
-      'Welcome/Onboarding',
-      'Birthday',
-      'Re-Engagement',
-      'Newsletter',
+      'Welcome/Onboarding Journeys',
       'Promotional Campaigns',
-    ],
-  },
-  {
-    type: 'transactional',
-    name: 'Transactional',
-    description:
-      'Journeys triggered by transactional data that may require deeper data integration but follow standard patterns.',
-    examples: [
-      'Cart Abandon',
-      'Browse Abandon',
-      'Purchase Confirmation',
-      'Shipment Tracking',
-      'Post-Purchase Review',
+      'Re-Engagement Programs',
+      'Cart/Browse Abandonment',
+      'Cross-Channel Campaigns',
     ],
   },
   {
     type: 'below-the-line',
-    name: 'Below the Line',
+    name: 'Customer Data MANAGEMENT',
     description:
-      'Sophisticated value creation through deeper customer relationships using 1st, 2nd, and 3rd party data enrichment. Brand-unique experiences that require custom insights or modeling.',
+      'Sophisticated data management that enables deeper customer understanding through 1st, 2nd, and 3rd party data enrichment. The foundational data layer that powers above-the-line activations.',
     examples: [
-      'Churn Prediction Intervention',
-      'Next Best Action',
-      'Custom Propensity Journeys',
-      'Lifetime Value Optimization',
-      'Insight-Driven Experiences',
+      'Identity Resolution',
+      'Data Integration & ETL',
+      'Customer Segmentation',
+      'CLV Modeling',
+      'Einstein Scoring',
     ],
   },
 ];
@@ -230,6 +217,55 @@ export const CAPABILITY_PILLARS = [
   },
 ] as const;
 
+// Salesforce Value Proposition - General value that applies across all capabilities
+export const SALESFORCE_VALUE_PROPOSITION = {
+  overview: 'Each capability in the maturity matrix drives value for Salesforce across three dimensions: consumption, stickiness, and expansion opportunities.',
+  dimensions: [
+    {
+      id: 'consumption',
+      name: 'Platform Consumption',
+      description: 'Drives increased platform usage through more campaigns, journeys, Einstein processing, and data operations.',
+      examples: [
+        'More journey entries = more message sends',
+        'Einstein features consume super messages',
+        'Data integrations drive processing volume',
+        'Cross-channel activation multiplies sends per journey',
+      ],
+    },
+    {
+      id: 'stickiness',
+      name: 'Platform Stickiness',
+      description: 'Makes the platform harder to leave by embedding it deeply into critical business processes and decision-making.',
+      examples: [
+        'Automated journeys become business-critical infrastructure',
+        'Einstein models integral to marketing decisions',
+        'Data integrations create deep dependencies',
+        'Analytics become embedded in workflow',
+      ],
+    },
+    {
+      id: 'expansion',
+      name: 'Expansion Opportunities',
+      description: 'Creates opportunities for cross-sell (additional clouds/products) and up-sell (higher tiers, more contacts, premium features).',
+      examples: [
+        'Email success drives SMS/Push adoption',
+        'Journey Builder success leads to Ad Studio',
+        'Data needs drive Data Cloud adoption',
+        'Einstein usage leads to higher tier upgrades',
+      ],
+    },
+  ],
+  keyMetrics: [
+    { metric: '+35%', label: 'Email Revenue', description: 'Average lift from enhanced journeys' },
+    { metric: '+40%', label: 'Open Rate', description: 'vs. industry average' },
+    { metric: '3X', label: 'ROAS', description: 'Return on ad spend with cross-channel' },
+    { metric: '+100%', label: 'Campaign Efficiency', description: 'Through orchestration' },
+    { metric: '3X', label: 'Operational Efficiency', description: 'Post-migration' },
+    { metric: '+111%', label: 'Digital Penetration', description: 'Channel adoption growth' },
+  ],
+};
+
+// Legacy template for backwards compatibility
 export const SALESFORCE_VALUE_TEMPLATE = {
   consumption:
     'Drives increased platform usage through more campaigns, journeys, and data processing.',

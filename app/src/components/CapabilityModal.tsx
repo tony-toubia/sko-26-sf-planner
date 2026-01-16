@@ -1,6 +1,6 @@
-import { X, ExternalLink, CheckCircle, ArrowRight, Target, TrendingUp, Users, Zap } from 'lucide-react';
+import { X, ExternalLink, CheckCircle, ArrowRight, Target, TrendingUp, Users, Zap, Package, Briefcase } from 'lucide-react';
 import type { Capability } from '../types';
-import { MATURITY_STAGES, PHASES, LIFECYCLE_STAGES } from '../data/constants';
+import { MATURITY_STAGES, PHASES } from '../data/constants';
 
 interface CapabilityModalProps {
   capability: Capability;
@@ -41,7 +41,7 @@ export function CapabilityModal({ capability, onClose }: CapabilityModalProps) {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column - Client Value */}
+            {/* Left Column - Client Value & Key Capabilities */}
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -59,6 +59,42 @@ export function CapabilityModal({ capability, onClose }: CapabilityModalProps) {
                 <p className="text-gray-600">{capability.clientValue.howItAdvancesMaturity}</p>
               </div>
 
+              {capability.keyCapabilities && capability.keyCapabilities.length > 0 && (
+                <div className="bg-salesforce-blue/5 border border-salesforce-blue/20 rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-salesforce-blue mb-3 flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Key Capabilities Unlocked
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {capability.keyCapabilities.map((cap: string, i: number) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-salesforce-blue/10 text-salesforce-blue rounded-full text-sm font-medium"
+                      >
+                        {cap}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {capability.prerequisites.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h3>
+                  <div className="space-y-1">
+                    {capability.prerequisites.map((prereq, i) => (
+                      <div key={i} className="flex items-center gap-2 text-gray-600">
+                        <ArrowRight className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm">{prereq}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Business Outcomes & Commercial Offerings */}
+            <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Business Outcomes</h3>
                 <div className="space-y-2">
@@ -84,74 +120,31 @@ export function CapabilityModal({ capability, onClose }: CapabilityModalProps) {
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Right Column - Salesforce Value & Details */}
-            <div className="space-y-6">
-              <div className="bg-salesforce-blue/5 border border-salesforce-blue/20 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-salesforce-blue mb-3 flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  Salesforce Value
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Consumption</span>
-                    <p className="text-gray-700 text-sm">{capability.salesforceValue.consumption}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Stickiness</span>
-                    <p className="text-gray-700 text-sm">{capability.salesforceValue.stickiness}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500 uppercase">Expansion</span>
-                    <p className="text-gray-700 text-sm">{capability.salesforceValue.expansion}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Salesforce Products</h3>
-                <div className="flex flex-wrap gap-2">
-                  {capability.salesforceProducts.map((product, i) => (
-                    <span
-                      key={i}
-                      className="px-3 py-1 bg-salesforce-blue/10 text-salesforce-blue rounded-full text-sm font-medium"
-                    >
-                      {product}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Customer Lifecycle</h3>
-                <div className="flex flex-wrap gap-2">
-                  {LIFECYCLE_STAGES.map((stage) => {
-                    const isActive = capability.lifecycleStages.includes(stage.id);
-                    return (
-                      <span
-                        key={stage.id}
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          isActive
-                            ? 'bg-merkle-teal text-white'
-                            : 'bg-gray-100 text-gray-400'
-                        }`}
-                      >
-                        {stage.name}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {capability.prerequisites.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Prerequisites</h3>
-                  <div className="space-y-1">
-                    {capability.prerequisites.map((prereq, i) => (
-                      <div key={i} className="flex items-center gap-2 text-gray-600">
-                        <ArrowRight className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm">{prereq}</span>
+              {capability.merkleOfferings && capability.merkleOfferings.length > 0 && (
+                <div className="bg-merkle-blue/5 border border-merkle-blue/20 rounded-xl p-4">
+                  <h3 className="text-lg font-semibold text-merkle-blue mb-3 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5" />
+                    Merkle Commercial Offerings
+                  </h3>
+                  <div className="space-y-3">
+                    {capability.merkleOfferings.map((offering, i: number) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {offering.sizing && (
+                            <span className="inline-flex items-center justify-center w-6 h-6 bg-merkle-blue text-white text-xs font-bold rounded">
+                              {offering.sizing}
+                            </span>
+                          )}
+                          {!offering.sizing && (
+                            <Package className="w-5 h-5 text-merkle-blue" />
+                          )}
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-gray-900 text-sm">{offering.name}</h5>
+                          <p className="text-gray-600 text-xs">{offering.description}</p>
+                          <span className="text-xs text-merkle-blue capitalize">{offering.type.replace('-', ' ')}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -182,25 +175,19 @@ export function CapabilityModal({ capability, onClose }: CapabilityModalProps) {
               <div
                 className={`p-4 rounded-xl ${
                   capability.journeyType === 'above-the-line'
-                    ? 'bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200'
-                    : capability.journeyType === 'transactional'
-                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200'
+                    ? 'bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-200'
                     : 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200'
                 }`}
               >
                 <h4 className="font-semibold text-gray-900 mb-1">
                   {capability.journeyType === 'above-the-line'
-                    ? 'Above the Line Journey'
-                    : capability.journeyType === 'transactional'
-                    ? 'Transactional Journey'
-                    : 'Below the Line Journey'}
+                    ? 'Customer Data ACTIVATION'
+                    : 'Customer Data MANAGEMENT'}
                 </h4>
                 <p className="text-sm text-gray-600">
                   {capability.journeyType === 'above-the-line'
-                    ? 'Visible customer data activation tactics that drive acquisition, retention, and engagement.'
-                    : capability.journeyType === 'transactional'
-                    ? 'Journeys triggered by transactional data following standard patterns.'
-                    : 'Sophisticated value creation through deeper customer relationships using enriched data.'}
+                    ? 'Visible marketing tactics that drive acquisition, retention, and sustained customer engagement.'
+                    : 'Foundational data management enabling deeper customer understanding through data enrichment and integration.'}
                 </p>
               </div>
 

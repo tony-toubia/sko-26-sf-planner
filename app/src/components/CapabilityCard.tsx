@@ -48,12 +48,6 @@ export function CapabilityCard({
   const phase = PHASES.find((p) => p.phase === capability.phase);
   const Icon = iconMap[capability.icon || ''] || HelpCircle;
 
-  const journeyTypeColors = {
-    'above-the-line': 'from-cyan-400 to-blue-500',
-    transactional: 'from-amber-400 to-orange-500',
-    'below-the-line': 'from-blue-600 to-indigo-700',
-  };
-
   return (
     <button
       onClick={onClick}
@@ -66,37 +60,29 @@ export function CapabilityCard({
       <div className="flex items-start gap-3">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: maturityStage.color }}
+          style={{ backgroundColor: phase?.color }}
         >
           <Icon className="w-5 h-5 text-white" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1 truncate">
+          <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
             {capability.shortName}
           </h4>
           <p className="text-xs text-gray-500 line-clamp-2">
-            {capability.description.slice(0, 80)}...
+            {capability.description.slice(0, 100)}...
           </p>
         </div>
       </div>
 
       <div className="mt-3 flex items-center gap-2 flex-wrap">
         <span
-          className="px-2 py-0.5 rounded text-xs font-medium text-white"
-          style={{ backgroundColor: phase?.color }}
-        >
-          P{capability.phase}
-        </span>
-        <span
-          className={`px-2 py-0.5 rounded text-xs font-medium text-white bg-gradient-to-r ${
-            journeyTypeColors[capability.journeyType]
+          className={`px-2 py-0.5 rounded text-xs font-medium text-white ${
+            capability.journeyType === 'above-the-line'
+              ? 'bg-gradient-to-r from-cyan-400 to-teal-500'
+              : 'bg-gradient-to-r from-blue-600 to-indigo-700'
           }`}
         >
-          {capability.journeyType === 'above-the-line'
-            ? 'ATL'
-            : capability.journeyType === 'below-the-line'
-            ? 'BTL'
-            : 'TXN'}
+          {capability.journeyType === 'above-the-line' ? 'Activation' : 'Data Mgmt'}
         </span>
         <span
           className="px-2 py-0.5 rounded text-xs font-medium"
@@ -105,7 +91,7 @@ export function CapabilityCard({
             color: maturityStage.color,
           }}
         >
-          L{capability.maturityLevel}
+          Level {capability.maturityLevel}
         </span>
       </div>
     </button>

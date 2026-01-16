@@ -1,8 +1,15 @@
 export { Header } from './Header';
+export type { ViewType } from './Header';
 export { DisciplineSelector } from './DisciplineSelector';
-export { MaturityLegend } from './MaturityLegend';
-export { PhaseFilter } from './PhaseFilter';
+export { IndustrySelector } from './IndustrySelector';
 export { CapabilityCard } from './CapabilityCard';
 export { CapabilityModal } from './CapabilityModal';
 export { MaturityMatrix } from './MaturityMatrix';
 export { JourneyIceberg } from './JourneyIceberg';
+export { SalesforceValue } from './SalesforceValue';
+export { AIAssistant } from './AIAssistant';
+export { AssessmentModal } from './AssessmentModal';
+export { AssessmentSummary } from './AssessmentSummary';
+export { GlobalInputsModal } from './GlobalInputsModal';
+export { PlanOutput } from './PlanOutput';
+export { ValueRealizationSlides } from './ValueRealizationSlides';
