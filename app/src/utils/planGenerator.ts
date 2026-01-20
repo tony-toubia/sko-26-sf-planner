@@ -20,7 +20,13 @@ export function generatePlan(
   const assessments = Object.values(assessment.assessments);
 
   // Categorize assessed capabilities
+  // Complete = already implemented, can be used as foundation
+  const completeCapabilities = assessments.filter((a) => a.relevance === 'complete');
+  // In-progress = partially done, factor into sequencing
+  const inProgressCapabilities = assessments.filter((a) => a.relevance === 'in-progress');
+  // Immediate = ready to start, highest priority for recommendations
   const immediateCapabilities = assessments.filter((a) => a.relevance === 'immediately-relevant');
+  // Near-future = planned for later phases
   const nearFutureCapabilities = assessments.filter((a) => a.relevance === 'near-future');
   // notReadyCapabilities could be used for future "not in scope" section
   // const notReadyCapabilities = assessments.filter((a) => a.relevance === 'not-ready');
@@ -29,9 +35,12 @@ export function generatePlan(
   const getCapability = (id: string) => getCapabilityById(id);
 
   // Build dependency graph and determine sequencing
+  // Pass complete and in-progress items so they're factored into foundation requirements
   const { phases, foundationRequirements } = buildPhasedPlan(
     immediateCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
     nearFutureCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
+    completeCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
+    inProgressCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
     globalInputs
   );
 
@@ -64,12 +73,16 @@ export function generatePlan(
     overallRecommendation: generateOverallRecommendation(
       immediateCapabilities.length,
       nearFutureCapabilities.length,
+      completeCapabilities.length,
+      inProgressCapabilities.length,
       globalInputs
     ),
     strategicRationale: generateStrategicRationale(assessment, globalInputs),
     totalCapabilities: immediateCapabilities.length + nearFutureCapabilities.length,
     immediateCapabilities: immediateCapabilities.length,
     nearFutureCapabilities: nearFutureCapabilities.length,
+    completeCapabilities: completeCapabilities.length,
+    inProgressCapabilities: inProgressCapabilities.length,
     estimatedTotalInvestment: estimateTotalInvestment(phases, globalInputs),
     recommendedTimeframe: calculateRecommendedTimeframe(phases),
   };
@@ -103,23 +116,41 @@ interface AssessmentWithCapability {
 function buildPhasedPlan(
   immediate: AssessmentWithCapability[],
   nearFuture: AssessmentWithCapability[],
+  complete: AssessmentWithCapability[],
+  inProgress: AssessmentWithCapability[],
   globalInputs: GlobalAssessmentInputs
 ): { phases: PlanPhase[]; foundationRequirements: GeneratedPlan['foundationRequirements'] } {
   const phases: PlanPhase[] = [];
   const foundationRequirements: GeneratedPlan['foundationRequirements'] = [];
+
+  // Get IDs of complete capabilities (these are already done, no work needed)
+  const completeCapIds = new Set(complete.map((a) => a.capabilityId));
+  // Get IDs of in-progress capabilities (these are partially done)
+  const inProgressCapIds = new Set(inProgress.map((a) => a.capabilityId));
 
   // Check if Data Cloud is needed (foundation for almost everything)
   const needsDataCloud = [...immediate, ...nearFuture].some(
     (a) => a.capability.dependencies.includes('migrate-sfmc') || a.capabilityId === 'migrate-sfmc'
   );
 
-  const hasDataCloud = immediate.some((a) => a.capabilityId === 'migrate-sfmc');
+  // Data Cloud is available if it's complete, in-progress, or in immediate scope
+  const hasDataCloud = immediate.some((a) => a.capabilityId === 'migrate-sfmc')
+    || completeCapIds.has('migrate-sfmc')
+    || inProgressCapIds.has('migrate-sfmc');
 
   if (needsDataCloud) {
+    // Determine status: met if complete, partial if in-progress, not-met otherwise
+    let dataCloudStatus: 'met' | 'partial' | 'not-met' = 'not-met';
+    if (completeCapIds.has('migrate-sfmc')) {
+      dataCloudStatus = 'met';
+    } else if (inProgressCapIds.has('migrate-sfmc') || immediate.some((a) => a.capabilityId === 'migrate-sfmc')) {
+      dataCloudStatus = 'partial';
+    }
+
     foundationRequirements.push({
       requirement: 'Data Cloud & MC Advanced activated',
       relatedCapabilities: ['migrate-sfmc'],
-      status: hasDataCloud ? 'met' : 'not-met',
+      status: dataCloudStatus,
     });
   }
 
@@ -719,26 +750,46 @@ function generateNextSteps(
 function generateOverallRecommendation(
   immediateCount: number,
   nearFutureCount: number,
+  completeCount: number,
+  inProgressCount: number,
   globalInputs: GlobalAssessmentInputs
 ): string {
   const total = immediateCount + nearFutureCount;
 
+  // If nothing to implement (all done or not relevant)
   if (total === 0) {
+    if (completeCount > 0 || inProgressCount > 0) {
+      const existingText = completeCount > 0 ? `${completeCount} capabilities already implemented` : '';
+      const progressText = inProgressCount > 0 ? `${inProgressCount} in progress` : '';
+      const combinedText = [existingText, progressText].filter(Boolean).join(' and ');
+      return `Strong existing foundation with ${combinedText}. Consider optimization and advanced use cases as next steps.`;
+    }
     return 'No capabilities marked as relevant. Consider re-evaluating assessment or scheduling discovery session.';
   }
 
   const drivers = globalInputs.strategicContext.keyBusinessDrivers || [];
   const driverText = drivers.length > 0 ? `aligned with ${drivers[0]}` : 'supporting marketing transformation';
 
+  // Build foundation context if they have existing capabilities
+  let foundationContext = '';
+  if (completeCount > 0) {
+    foundationContext = ` Building on ${completeCount} existing capabilities,`;
+  }
+  if (inProgressCount > 0) {
+    foundationContext += foundationContext
+      ? ` with ${inProgressCount} in progress,`
+      : ` With ${inProgressCount} capabilities already in progress,`;
+  }
+
   if (immediateCount >= 5) {
-    return `Comprehensive transformation program recommended with ${immediateCount} immediate priorities ${driverText}. Phased approach will de-risk delivery while accelerating time-to-value.`;
+    return `${foundationContext} comprehensive transformation program recommended with ${immediateCount} immediate priorities ${driverText}. Phased approach will de-risk delivery while accelerating time-to-value.`.trim();
   }
 
   if (immediateCount >= 3) {
-    return `Focused implementation program covering ${immediateCount} core capabilities ${driverText}. Foundation-first approach ensures sustainable success.`;
+    return `${foundationContext} focused implementation program covering ${immediateCount} core capabilities ${driverText}. Foundation-first approach ensures sustainable success.`.trim();
   }
 
-  return `Targeted initiative addressing ${immediateCount} key capabilities ${driverText}. Quick wins available to demonstrate value while building toward full vision.`;
+  return `${foundationContext} targeted initiative addressing ${immediateCount} key capabilities ${driverText}. Quick wins available to demonstrate value while building toward full vision.`.trim();
 }
 
 /**

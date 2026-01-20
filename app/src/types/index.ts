@@ -212,7 +212,8 @@ export interface MatrixFilters {
 }
 
 // Assessment relevance for capability evaluation
-export type CapabilityRelevance = 'immediately-relevant' | 'near-future' | 'not-ready' | 'not-assessed';
+// Order: complete > in-progress > immediately-relevant > near-future > not-ready > not-assessed
+export type CapabilityRelevance = 'complete' | 'in-progress' | 'immediately-relevant' | 'near-future' | 'not-ready' | 'not-assessed';
 
 // Assessment question for a capability
 export interface AssessmentQuestion {
@@ -333,6 +334,8 @@ export interface GeneratedPlan {
     totalCapabilities: number;
     immediateCapabilities: number;
     nearFutureCapabilities: number;
+    completeCapabilities?: number;
+    inProgressCapabilities?: number;
     estimatedTotalInvestment?: string;
     recommendedTimeframe: string;
   };

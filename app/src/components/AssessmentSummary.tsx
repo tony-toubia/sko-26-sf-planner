@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import {
   CheckCircle,
+  CheckCircle2,
+  CircleDot,
   Clock,
   XCircle,
   FileText,
@@ -24,9 +26,11 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
   const { assessment, assessedCount, relevantCount, totalCapabilities, selectedIndustry } = useAssessment();
 
   const groupedAssessments = useMemo(() => {
-    if (!assessment) return { immediate: [], nearFuture: [], notReady: [] };
+    if (!assessment) return { complete: [], inProgress: [], immediate: [], nearFuture: [], notReady: [] };
 
     const grouped = {
+      complete: [] as { id: string; name: string; notes?: string }[],
+      inProgress: [] as { id: string; name: string; notes?: string }[],
       immediate: [] as { id: string; name: string; notes?: string }[],
       nearFuture: [] as { id: string; name: string; notes?: string }[],
       notReady: [] as { id: string; name: string }[],
@@ -36,7 +40,11 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
       const cap = getCapabilityById(a.capabilityId);
       if (!cap) return;
 
-      if (a.relevance === 'immediately-relevant') {
+      if (a.relevance === 'complete') {
+        grouped.complete.push({ id: cap.id, name: cap.name, notes: a.notes });
+      } else if (a.relevance === 'in-progress') {
+        grouped.inProgress.push({ id: cap.id, name: cap.name, notes: a.notes });
+      } else if (a.relevance === 'immediately-relevant') {
         grouped.immediate.push({ id: cap.id, name: cap.name, notes: a.notes });
       } else if (a.relevance === 'near-future') {
         grouped.nearFuture.push({ id: cap.id, name: cap.name, notes: a.notes });
@@ -85,23 +93,75 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 divide-x divide-gray-200 border-b border-gray-200">
-        <div className="p-4 text-center">
-          <div className="text-2xl font-bold text-emerald-600">{groupedAssessments.immediate.length}</div>
-          <div className="text-sm text-gray-600">Immediate Priority</div>
+      <div className="grid grid-cols-5 divide-x divide-gray-200 border-b border-gray-200">
+        <div className="p-3 text-center">
+          <div className="text-xl font-bold text-blue-600">{groupedAssessments.complete.length}</div>
+          <div className="text-xs text-gray-600">Complete</div>
         </div>
-        <div className="p-4 text-center">
-          <div className="text-2xl font-bold text-amber-600">{groupedAssessments.nearFuture.length}</div>
-          <div className="text-sm text-gray-600">Near-Future</div>
+        <div className="p-3 text-center">
+          <div className="text-xl font-bold text-violet-600">{groupedAssessments.inProgress.length}</div>
+          <div className="text-xs text-gray-600">In Progress</div>
         </div>
-        <div className="p-4 text-center">
-          <div className="text-2xl font-bold text-gray-500">{groupedAssessments.notReady.length}</div>
-          <div className="text-sm text-gray-600">Not Ready</div>
+        <div className="p-3 text-center">
+          <div className="text-xl font-bold text-emerald-600">{groupedAssessments.immediate.length}</div>
+          <div className="text-xs text-gray-600">Immediate</div>
+        </div>
+        <div className="p-3 text-center">
+          <div className="text-xl font-bold text-amber-600">{groupedAssessments.nearFuture.length}</div>
+          <div className="text-xs text-gray-600">Near-Future</div>
+        </div>
+        <div className="p-3 text-center">
+          <div className="text-xl font-bold text-gray-500">{groupedAssessments.notReady.length}</div>
+          <div className="text-xs text-gray-600">Not Ready</div>
         </div>
       </div>
 
       {/* Capability lists */}
       <div className="p-6 space-y-6">
+        {/* Complete */}
+        {groupedAssessments.complete.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <CheckCircle2 className="w-5 h-5 text-blue-600" />
+              <h4 className="font-semibold text-gray-900">Complete</h4>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {groupedAssessments.complete.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onEditCapability(item.id)}
+                  className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* In Progress */}
+        {groupedAssessments.inProgress.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <CircleDot className="w-5 h-5 text-violet-600" />
+              <h4 className="font-semibold text-gray-900">In Progress</h4>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {groupedAssessments.inProgress.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onEditCapability(item.id)}
+                  className="px-3 py-1.5 bg-violet-50 text-violet-700 rounded-full text-sm font-medium hover:bg-violet-100 transition-colors flex items-center gap-1.5"
+                >
+                  <CircleDot className="w-3.5 h-3.5" />
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Immediate Priority */}
         {groupedAssessments.immediate.length > 0 && (
           <div>
