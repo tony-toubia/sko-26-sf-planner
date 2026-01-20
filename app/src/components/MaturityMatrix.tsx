@@ -9,7 +9,7 @@ import { PlanOutput } from './PlanOutput';
 import { DisciplineSelector } from './DisciplineSelector';
 import { IndustrySelector } from './IndustrySelector';
 import { useAssessment } from '../context/AssessmentContext';
-import { Search, Info, ClipboardList, X, Target, Clock, CheckCircle, Star } from 'lucide-react';
+import { Search, Info, ClipboardList, X, Target, Clock, CheckCircle, CheckCircle2, CircleDot, Star } from 'lucide-react';
 
 type HighlightType = 'none' | 'prerequisite' | 'unlocks' | 'hovered';
 
@@ -109,6 +109,10 @@ function GridCell({ capability, onClick, onHover, highlightType, assessmentStatu
     // In assessment mode, show assessment status styling
     if (isAssessmentMode && assessmentStatus && assessmentStatus !== 'not-assessed') {
       switch (assessmentStatus) {
+        case 'complete':
+          return 'border-blue-500 ring-2 ring-blue-500/30 bg-blue-50';
+        case 'in-progress':
+          return 'border-violet-500 ring-2 ring-violet-500/30 bg-violet-50';
         case 'immediately-relevant':
           return 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-50';
         case 'near-future':
@@ -135,6 +139,18 @@ function GridCell({ capability, onClick, onHover, highlightType, assessmentStatu
     if (!isAssessmentMode) return null;
 
     switch (assessmentStatus) {
+      case 'complete':
+        return (
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+          </div>
+        );
+      case 'in-progress':
+        return (
+          <div className="absolute -top-2 -right-2 w-6 h-6 bg-violet-500 rounded-full flex items-center justify-center">
+            <CircleDot className="w-3.5 h-3.5 text-white" />
+          </div>
+        );
       case 'immediately-relevant':
         return (
           <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
@@ -400,17 +416,25 @@ export function MaturityMatrix() {
                 <span className="text-gray-600 ml-2">{assessment.clientName}</span>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-3 text-xs flex-wrap">
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                <span className="text-gray-600">Complete</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-violet-500" />
+                <span className="text-gray-600">In Progress</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                 <span className="text-gray-600">Immediate</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                 <span className="text-gray-600">Near-Future</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-gray-400" />
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-400" />
                 <span className="text-gray-600">Not Ready</span>
               </div>
             </div>
@@ -504,6 +528,10 @@ export function MaturityMatrix() {
                   const getAdditionalHighlightStyles = () => {
                     if (isAssessmentMode && assessmentStatus && assessmentStatus !== 'not-assessed') {
                       switch (assessmentStatus) {
+                        case 'complete':
+                          return 'border-blue-500 ring-2 ring-blue-500/30 bg-blue-50';
+                        case 'in-progress':
+                          return 'border-violet-500 ring-2 ring-violet-500/30 bg-violet-50';
                         case 'immediately-relevant':
                           return 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-50';
                         case 'near-future':
@@ -528,6 +556,10 @@ export function MaturityMatrix() {
                   const getIndicator = () => {
                     if (!isAssessmentMode) return null;
                     switch (assessmentStatus) {
+                      case 'complete':
+                        return <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center"><CheckCircle2 className="w-3 h-3 text-white" /></div>;
+                      case 'in-progress':
+                        return <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-violet-500 rounded-full flex items-center justify-center"><CircleDot className="w-3 h-3 text-white" /></div>;
                       case 'immediately-relevant':
                         return <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center"><Target className="w-3 h-3 text-white" /></div>;
                       case 'near-future':

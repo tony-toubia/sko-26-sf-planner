@@ -7,6 +7,8 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCircle,
+  CheckCircle2,
+  CircleDot,
   MessageSquare,
   Users,
   TrendingUp,
@@ -41,7 +43,28 @@ const RELEVANCE_OPTIONS: {
   color: string;
   bgColor: string;
   borderColor: string;
+  description?: string;
 }[] = [
+  {
+    value: 'complete',
+    label: 'Complete',
+    shortLabel: 'Complete',
+    icon: CheckCircle2,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-600 hover:bg-blue-700',
+    borderColor: 'border-blue-600',
+    description: 'Already implemented and working',
+  },
+  {
+    value: 'in-progress',
+    label: 'In Progress',
+    shortLabel: 'In Progress',
+    icon: CircleDot,
+    color: 'text-violet-600',
+    bgColor: 'bg-violet-500 hover:bg-violet-600',
+    borderColor: 'border-violet-500',
+    description: 'Currently being implemented',
+  },
   {
     value: 'immediately-relevant',
     label: 'Immediately Relevant',
@@ -50,6 +73,7 @@ const RELEVANCE_OPTIONS: {
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-500 hover:bg-emerald-600',
     borderColor: 'border-emerald-500',
+    description: 'Ready to start now',
   },
   {
     value: 'near-future',
@@ -59,6 +83,7 @@ const RELEVANCE_OPTIONS: {
     color: 'text-amber-600',
     bgColor: 'bg-amber-500 hover:bg-amber-600',
     borderColor: 'border-amber-500',
+    description: 'Plan to start within 6-12 months',
   },
   {
     value: 'not-ready',
@@ -68,6 +93,7 @@ const RELEVANCE_OPTIONS: {
     color: 'text-gray-500',
     bgColor: 'bg-gray-400 hover:bg-gray-500',
     borderColor: 'border-gray-400',
+    description: 'Not a current priority',
   },
 ];
 
@@ -114,8 +140,8 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
   const handleRelevanceSelect = (relevance: CapabilityRelevance) => {
     setSelectedRelevance(relevance);
 
-    if (relevance === 'not-ready') {
-      // Save and close immediately for "not ready"
+    // For complete, in-progress, and not-ready - save immediately and close
+    if (relevance === 'complete' || relevance === 'in-progress' || relevance === 'not-ready') {
       saveCapabilityAssessment(capability.id, relevance, [], '');
       if (onNext) {
         onNext();
@@ -123,7 +149,7 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
         onClose();
       }
     } else if (hasQuestions) {
-      // Move to questions step
+      // Move to questions step for immediately-relevant and near-future
       setStep('questions');
     } else {
       // No questions, save and move to complete
@@ -571,9 +597,9 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
           {step === 'review' && isAssessmentMode && (
             <div className="space-y-3">
               <p className="text-sm text-gray-600 text-center font-medium">
-                Is this capability relevant for your client?
+                What is the status of this capability for your client?
               </p>
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center justify-center gap-2 flex-wrap">
                 {RELEVANCE_OPTIONS.map((option) => {
                   const Icon = option.icon;
                   const isSelected = selectedRelevance === option.value && existingAssessment;
@@ -581,7 +607,8 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
                     <button
                       key={option.value}
                       onClick={() => handleRelevanceSelect(option.value)}
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-white transition-all ${option.bgColor} ${
+                      title={option.description}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-white transition-all text-sm ${option.bgColor} ${
                         isSelected ? 'ring-2 ring-offset-2 ' + option.borderColor : ''
                       }`}
                     >
@@ -593,7 +620,7 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
               </div>
               {existingAssessment && (
                 <p className="text-xs text-gray-500 text-center">
-                  Currently marked as: {existingAssessment.relevance === 'immediately-relevant' ? 'Immediately Relevant' : existingAssessment.relevance === 'near-future' ? 'Near-Future' : 'Not Ready'}
+                  Currently marked as: {RELEVANCE_OPTIONS.find(o => o.value === existingAssessment.relevance)?.label || existingAssessment.relevance}
                 </p>
               )}
             </div>
