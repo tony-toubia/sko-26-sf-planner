@@ -13,3 +13,4 @@ export { AssessmentSummary } from './AssessmentSummary';
 export { GlobalInputsModal } from './GlobalInputsModal';
 export { PlanOutput } from './PlanOutput';
 export { ValueRealizationSlides } from './ValueRealizationSlides';
+export { ChannelRoleGuide } from './ChannelRoleGuide';

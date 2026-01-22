@@ -22,11 +22,21 @@ import {
   Star,
   Box,
   Link2,
+  Share2,
 } from 'lucide-react';
 import type { Capability, CapabilityRelevance, AssessmentAnswer } from '../types';
 import { MATURITY_STAGES, PHASES } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import { INDUSTRY_CAPABILITY_CONTEXT, INDUSTRY_CAPABILITY_EMPHASIS, INDUSTRIES } from '../data/industries';
+import { ChannelRoleGuide } from './ChannelRoleGuide';
+
+// Capabilities that benefit from the Channel Role Guide
+const CHANNEL_GUIDE_CAPABILITIES = [
+  'cross-channel-activation',
+  'baseline-subscriber-journeys',
+  'customer-lifecycle-journeys',
+  'enhance-planned-campaigns',
+];
 
 interface AssessmentModalProps {
   capability: Capability;
@@ -114,8 +124,10 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
     ) || {}
   );
   const [notes, setNotes] = useState(existingAssessment?.notes || '');
+  const [showChannelGuide, setShowChannelGuide] = useState(false);
 
   const maturityStage = MATURITY_STAGES[capability.maturityLevel];
+  const showChannelGuideButton = CHANNEL_GUIDE_CAPABILITIES.includes(capability.id);
   const phase = PHASES.find((p) => p.phase === capability.phase);
   const questions = capability.assessmentQuestions || [];
   const hasQuestions = questions.length > 0;
@@ -516,6 +528,29 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
                   </div>
                 </div>
               )}
+
+              {/* Channel Strategy Guide Button */}
+              {showChannelGuideButton && (
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowChannelGuide(true)}
+                    className="w-full p-4 bg-gradient-to-r from-merkle-blue/5 to-merkle-teal/5 border-2 border-dashed border-merkle-blue/30 rounded-xl hover:border-merkle-blue/50 hover:bg-merkle-blue/10 transition-all group"
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-merkle-blue to-merkle-teal rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform">
+                        <Share2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-semibold text-gray-900">Cross-Channel Strategy Guide</h4>
+                        <p className="text-sm text-gray-600">
+                          When to use SMS, Push, Ads, and Direct Mail across journeys
+                        </p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-merkle-blue transition-colors" />
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -737,6 +772,11 @@ export function AssessmentModal({ capability, onClose, onNext, isAssessmentMode 
           )}
         </div>
       </div>
+
+      {/* Channel Role Guide Modal */}
+      {showChannelGuide && (
+        <ChannelRoleGuide onClose={() => setShowChannelGuide(false)} />
+      )}
     </div>
   );
 }
