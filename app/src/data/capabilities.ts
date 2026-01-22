@@ -108,6 +108,17 @@ export const MESSAGING_PERSONALIZATION_CAPABILITIES: Capability[] = [
     ],
     tags: ['data-cloud', 'foundation', 'platform', 'phase-1', 'agentforce', 'cdp', 'mc-advanced'],
     icon: 'Database',
+    productsFeatures: [
+      { name: 'Data Cloud', category: 'platform' },
+      { name: 'Marketing Cloud Advanced', category: 'platform' },
+      { name: 'Flow for Marketing', category: 'feature' },
+      { name: 'Einstein Engagement Scoring', category: 'feature' },
+      { name: 'Zero-Copy Partners', category: 'integration' },
+      { name: 'Identity Resolution', category: 'feature' },
+      { name: 'Calculated Insights', category: 'feature' },
+    ],
+    availableFor: ['mc-advanced'],
+    isDecisionPoint: true,
     assessmentQuestions: [
       {
         id: 'existing-cdp',
@@ -247,6 +258,25 @@ export const MESSAGING_PERSONALIZATION_CAPABILITIES: Capability[] = [
     ],
     tags: ['data', 'integration', 'purchase', 'loyalty', 'phase-1'],
     icon: 'Database',
+    productsFeatures: [
+      { name: 'Data Cloud Data Streams', category: 'feature' },
+      { name: 'Zero-Copy Partners', category: 'integration' },
+      { name: 'Data Cloud Connectors', category: 'integration' },
+      { name: 'Calculated Insights', category: 'feature' },
+      { name: 'Merkury', category: 'merkle' },
+    ],
+    adjacencies: [
+      {
+        matrix: 'commerce',
+        connectionPoint: 'Commerce data integration',
+        description: 'Integrate Commerce Cloud transaction and cart data for purchase-based personalization',
+      },
+      {
+        matrix: 'service',
+        connectionPoint: 'Service data integration',
+        description: 'Integrate Service Cloud case data for service-triggered journeys',
+      },
+    ],
     assessmentQuestions: [
       {
         id: 'data-source-priority',
@@ -489,6 +519,14 @@ export const MESSAGING_PERSONALIZATION_CAPABILITIES: Capability[] = [
     references: [],
     tags: ['journeys', 'welcome', 'birthday', 're-engagement', 'phase-2'],
     icon: 'UserPlus',
+    productsFeatures: [
+      { name: 'Marketing Cloud Flow', category: 'platform' },
+      { name: 'Journey Builder', category: 'feature' },
+      { name: 'Email Studio', category: 'feature' },
+      { name: 'Mobile Push', category: 'feature' },
+      { name: 'Content Builder', category: 'feature' },
+    ],
+    availableFor: ['mc-engagement', 'mc-advanced'],
     assessmentQuestions: [
       {
         id: 'existing-lifecycle-journeys',
@@ -856,6 +894,26 @@ export const MESSAGING_PERSONALIZATION_CAPABILITIES: Capability[] = [
     references: [],
     tags: ['journeys', 'cart-abandon', 'post-purchase', 'transactional', 'phase-3'],
     icon: 'ShoppingCart',
+    productsFeatures: [
+      { name: 'Marketing Cloud Flow', category: 'platform' },
+      { name: 'Data Cloud', category: 'platform' },
+      { name: 'Journey Builder', category: 'feature' },
+      { name: 'Commerce Cloud Connector', category: 'integration' },
+      { name: 'Service Cloud Connector', category: 'integration' },
+      { name: 'Mobile Push', category: 'feature' },
+    ],
+    adjacencies: [
+      {
+        matrix: 'loyalty',
+        connectionPoint: 'Loyalty program integration',
+        description: 'Integrate loyalty promotions, points reminders, and referral programs into lifecycle journeys',
+      },
+      {
+        matrix: 'commerce',
+        connectionPoint: 'Shopping experience',
+        description: 'Connect abandoned cart and post-purchase journeys with Commerce Cloud storefront',
+      },
+    ],
     assessmentQuestions: [
       {
         id: 'purchase-journeys-current',
@@ -1256,6 +1314,26 @@ export const MESSAGING_PERSONALIZATION_CAPABILITIES: Capability[] = [
     references: [],
     tags: ['identity', 'consent', 'data-cloud', 'gdpr', 'phase-4'],
     icon: 'Fingerprint',
+    productsFeatures: [
+      { name: 'Data Cloud Identity Resolution', category: 'feature' },
+      { name: 'Merkury', category: 'merkle' },
+      { name: 'Consent Management', category: 'feature' },
+      { name: 'Profile Unification', category: 'feature' },
+      { name: 'Data Enrichment Services', category: 'merkle' },
+    ],
+    availableFor: ['mc-advanced'],
+    adjacencies: [
+      {
+        matrix: 'commerce',
+        connectionPoint: 'Unified commerce identity',
+        description: 'Connect customer identity across storefront, order history, and marketing for unified experiences',
+      },
+      {
+        matrix: 'service',
+        connectionPoint: 'Service identity',
+        description: 'Unified customer view across marketing and service interactions',
+      },
+    ],
     assessmentQuestions: [
       {
         id: 'identity-challenges',
