@@ -1,45 +1,30 @@
 import type { Industry, IndustryType } from '../types';
 
 export const INDUSTRIES: Record<IndustryType, Industry> = {
-  'retail-cpg': {
-    id: 'retail-cpg',
-    name: 'Retail & Consumer Goods',
-    shortName: 'Retail/CPG',
-    description: 'Retailers, consumer packaged goods, and direct-to-consumer brands',
+  'retail-cpg-qsr': {
+    id: 'retail-cpg-qsr',
+    name: 'Retail, CPG & QSR',
+    shortName: 'Retail/CPG/QSR',
+    description: 'Retailers, consumer packaged goods, quick service restaurants, and direct-to-consumer brands',
     icon: 'ShoppingBag',
     typicalPriorities: [
       'Omnichannel customer experience',
+      'Loyalty & rewards optimization',
       'Personalization at scale',
-      'Loyalty program optimization',
-      'Cart abandonment recovery',
+      'Cart/browse abandonment recovery',
       'Customer lifetime value growth',
+      'Location-based marketing',
+      'Order frequency & ticket optimization',
+      'Mobile app engagement',
     ],
     commonChallenges: [
-      'Unifying online/offline customer data',
-      'Competing with Amazon/DTC disruptors',
+      'Unifying online/offline/app customer data',
+      'Identifying customers across channels',
       'Rising customer acquisition costs',
       'Inventory-aware personalization',
       'Attribution across channels',
-    ],
-  },
-  'qsr-restaurants': {
-    id: 'qsr-restaurants',
-    name: 'QSR & Restaurants',
-    shortName: 'QSR',
-    description: 'Quick service restaurants, fast casual, and food service brands',
-    icon: 'UtensilsCrossed',
-    typicalPriorities: [
-      'Mobile app engagement',
-      'Loyalty & rewards optimization',
-      'Location-based marketing',
-      'Order frequency & ticket size',
-      'Franchisee/corporate alignment',
-    ],
-    commonChallenges: [
-      'Identifying customers across channels (app, in-store, delivery)',
-      'Limited margin for marketing spend',
-      'Franchisee data fragmentation',
       'Delivery platform intermediation',
+      'Franchisee data fragmentation (QSR)',
       'Real-time offer decisioning',
     ],
   },
@@ -201,15 +186,26 @@ export const INDUSTRY_CAPABILITY_EMPHASIS: Record<IndustryType, {
   mediumPriority: string[];
   lowPriority: string[];
 }> = {
-  'retail-cpg': {
-    highPriority: ['migrate-sfmc', 'customer-lifecycle-journeys', 'scale-dynamic-content', 'cross-channel-activation'],
-    mediumPriority: ['extend-data-integrations', 'baseline-subscriber-journeys', 'identity-resolution'],
-    lowPriority: ['clv-modeling'],
-  },
-  'qsr-restaurants': {
-    highPriority: ['migrate-sfmc', 'baseline-subscriber-journeys', 'enhance-planned-campaigns'],
-    mediumPriority: ['extend-data-integrations', 'einstein-engagement-scoring', 'cross-channel-activation'],
-    lowPriority: ['insight-driven-experiences', 'clv-modeling'],
+  'retail-cpg-qsr': {
+    highPriority: [
+      'marketing-foundation',
+      'customer-lifecycle-journeys',
+      'baseline-subscriber-journeys',
+      'scale-dynamic-content',
+      'cross-channel-activation',
+    ],
+    mediumPriority: [
+      'extend-data-integrations',
+      'enhance-planned-campaigns',
+      'einstein-engagement-scoring',
+      'agentic-campaign-production',
+    ],
+    lowPriority: [
+      'identity-resolution',
+      'insight-driven-experiences',
+      'clv-modeling',
+      'data-exploration',
+    ],
   },
   'financial-services': {
     highPriority: ['migrate-sfmc', 'identity-resolution', 'customer-lifecycle-journeys'],
@@ -249,48 +245,50 @@ export const INDUSTRY_CAPABILITY_CONTEXT: Record<IndustryType, Record<string, {
   commonUseCase?: string;
   regulatoryNote?: string;
 }>> = {
-  'retail-cpg': {
-    'migrate-sfmc': {
-      industryTip: 'For retail, Data Cloud is critical for unifying POS, e-commerce, and loyalty data. Focus on zero-copy integrations with existing data warehouses.',
-      commonUseCase: 'Unified customer view across online/offline channels for omnichannel personalization',
+  'retail-cpg-qsr': {
+    'marketing-foundation': {
+      industryTip: 'For retail, CPG & QSR, Data Cloud is critical for unifying POS, e-commerce, mobile app, and loyalty data. MC Advanced unlocks the full journey orchestration capabilities needed for omnichannel experiences.',
+      commonUseCase: 'Unified customer view across online/offline/app channels for real-time personalization and Agentforce-powered campaigns',
     },
     'customer-lifecycle-journeys': {
-      industryTip: 'Cart abandonment and post-purchase journeys have the highest ROI for retail—prioritize these over general lifecycle.',
-      commonUseCase: 'Browse abandon, cart abandon, post-purchase cross-sell, and replenishment reminders',
-    },
-    'scale-dynamic-content': {
-      industryTip: 'Inventory-aware personalization is a key differentiator—show products that are actually in stock.',
-      commonUseCase: 'Product recommendations, regional inventory visibility, personalized promotions',
-    },
-    'cross-channel-activation': {
-      industryTip: 'Coordinate email, SMS, and paid media for key retail moments (flash sales, holiday campaigns).',
-      commonUseCase: 'Flash sale coordination, abandoned cart recovery across channels',
-    },
-    'identity-resolution': {
-      industryTip: 'Focus on connecting loyalty members across online and in-store transactions.',
-      commonUseCase: 'Matching in-store POS transactions to online profiles, loyalty member unification',
-    },
-  },
-  'qsr-restaurants': {
-    'migrate-sfmc': {
-      industryTip: 'QSR data is often fragmented across POS, mobile app, and delivery partners. Prioritize mobile app and loyalty integration.',
-      commonUseCase: 'Connecting app users, loyalty members, and in-store guests into a single view',
+      industryTip: 'Cart abandonment and post-purchase journeys have the highest ROI. For QSR, focus on order frequency and lapsed guest recovery.',
+      commonUseCase: 'Browse/cart abandon, post-purchase cross-sell, replenishment reminders, lapsed customer win-back',
     },
     'baseline-subscriber-journeys': {
-      industryTip: 'For QSR, focus on frequency-driving journeys—welcome series that incentivize second purchase, lapsed guest win-back.',
-      commonUseCase: 'App download welcome series, loyalty tier progression, lapsed guest offers',
+      industryTip: 'Focus on frequency-driving journeys—welcome series that incentivize second purchase, loyalty tier progression, birthday rewards.',
+      commonUseCase: 'App download welcome series, loyalty enrollment, birthday/anniversary recognition, re-engagement',
     },
-    'enhance-planned-campaigns': {
-      industryTip: 'QSR campaigns are highly seasonal and time-sensitive. Consider daypart-aware messaging (breakfast, lunch, dinner).',
-      commonUseCase: 'LTO launches, daypart promotions, franchisee-approved offer campaigns',
+    'scale-dynamic-content': {
+      industryTip: 'Inventory-aware personalization is a key differentiator—show products in stock. For QSR, consider daypart-aware menu content.',
+      commonUseCase: 'Product recommendations, regional inventory visibility, daypart menus, personalized promotions',
     },
     'cross-channel-activation': {
-      industryTip: 'Mobile push and SMS are critical for QSR due to proximity and immediacy needs.',
-      commonUseCase: 'Geo-triggered offers, order-ready notifications, time-sensitive LTO alerts',
+      industryTip: 'Coordinate email, SMS, push, and paid media for key moments. Mobile push and SMS are critical for QSR proximity needs.',
+      commonUseCase: 'Flash sales, abandoned cart recovery, geo-triggered offers, order-ready notifications, LTO alerts',
+    },
+    'enhance-planned-campaigns': {
+      industryTip: 'Transform batch campaigns into journey-based experiences. QSR campaigns need daypart awareness and franchisee coordination.',
+      commonUseCase: 'LTO launches, seasonal campaigns, franchisee-approved offers, coordinated holiday promotions',
+    },
+    'extend-data-integrations': {
+      industryTip: 'Priority data sources: POS transactions, e-commerce, mobile app, loyalty, delivery partners. Consider zero-copy for warehouse data.',
+      commonUseCase: 'Unified purchase history, loyalty data activation, delivery partner data integration',
+    },
+    'identity-resolution': {
+      industryTip: 'Focus on connecting loyalty members across online, in-store, and app transactions. Critical for unified customer view.',
+      commonUseCase: 'POS-to-online matching, loyalty member unification, cross-device identity',
     },
     'einstein-engagement-scoring': {
-      industryTip: 'Use engagement scoring to identify high-frequency guests vs. occasional visitors for differentiated messaging.',
-      commonUseCase: 'Heavy user recognition, lapsed guest identification, optimal send frequency',
+      industryTip: 'Use engagement scoring to identify high-value/high-frequency customers vs. occasional visitors for differentiated messaging.',
+      commonUseCase: 'Heavy user recognition, lapsed guest identification, optimal send frequency, VIP treatment triggers',
+    },
+    'insight-driven-experiences': {
+      industryTip: 'Brand-unique experiences powered by proprietary data—predicted next purchase, weather-triggered offers, lifestyle segmentation.',
+      commonUseCase: 'Predicted category affinity, weather-based menu suggestions, event-triggered campaigns, household optimization',
+    },
+    'agentic-campaign-production': {
+      industryTip: 'Establish governance for AI-generated campaigns. Critical for franchisee alignment and promotional compliance.',
+      commonUseCase: 'Automated campaign creation with brand guardrails, franchisee-approved content governance, promotional compliance',
     },
   },
   'financial-services': {
@@ -442,12 +440,18 @@ export const INDUSTRY_SPECIFIC_QUESTIONS: Record<IndustryType, {
   type: 'single-select' | 'multi-select' | 'text';
   options?: string[];
 }[]> = {
-  'retail-cpg': [
+  'retail-cpg-qsr': [
     {
-      id: 'retail-channels',
-      question: 'Which retail channels does the client operate?',
+      id: 'business-type',
+      question: 'What type of business is this?',
+      type: 'single-select',
+      options: ['Retail (stores/e-commerce)', 'CPG/Consumer Goods', 'QSR/Fast Casual', 'Full-service Restaurant', 'DTC Brand', 'Mixed/Multi-format'],
+    },
+    {
+      id: 'sales-channels',
+      question: 'Which sales/ordering channels are active?',
       type: 'multi-select',
-      options: ['E-commerce (owned)', 'Physical stores', 'Marketplaces (Amazon, etc.)', 'Wholesale/B2B', 'DTC subscription'],
+      options: ['E-commerce (owned)', 'Physical stores', 'Mobile app', 'Marketplaces (Amazon, etc.)', 'Drive-thru', 'Third-party delivery', 'Wholesale/B2B', 'DTC subscription'],
     },
     {
       id: 'loyalty-program',
@@ -455,19 +459,11 @@ export const INDUSTRY_SPECIFIC_QUESTIONS: Record<IndustryType, {
       type: 'single-select',
       options: ['Yes, points-based', 'Yes, tier-based', 'Yes, subscription/membership', 'No, but planning', 'No'],
     },
-  ],
-  'qsr-restaurants': [
     {
-      id: 'restaurant-model',
-      question: 'What is the restaurant operating model?',
+      id: 'operating-model',
+      question: 'What is the operating model? (QSR/Restaurant only)',
       type: 'single-select',
-      options: ['Corporate-owned', 'Franchise', 'Mixed corporate/franchise', 'Licensing'],
-    },
-    {
-      id: 'ordering-channels',
-      question: 'Which ordering channels are active?',
-      type: 'multi-select',
-      options: ['Mobile app', 'In-store/counter', 'Drive-thru', 'Delivery (owned)', 'Third-party delivery (DoorDash, etc.)', 'Catering'],
+      options: ['Corporate-owned', 'Franchise', 'Mixed corporate/franchise', 'Licensing', 'N/A - Not a restaurant'],
     },
   ],
   'financial-services': [

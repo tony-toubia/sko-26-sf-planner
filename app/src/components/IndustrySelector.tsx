@@ -1,4 +1,4 @@
-import { ShoppingBag, UtensilsCrossed, Landmark, Heart, Factory, Plane, Tv, Cpu } from 'lucide-react';
+import { ShoppingBag, Landmark, Heart, Factory, Plane, Tv, Cpu } from 'lucide-react';
 import type { IndustryType } from '../types';
 import { INDUSTRIES } from '../data/industries';
 
@@ -9,8 +9,7 @@ interface IndustrySelectorProps {
 }
 
 const INDUSTRY_ICONS: Record<IndustryType, React.ReactNode> = {
-  'retail-cpg': <ShoppingBag className="w-4 h-4" />,
-  'qsr-restaurants': <UtensilsCrossed className="w-4 h-4" />,
+  'retail-cpg-qsr': <ShoppingBag className="w-4 h-4" />,
   'financial-services': <Landmark className="w-4 h-4" />,
   'healthcare-life-sciences': <Heart className="w-4 h-4" />,
   'manufacturing': <Factory className="w-4 h-4" />,

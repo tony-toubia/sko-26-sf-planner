@@ -1,7 +1,7 @@
 export { Header } from './Header';
 export type { ViewType } from './Header';
-export { DisciplineSelector } from './DisciplineSelector';
 export { IndustrySelector } from './IndustrySelector';
+export { LandingPage } from './LandingPage';
 export { CapabilityCard } from './CapabilityCard';
 export { CapabilityModal } from './CapabilityModal';
 export { MaturityMatrix } from './MaturityMatrix';

@@ -7,6 +7,7 @@ import type {
   GlobalAssessmentInputs,
   GeneratedPlan,
   IndustryType,
+  MarketingFoundationType,
 } from '../types';
 import { generatePlan } from '../utils/planGenerator';
 import { INDUSTRIES } from '../data/industries';
@@ -17,9 +18,11 @@ interface AssessmentContextValue {
   isAssessmentMode: boolean;
   generatedPlan: GeneratedPlan | null;
   selectedIndustry: IndustryType | null;
+  marketingFoundation: MarketingFoundationType | null;
 
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
+  setMarketingFoundation: (foundation: MarketingFoundationType) => void;
   startAssessment: (clientName: string, industry: IndustryType, opportunityName?: string) => void;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
@@ -63,28 +66,42 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   const [isAssessmentMode, setIsAssessmentMode] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlan | null>(null);
   const [selectedIndustry, setSelectedIndustryState] = useState<IndustryType | null>(null);
+  const [marketingFoundation, setMarketingFoundationState] = useState<MarketingFoundationType | null>(null);
 
   const setSelectedIndustry = useCallback((industry: IndustryType) => {
     setSelectedIndustryState(industry);
   }, []);
 
+  const setMarketingFoundation = useCallback((foundation: MarketingFoundationType) => {
+    setMarketingFoundationState(foundation);
+    // Also update the assessment if one exists
+    setAssessment((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        marketingFoundation: foundation,
+        updatedAt: new Date(),
+      };
+    });
+  }, []);
+
   const startAssessment = useCallback((clientName: string, industry: IndustryType, opportunityName?: string) => {
-    const industryData = INDUSTRIES[industry];
     const newAssessment: OpportunityAssessment = {
       id: crypto.randomUUID(),
       clientName,
       opportunityName,
-      industry: industryData?.name,
+      industry: industry,
       createdAt: new Date(),
       updatedAt: new Date(),
       assessments: {},
       isComplete: false,
+      marketingFoundation: marketingFoundation || undefined,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);
     setIsAssessmentMode(true);
     setGeneratedPlan(null);
-  }, []);
+  }, [marketingFoundation]);
 
   const endAssessment = useCallback(() => {
     setIsAssessmentMode(false);
@@ -257,6 +274,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     setAssessment(null);
     setIsAssessmentMode(false);
     setGeneratedPlan(null);
+    setMarketingFoundationState(null);
   }, []);
 
   // Computed values
@@ -272,7 +290,9 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     isAssessmentMode,
     generatedPlan,
     selectedIndustry,
+    marketingFoundation,
     setSelectedIndustry,
+    setMarketingFoundation,
     startAssessment,
     endAssessment,
     setCapabilityRelevance,

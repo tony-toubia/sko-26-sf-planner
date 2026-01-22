@@ -1,12 +1,11 @@
 import { useState, useMemo } from 'react';
-import type { Capability, DisciplineType, CapabilityRelevance, GlobalAssessmentInputs, IndustryType } from '../types';
+import type { Capability, CapabilityRelevance, GlobalAssessmentInputs } from '../types';
 import { getCapabilityById, ALL_CAPABILITIES } from '../data/capabilities';
 import { INDUSTRY_CAPABILITY_EMPHASIS } from '../data/industries';
 import { AssessmentModal } from './AssessmentModal';
 import { AssessmentSummary } from './AssessmentSummary';
 import { GlobalInputsModal } from './GlobalInputsModal';
 import { PlanOutput } from './PlanOutput';
-import { DisciplineSelector } from './DisciplineSelector';
 import { IndustrySelector } from './IndustrySelector';
 import { useAssessment } from '../context/AssessmentContext';
 import { Search, Info, ClipboardList, X, Target, Clock, CheckCircle, CheckCircle2, CircleDot, Star } from 'lucide-react';
@@ -56,6 +55,7 @@ const ADDITIONAL_CAPABILITIES: Record<string, string[]> = {
     'einstein-send-time-optimization',
     'cross-channel-activation',
     'clv-modeling',
+    'agentic-campaign-production',
   ],
 };
 
@@ -77,9 +77,9 @@ function GridCell({ capability, onClick, onHover, highlightType, assessmentStatu
   }
 
   const phaseColors: Record<number, string> = {
-    1: '#0077C8',
-    2: '#F77F00',
-    3: '#43AA8B',
+    1: '#0057A3',
+    2: '#EA580C',
+    3: '#059669',
     4: '#7C3AED',
   };
 
@@ -224,18 +224,15 @@ function GridCell({ capability, onClick, onHover, highlightType, assessmentStatu
 }
 
 export function MaturityMatrix() {
-  const [selectedDiscipline, setSelectedDiscipline] = useState<DisciplineType>('messaging-personalization');
+  // M&P is now the only discipline - no selection needed
+  const selectedDiscipline = 'messaging-personalization';
   const [selectedCapability, setSelectedCapability] = useState<Capability | null>(null);
   const [hoveredCapabilityId, setHoveredCapabilityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showStartAssessmentModal, setShowStartAssessmentModal] = useState(false);
   const [showGlobalInputsModal, setShowGlobalInputsModal] = useState(false);
-  const [clientName, setClientName] = useState('');
-  const [assessmentIndustry, setAssessmentIndustry] = useState<IndustryType | null>(null);
 
   const {
     isAssessmentMode,
-    startAssessment,
     endAssessment,
     getCapabilityAssessment,
     assessment,
@@ -245,6 +242,7 @@ export function MaturityMatrix() {
     clearGeneratedPlan,
     selectedIndustry,
     setSelectedIndustry,
+    marketingFoundation,
   } = useAssessment();
 
   const gridConfig = GRID_LAYOUT[selectedDiscipline] || { rows: 3, cols: 3, cells: [] };
@@ -330,15 +328,6 @@ export function MaturityMatrix() {
     setSelectedCapability(cap);
   };
 
-  const handleStartAssessment = () => {
-    if (clientName.trim() && assessmentIndustry) {
-      startAssessment(clientName.trim(), assessmentIndustry);
-      setShowStartAssessmentModal(false);
-      setClientName('');
-      setAssessmentIndustry(null);
-    }
-  };
-
   const handleEditCapability = (capabilityId: string) => {
     const cap = getCapabilityById(capabilityId);
     if (cap) {
@@ -384,15 +373,7 @@ export function MaturityMatrix() {
               className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue focus:border-transparent"
             />
           </div>
-          {!isAssessmentMode ? (
-            <button
-              onClick={() => setShowStartAssessmentModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors whitespace-nowrap"
-            >
-              <ClipboardList className="w-4 h-4" />
-              Start Assessment
-            </button>
-          ) : (
+          {isAssessmentMode && (
             <button
               onClick={endAssessment}
               className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors whitespace-nowrap"
@@ -407,13 +388,25 @@ export function MaturityMatrix() {
       {/* Assessment Mode Banner */}
       {isAssessmentMode && assessment && (
         <div className="bg-gradient-to-r from-merkle-blue/10 to-salesforce-blue/10 border border-merkle-blue/20 rounded-xl p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <ClipboardList className="w-5 h-5 text-merkle-blue" />
-              <div>
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-gray-900">Assessment Mode</span>
-                <span className="text-gray-600 ml-2">|</span>
-                <span className="text-gray-600 ml-2">{assessment.clientName}</span>
+                <span className="text-gray-400">|</span>
+                <span className="text-gray-700 font-medium">{assessment.clientName}</span>
+                {marketingFoundation && (
+                  <>
+                    <span className="text-gray-400">|</span>
+                    <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                      marketingFoundation === 'mc-advanced'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}>
+                      {marketingFoundation === 'mc-advanced' ? 'MC Advanced & Data 360' : 'MC Engagement'}
+                    </span>
+                  </>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-3 text-xs flex-wrap">
@@ -449,12 +442,6 @@ export function MaturityMatrix() {
           onSelect={setSelectedIndustry}
         />
       )}
-
-      {/* Discipline Selector */}
-      <DisciplineSelector
-        selectedDiscipline={selectedDiscipline}
-        onSelect={setSelectedDiscipline}
-      />
 
       {/* Main Content - Grid and Assessment Summary side by side */}
       <div className={`grid gap-6 ${isAssessmentMode ? 'lg:grid-cols-3' : ''}`}>
@@ -599,7 +586,7 @@ export function MaturityMatrix() {
                       <div className="flex items-center gap-2 mb-2">
                         <div
                           className="w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: ({ 1: '#0077C8', 2: '#F77F00', 3: '#43AA8B', 4: '#7C3AED' } as Record<number, string>)[cap.phase] }}
+                          style={{ backgroundColor: ({ 1: '#0057A3', 2: '#EA580C', 3: '#059669', 4: '#7C3AED' } as Record<number, string>)[cap.phase] }}
                         >
                           {cap.phase}
                         </div>
@@ -643,7 +630,7 @@ export function MaturityMatrix() {
                 <div key={phase} className="flex items-center gap-1.5">
                   <div
                     className="w-5 h-5 rounded flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: { 1: '#0077C8', 2: '#F77F00', 3: '#43AA8B', 4: '#7C3AED' }[phase] }}
+                    style={{ backgroundColor: { 1: '#0057A3', 2: '#EA580C', 3: '#059669', 4: '#7C3AED' }[phase] }}
                   >
                     {phase}
                   </div>
@@ -679,77 +666,6 @@ export function MaturityMatrix() {
           onClose={() => setSelectedCapability(null)}
           isAssessmentMode={isAssessmentMode}
         />
-      )}
-
-      {/* Start Assessment Modal */}
-      {showStartAssessmentModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue">
-              <h3 className="text-xl font-bold text-white">Start New Assessment</h3>
-              <p className="text-white/80 text-sm">Evaluate capabilities for a client opportunity</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block font-medium text-gray-900 mb-2">
-                  Client Name <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={clientName}
-                    onChange={(e) => setClientName(e.target.value)}
-                    placeholder="Enter client name..."
-                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue focus:border-transparent"
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setClientName('Anonymous')}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors whitespace-nowrap"
-                    title="Use for confidential assessments"
-                  >
-                    Anonymous
-                  </button>
-                </div>
-                <p className="mt-1.5 text-xs text-gray-500">
-                  For confidential assessments without client permission, use "Anonymous" or a project code.
-                </p>
-              </div>
-              <div>
-                <label className="block font-medium text-gray-900 mb-2">
-                  Industry <span className="text-red-500">*</span>
-                </label>
-                <IndustrySelector
-                  selectedIndustry={assessmentIndustry}
-                  onSelect={setAssessmentIndustry}
-                />
-              </div>
-              <p className="text-sm text-gray-500">
-                The selected industry will tailor capability priorities and recommendations for your client.
-              </p>
-            </div>
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowStartAssessmentModal(false);
-                  setClientName('');
-                  setAssessmentIndustry(null);
-                }}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleStartAssessment}
-                disabled={!clientName.trim() || !assessmentIndustry}
-                className="px-6 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Start Assessment
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Global Inputs Modal - collects context before generating plan */}

@@ -10,8 +10,11 @@ export interface MaturityStage {
 }
 
 // Disciplines/Clouds that can have maturity matrices
-export type DisciplineType =
-  | 'messaging-personalization'
+// Currently focused on M&P only - other disciplines will be added in future releases
+export type DisciplineType = 'messaging-personalization';
+
+// Future disciplines (not yet implemented)
+export type FutureDisciplineType =
   | 'loyalty'
   | 'b2b'
   | 'commerce'
@@ -27,10 +30,23 @@ export interface Discipline {
   salesforceCloud: string;
 }
 
+// Marketing Foundation Choice - the key decision point
+export type MarketingFoundationType = 'mc-engagement' | 'mc-advanced';
+
+export interface MarketingFoundation {
+  id: MarketingFoundationType;
+  name: string;
+  shortName: string;
+  description: string;
+  features: string[];
+  limitations?: string[];
+  recommended: boolean;
+}
+
 // Industry verticals - affects capability relevance and questions
+// Retail, CPG & QSR are consolidated into one industry for M&P focus
 export type IndustryType =
-  | 'retail-cpg'
-  | 'qsr-restaurants'
+  | 'retail-cpg-qsr'
   | 'financial-services'
   | 'healthcare-life-sciences'
   | 'manufacturing'
@@ -113,6 +129,20 @@ export interface ReferenceMaterial {
   source: 'merkle-b2b' | 'merkle-modern-crm' | 'salesforce' | 'internal';
 }
 
+// Product/Feature used by a capability
+export interface ProductFeature {
+  name: string;
+  category: 'platform' | 'feature' | 'integration' | 'merkle';
+  icon?: string;
+}
+
+// Adjacency to other maturity matrices
+export interface MatrixAdjacency {
+  matrix: FutureDisciplineType;
+  connectionPoint: string;
+  description: string;
+}
+
 // Capability Card - main building block of the matrix
 export interface Capability {
   id: string;
@@ -161,6 +191,18 @@ export interface Capability {
 
   // Assessment questions for this capability
   assessmentQuestions?: AssessmentQuestion[];
+
+  // NEW: Products and features used by this capability
+  productsFeatures?: ProductFeature[];
+
+  // NEW: Adjacencies to other maturity matrices (future expansion)
+  adjacencies?: MatrixAdjacency[];
+
+  // NEW: Which marketing foundation(s) this capability is available for
+  availableFor?: MarketingFoundationType[];
+
+  // NEW: Is this a decision point capability?
+  isDecisionPoint?: boolean;
 }
 
 // Client assessment note
@@ -245,13 +287,15 @@ export interface OpportunityAssessment {
   id: string;
   clientName: string;
   opportunityName?: string;
-  industry?: string;
+  industry?: IndustryType;
   createdAt: Date;
   updatedAt: Date;
   assessments: Record<string, CapabilityAssessment>;
   globalInputs?: GlobalAssessmentInputs;
   isComplete: boolean;
   generatedPlan?: GeneratedPlan;
+  // NEW: Marketing foundation choice
+  marketingFoundation?: MarketingFoundationType;
 }
 
 // Global assessment inputs - collected before/after capability assessments

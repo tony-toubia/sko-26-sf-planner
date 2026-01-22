@@ -4,6 +4,7 @@ import type {
   PhaseInfo,
   JourneyCategory,
   MaturityLevel,
+  MarketingFoundation,
 } from '../types';
 
 export const MATURITY_STAGES: MaturityStage[] = [
@@ -13,7 +14,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Lagging',
     description:
       'Companies ignore the imperative to evolve along with their consumers.',
-    color: '#E63946',
+    color: '#DC2626',
   },
   {
     level: 1,
@@ -21,7 +22,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Siloed',
     description:
       'Companies try isolated programs in a single channel to evaluate what works and what doesn\'t.',
-    color: '#F77F00',
+    color: '#EA580C',
   },
   {
     level: 2,
@@ -29,7 +30,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Adopting',
     description:
       'Companies take early successes and begin to adopt new capabilities and apply those across marketing and communications.',
-    color: '#FCBF49',
+    color: '#D97706',
   },
   {
     level: 3,
@@ -37,7 +38,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Scaling',
     description:
       'Companies are focused on optimizing systems and applying those across all business units and corporate functions – removing friction in the process.',
-    color: '#90BE6D',
+    color: '#65A30D',
   },
   {
     level: 4,
@@ -45,7 +46,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Strategic',
     description:
       'Companies leverage their advanced digital capabilities into a competitive advantage in the marketplace.',
-    color: '#43AA8B',
+    color: '#0D9488',
   },
   {
     level: 5,
@@ -53,10 +54,11 @@ export const MATURITY_STAGES: MaturityStage[] = [
     shortName: 'Transformed',
     description:
       'Companies have achieved full digital transformation with data-driven, AI-powered customer experiences.',
-    color: '#4361EE',
+    color: '#4F46E5',
   },
 ];
 
+// Currently focused on M&P only - other disciplines coming soon
 export const DISCIPLINES: Discipline[] = [
   {
     id: 'messaging-personalization',
@@ -67,80 +69,109 @@ export const DISCIPLINES: Discipline[] = [
     icon: 'Mail',
     salesforceCloud: 'Marketing Cloud',
   },
+];
+
+// Marketing Foundation Options - the key decision point
+export const MARKETING_FOUNDATIONS: MarketingFoundation[] = [
+  {
+    id: 'mc-engagement',
+    name: 'MC Engagement (Legacy)',
+    shortName: 'MC Engagement',
+    description:
+      'Continue with existing Marketing Cloud Engagement investment. Journey Builder-based workflows with traditional data extensions.',
+    features: [
+      'Journey Builder automation',
+      'Email Studio & Content Builder',
+      'Basic Einstein features',
+      'Traditional data extensions',
+      'Existing integrations preserved',
+    ],
+    limitations: [
+      'No Agentforce capabilities',
+      'Limited real-time data access',
+      'Manual segment management',
+      'Some Phase 3-4 capabilities unavailable',
+    ],
+    recommended: false,
+  },
+  {
+    id: 'mc-advanced',
+    name: 'MC Advanced & Data 360',
+    shortName: 'MC Advanced',
+    description:
+      'Full Marketing Cloud Next feature set with Data Cloud foundation. Agentforce-ready infrastructure with zero-copy data federation.',
+    features: [
+      'Flow for Marketing (visual journey automation)',
+      'Data Cloud unified profiles',
+      'Agentforce Campaign Agent',
+      'Einstein Engagement Scoring & Frequency',
+      'Zero-Copy Data Federation (Snowflake, BigQuery, Redshift)',
+      'Calculated Insights (CLV, propensity scores)',
+      'Real-time segmentation',
+      'Identity Resolution & Consent Management',
+    ],
+    recommended: true,
+  },
+];
+
+// Future disciplines - not yet implemented but defined for adjacency hints
+export const FUTURE_DISCIPLINES = [
   {
     id: 'loyalty',
     name: 'Loyalty',
     shortName: 'Loyalty',
-    description:
-      'Customer loyalty programs, rewards, tier management, and retention strategies.',
+    description: 'Customer loyalty programs, rewards, tier management, and retention strategies.',
     icon: 'Award',
     salesforceCloud: 'Loyalty Management',
-  },
-  {
-    id: 'b2b',
-    name: 'B2B Marketing',
-    shortName: 'B2B',
-    description:
-      'Account-based marketing, lead scoring, partner management, and B2B customer journeys.',
-    icon: 'Building',
-    salesforceCloud: 'Marketing Cloud Account Engagement',
+    comingSoon: true,
   },
   {
     id: 'commerce',
     name: 'Commerce',
     shortName: 'Commerce',
-    description:
-      'E-commerce, order management, fulfillment, and unified commerce experiences.',
+    description: 'E-commerce, order management, fulfillment, and unified commerce experiences.',
     icon: 'ShoppingCart',
     salesforceCloud: 'Commerce Cloud',
+    comingSoon: true,
   },
   {
     id: 'service',
     name: 'Service',
     shortName: 'Service',
-    description:
-      'Customer service, case management, knowledge base, and service automation.',
+    description: 'Customer service, case management, knowledge base, and service automation.',
     icon: 'Headphones',
     salesforceCloud: 'Service Cloud',
-  },
-  {
-    id: 'data-cloud',
-    name: 'Data Cloud',
-    shortName: 'Data',
-    description:
-      'Customer data platform, identity resolution, segmentation, and data activation.',
-    icon: 'Database',
-    salesforceCloud: 'Data Cloud',
+    comingSoon: true,
   },
 ];
 
 export const PHASES: PhaseInfo[] = [
   {
     phase: 1,
-    name: 'Phase 1: Unlock New Capabilities',
+    name: 'Phase 1: Foundation',
     description:
-      'Migrating to new platforms and setting up foundational integrations to unlock advanced capabilities.',
-    color: '#0077C8',
+      'Establish the marketing platform foundation, migrate to modern stack, and set up initial data integrations.',
+    color: '#0057A3',
   },
   {
     phase: 2,
-    name: 'Phase 2: Activate New Capabilities',
+    name: 'Phase 2: Activation',
     description:
-      'Applying new capabilities across subscriber lifecycle journeys and campaigns with purchase data integration.',
-    color: '#F77F00',
+      'Activate subscriber and customer journeys, build campaign frameworks, and implement cross-channel coordination.',
+    color: '#EA580C',
   },
   {
     phase: 3,
-    name: 'Phase 3: Meeting Today\'s Consumer Expectations',
+    name: 'Phase 3: Optimization',
     description:
-      'Activating rich consumer-level purchase and loyalty data to affect segmentation, journeys, and detailed performance analysis.',
-    color: '#43AA8B',
+      'Optimize with advanced data integrations, lifecycle journeys, dynamic content, and analytics to meet consumer expectations.',
+    color: '#059669',
   },
   {
     phase: 4,
-    name: 'Phase 4: Future Proofing',
+    name: 'Phase 4: Transformation',
     description:
-      'Moving from touchpoints to moments, informed by rich customer behavior in the form of experience-led journeys backed by data & insights.',
+      'Transform with insight-driven experiences, identity resolution, and brand-unique capabilities that differentiate.',
     color: '#7C3AED',
   },
 ];

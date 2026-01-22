@@ -1,29 +1,52 @@
 @import "tailwindcss";
 
 @theme {
-  --color-merkle-blue: #0077C8;
+  /* Merkle Brand Colors */
+  --color-merkle-blue: #0057A3;
+  --color-merkle-cyan: #00B5E2;
+  --color-merkle-dark: #1A1A1A;
   --color-merkle-teal: #00A5B5;
+
+  /* Salesforce Brand */
   --color-salesforce-blue: #00A1E0;
-  --color-maturity-lagging: #E63946;
-  --color-maturity-siloed: #F77F00;
-  --color-maturity-adopting: #FCBF49;
-  --color-maturity-scaling: #90BE6D;
-  --color-maturity-strategic: #43AA8B;
-  --color-maturity-transformed: #4361EE;
+
+  /* Maturity Level Colors */
+  --color-maturity-lagging: #DC2626;
+  --color-maturity-siloed: #EA580C;
+  --color-maturity-adopting: #D97706;
+  --color-maturity-scaling: #65A30D;
+  --color-maturity-strategic: #0D9488;
+  --color-maturity-transformed: #4F46E5;
+
+  /* Phase Colors */
+  --color-phase-1: #0057A3;
+  --color-phase-2: #EA580C;
+  --color-phase-3: #059669;
+  --color-phase-4: #7C3AED;
 }
 
 :root {
-  --merkle-blue: #0077C8;
+  --merkle-blue: #0057A3;
+  --merkle-cyan: #00B5E2;
   --merkle-teal: #00A5B5;
   --salesforce-blue: #00A1E0;
 }
 
+/* Base styles */
 body {
-  background-color: rgb(249 250 251);
-  color: rgb(17 24 39);
+  background-color: #F8FAFC;
+  color: #1A1A1A;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
 /* Custom scrollbar */
@@ -33,56 +56,65 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background-color: rgb(243 244 246);
+  background-color: #F1F5F9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(209 213 219);
+  background-color: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(156 163 175);
+  background-color: #94A3B8;
 }
 
-/* Maturity level gradients */
+/* Merkle gradient backgrounds */
+.merkle-gradient {
+  background: linear-gradient(135deg, #0057A3 0%, #00A5B5 50%, #00B5E2 100%);
+}
+
+.merkle-gradient-subtle {
+  background: linear-gradient(135deg, rgba(0, 87, 163, 0.05) 0%, rgba(0, 165, 181, 0.05) 100%);
+}
+
+/* Maturity level gradient */
 .maturity-gradient {
   background: linear-gradient(90deg,
-    #E63946 0%,
-    #F77F00 20%,
-    #FCBF49 40%,
-    #90BE6D 60%,
-    #43AA8B 80%,
-    #4361EE 100%
+    #DC2626 0%,
+    #EA580C 20%,
+    #D97706 40%,
+    #65A30D 60%,
+    #0D9488 80%,
+    #4F46E5 100%
   );
 }
 
 /* Card hover effects */
 .capability-card {
-  transition-property: all;
-  transition-duration: 300ms;
-  transition-timing-function: ease-in-out;
+  transition: all 0.2s ease-in-out;
+  border: 2px solid transparent;
 }
 
 .capability-card:hover {
-  transform: translateY(-0.25rem);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0, 87, 163, 0.15);
+  border-color: #0057A3;
 }
 
 /* Journey type badges */
 .journey-above-line {
-  background-image: linear-gradient(to right, #22d3ee, #3b82f6);
+  background: linear-gradient(135deg, #06B6D4 0%, #0D9488 100%);
 }
 
 .journey-below-line {
-  background-image: linear-gradient(to right, #2563eb, #4338ca);
+  background: linear-gradient(135deg, #0057A3 0%, #4F46E5 100%);
 }
 
 /* Phase badges */
-.phase-1 { background-color: #3b82f6; }
-.phase-2 { background-color: #f97316; }
-.phase-3 { background-color: #22c55e; }
-.phase-4 { background-color: #a855f7; }
+.phase-1 { background-color: #0057A3; }
+.phase-2 { background-color: #EA580C; }
+.phase-3 { background-color: #059669; }
+.phase-4 { background-color: #7C3AED; }
 
 /* Iceberg visualization */
 .iceberg-above {
@@ -90,5 +122,42 @@ body {
 }
 
 .iceberg-below {
-  background: linear-gradient(180deg, #0277BD 0%, #01579B 100%);
+  background: linear-gradient(180deg, #0057A3 0%, #003366 100%);
+}
+
+/* Focus states */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #0057A3;
+  outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Custom button styles */
+.btn-primary {
+  background: linear-gradient(135deg, #0057A3 0%, #0077C8 100%);
+  color: white;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #004080 0%, #0066AA 100%);
+  box-shadow: 0 4px 12px rgba(0, 87, 163, 0.3);
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(0, 87, 163, 0.2);
+  color: inherit;
 }
