@@ -7,6 +7,7 @@ import { AssessmentSummary } from './AssessmentSummary';
 import { GlobalInputsModal } from './GlobalInputsModal';
 import { PlanOutput } from './PlanOutput';
 import { IndustrySelector } from './IndustrySelector';
+import { ConsolidatedQuestionnaire } from './ConsolidatedQuestionnaire';
 import { useAssessment } from '../context/AssessmentContext';
 import { Search, Info, ClipboardList, X, Target, Clock, CheckCircle, CheckCircle2, CircleDot, Star } from 'lucide-react';
 
@@ -230,6 +231,7 @@ export function MaturityMatrix() {
   const [hoveredCapabilityId, setHoveredCapabilityId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showGlobalInputsModal, setShowGlobalInputsModal] = useState(false);
+  const [showDeepDiveQuestionnaire, setShowDeepDiveQuestionnaire] = useState(false);
 
   const {
     isAssessmentMode,
@@ -348,6 +350,16 @@ export function MaturityMatrix() {
   const handleGlobalInputsSubmit = (inputs: GlobalAssessmentInputs) => {
     generateRecommendationPlan(inputs);
     setShowGlobalInputsModal(false);
+  };
+
+  const handleStartDeepDive = () => {
+    setShowDeepDiveQuestionnaire(true);
+  };
+
+  const handleDeepDiveComplete = () => {
+    setShowDeepDiveQuestionnaire(false);
+    // Optionally show the global inputs modal to generate plan
+    setShowGlobalInputsModal(true);
   };
 
   return (
@@ -615,6 +627,7 @@ export function MaturityMatrix() {
               onGenerateQuickPlan={handleGenerateQuickPlan}
               onGenerateDetailedPlan={handleGenerateDetailedPlan}
               onEditCapability={handleEditCapability}
+              onStartDeepDive={handleStartDeepDive}
             />
           </div>
         )}
@@ -682,6 +695,14 @@ export function MaturityMatrix() {
         <PlanOutput
           plan={generatedPlan}
           onClose={clearGeneratedPlan}
+        />
+      )}
+
+      {/* Phase 2: Deep Dive Questionnaire */}
+      {showDeepDiveQuestionnaire && (
+        <ConsolidatedQuestionnaire
+          onClose={() => setShowDeepDiveQuestionnaire(false)}
+          onComplete={handleDeepDiveComplete}
         />
       )}
     </div>

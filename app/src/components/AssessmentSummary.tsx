@@ -12,6 +12,8 @@ import {
   Sparkles,
   Zap,
   Settings2,
+  MessageSquare,
+  ArrowRight,
 } from 'lucide-react';
 import { useAssessment } from '../context/AssessmentContext';
 import { getCapabilityById } from '../data/capabilities';
@@ -20,9 +22,10 @@ interface AssessmentSummaryProps {
   onGenerateQuickPlan: () => void;
   onGenerateDetailedPlan: () => void;
   onEditCapability: (capabilityId: string) => void;
+  onStartDeepDive?: () => void;
 }
 
-export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan, onEditCapability }: AssessmentSummaryProps) {
+export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan, onEditCapability, onStartDeepDive }: AssessmentSummaryProps) {
   const { assessment, assessedCount, relevantCount, totalCapabilities, selectedIndustry } = useAssessment();
 
   const groupedAssessments = useMemo(() => {
@@ -55,6 +58,35 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
 
     return grouped;
   }, [assessment]);
+
+  // Check if any capabilities marked for action have unanswered questions
+  const capabilitiesNeedingQuestions = useMemo(() => {
+    if (!assessment) return [];
+
+    const needsQuestions: { id: string; name: string; questionCount: number }[] = [];
+
+    Object.values(assessment.assessments).forEach((a) => {
+      if (a.relevance === 'immediately-relevant' || a.relevance === 'near-future') {
+        const cap = getCapabilityById(a.capabilityId);
+        if (cap && cap.assessmentQuestions && cap.assessmentQuestions.length > 0) {
+          // Check if questions are not yet answered
+          const answeredCount = a.answers?.length || 0;
+          if (answeredCount < cap.assessmentQuestions.length) {
+            needsQuestions.push({
+              id: cap.id,
+              name: cap.shortName || cap.name,
+              questionCount: cap.assessmentQuestions.length,
+            });
+          }
+        }
+      }
+    });
+
+    return needsQuestions;
+  }, [assessment]);
+
+  const hasUnansweredQuestions = capabilitiesNeedingQuestions.length > 0;
+  const totalQuestionsNeeded = capabilitiesNeedingQuestions.reduce((sum, c) => sum + c.questionCount, 0);
 
   const progressPercentage = Math.round((assessedCount / totalCapabilities) * 100);
   const canGeneratePlan = relevantCount > 0;
@@ -253,6 +285,28 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
           </div>
         )}
       </div>
+
+      {/* Deep Dive Questions CTA */}
+      {hasUnansweredQuestions && onStartDeepDive && (
+        <div className="px-6 py-4 bg-gradient-to-r from-violet-50 to-indigo-50 border-t border-violet-200">
+          <button
+            onClick={onStartDeepDive}
+            className="w-full py-3 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-3"
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span>Answer Deep Dive Questions</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <div className="mt-2 text-center">
+            <p className="text-sm text-violet-700">
+              {capabilitiesNeedingQuestions.length} {capabilitiesNeedingQuestions.length === 1 ? 'capability needs' : 'capabilities need'} more details ({totalQuestionsNeeded} questions total)
+            </p>
+            <p className="text-xs text-violet-600 mt-1">
+              These questions help customize your implementation plan
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Generate Plan CTA */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 space-y-3">
