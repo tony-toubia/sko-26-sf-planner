@@ -682,14 +682,14 @@ export const TRACK_DEPENDENCIES: TrackDependency[] = [
     type: 'recommended',
     description: 'Subscriber journeys help inform mobile channel strategy',
   },
-  // Data L2 + Journeys L2 required for Journeys L3
+  // Journeys L2 recommended for Journeys L3 (not required - can assess L3 independently)
   {
     fromTrack: 'journeys',
     fromLevel: 2,
     toTrack: 'journeys',
     toLevel: 3,
-    type: 'required',
-    description: 'Customer lifecycle journeys must be operational before insight-driven experiences',
+    type: 'recommended',
+    description: 'Customer lifecycle journeys help inform insight-driven experiences',
   },
   // Intelligence L2 recommended for Journeys L3
   {
