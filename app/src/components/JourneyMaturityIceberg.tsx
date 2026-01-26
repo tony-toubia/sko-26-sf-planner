@@ -37,130 +37,142 @@ export function JourneyMaturityIceberg({
       </div>
 
       <div className="p-6">
-        {/* Iceberg Visualization */}
-        <div className="relative">
-          {/* Water line indicator */}
-          <div className="absolute left-0 right-0 top-[52%] z-10 flex items-center">
-            <div className="flex-1 border-t-2 border-dashed border-blue-400" />
-            <span className="px-3 text-xs font-medium text-blue-500 bg-white">
-              WATERLINE
-            </span>
-            <div className="flex-1 border-t-2 border-dashed border-blue-400" />
-          </div>
+        {/* Iceberg Visualization with background image */}
+        <div className="relative rounded-xl overflow-hidden">
+          {/* Background iceberg image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30"
+            style={{ backgroundImage: 'url(/images/iceberg.png)' }}
+          />
 
-          {/* Sky/Above water background */}
-          <div className="bg-gradient-to-b from-sky-50 to-sky-100 rounded-t-xl pt-4 pb-8">
-            {/* Level 1: Subscriber Journeys - Top of iceberg */}
-            <button
-              onClick={() => onSelectLevel?.('subscriber')}
-              className={`
-                relative mx-auto block w-[70%] transition-all
-                ${highlightLevel === 'subscriber' ? 'scale-105' : 'hover:scale-102'}
-              `}
-            >
-              <div
+          {/* Gradient overlays to blend with content */}
+          <div className="absolute inset-0 bg-gradient-to-b from-sky-100/80 via-blue-300/60 to-blue-900/80" />
+
+          {/* Content container */}
+          <div className="relative z-10">
+            {/* Water line indicator */}
+            <div className="absolute left-0 right-0 top-[52%] z-20 flex items-center">
+              <div className="flex-1 border-t-2 border-dashed border-white/60" />
+              <span className="px-3 text-xs font-semibold text-white bg-blue-500/80 rounded-full shadow-lg">
+                WATERLINE
+              </span>
+              <div className="flex-1 border-t-2 border-dashed border-white/60" />
+            </div>
+
+            {/* Sky/Above water section */}
+            <div className="pt-4 pb-8">
+              {/* Level 1: Subscriber Journeys - Top of iceberg */}
+              <button
+                onClick={() => onSelectLevel?.('subscriber')}
                 className={`
-                  bg-gradient-to-br from-emerald-400 to-teal-500 rounded-t-3xl p-4 shadow-lg
-                  ${highlightLevel === 'subscriber' ? 'ring-4 ring-emerald-300' : ''}
+                  relative mx-auto block w-[70%] transition-all
+                  ${highlightLevel === 'subscriber' ? 'scale-105' : 'hover:scale-102'}
                 `}
               >
-                <div className="flex items-center justify-center gap-2 text-white mb-2">
-                  <UserPlus className="w-5 h-5" />
-                  <span className="font-semibold">Subscriber Journeys</span>
+                <div
+                  className={`
+                    bg-gradient-to-br from-emerald-400/95 to-teal-500/95 rounded-t-3xl p-4 shadow-lg backdrop-blur-sm
+                    ${highlightLevel === 'subscriber' ? 'ring-4 ring-emerald-300' : ''}
+                  `}
+                >
+                  <div className="flex items-center justify-center gap-2 text-white mb-2">
+                    <UserPlus className="w-5 h-5" />
+                    <span className="font-semibold">Subscriber Journeys</span>
+                  </div>
+                  <div className="flex justify-center gap-4 text-xs text-white/90">
+                    <span>Welcome</span>
+                    <span>•</span>
+                    <span>Birthday</span>
+                    <span>•</span>
+                    <span>Re-engagement</span>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-xs text-white">
+                      Table Stakes
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-center gap-4 text-xs text-white/90">
-                  <span>Welcome</span>
-                  <span>•</span>
-                  <span>Birthday</span>
-                  <span>•</span>
-                  <span>Re-engagement</span>
-                </div>
-                <div className="mt-2 text-center">
-                  <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-xs text-white">
-                    Table Stakes
-                  </span>
-                </div>
-              </div>
-            </button>
+              </button>
 
-            {/* Level 2: Customer Lifecycle - Middle of iceberg */}
-            <button
-              onClick={() => onSelectLevel?.('lifecycle')}
-              className={`
-                relative mx-auto block w-[85%] -mt-2 transition-all
-                ${highlightLevel === 'lifecycle' ? 'scale-105' : 'hover:scale-102'}
-              `}
-            >
-              <div
+              {/* Level 2: Customer Lifecycle - Middle of iceberg */}
+              <button
+                onClick={() => onSelectLevel?.('lifecycle')}
                 className={`
-                  bg-gradient-to-br from-violet-500 to-purple-600 p-4 shadow-lg
-                  ${highlightLevel === 'lifecycle' ? 'ring-4 ring-violet-300' : ''}
+                  relative mx-auto block w-[85%] -mt-2 transition-all
+                  ${highlightLevel === 'lifecycle' ? 'scale-105' : 'hover:scale-102'}
                 `}
               >
-                <div className="flex items-center justify-center gap-2 text-white mb-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="font-semibold">Customer Lifecycle Journeys</span>
+                <div
+                  className={`
+                    bg-gradient-to-br from-violet-500/95 to-purple-600/95 p-4 shadow-lg backdrop-blur-sm
+                    ${highlightLevel === 'lifecycle' ? 'ring-4 ring-violet-300' : ''}
+                  `}
+                >
+                  <div className="flex items-center justify-center gap-2 text-white mb-2">
+                    <ShoppingCart className="w-5 h-5" />
+                    <span className="font-semibold">Customer Lifecycle Journeys</span>
+                  </div>
+                  <div className="flex justify-center gap-3 text-xs text-white/90 flex-wrap">
+                    <span>Cart Abandon</span>
+                    <span>•</span>
+                    <span>Post-Purchase</span>
+                    <span>•</span>
+                    <span>Win-Back</span>
+                    <span>•</span>
+                    <span>Replenishment</span>
+                  </div>
+                  <div className="mt-2 text-center">
+                    <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-xs text-white">
+                      Meeting Expectations
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-center gap-3 text-xs text-white/90 flex-wrap">
-                  <span>Cart Abandon</span>
-                  <span>•</span>
-                  <span>Post-Purchase</span>
-                  <span>•</span>
-                  <span>Win-Back</span>
-                  <span>•</span>
-                  <span>Replenishment</span>
-                </div>
-                <div className="mt-2 text-center">
-                  <span className="inline-block px-2 py-0.5 bg-white/20 rounded text-xs text-white">
-                    Meeting Expectations
-                  </span>
-                </div>
-              </div>
-            </button>
-          </div>
+              </button>
+            </div>
 
-          {/* Water/Below water background */}
-          <div className="bg-gradient-to-b from-blue-400 via-blue-600 to-blue-900 rounded-b-xl pb-6 pt-2">
-            {/* Level 3: Insight-Driven - Below water */}
-            <button
-              onClick={() => onSelectLevel?.('insight-driven')}
-              className={`
-                relative mx-auto block w-full px-4 transition-all
-                ${highlightLevel === 'insight-driven' ? 'scale-105' : 'hover:scale-102'}
-              `}
-            >
-              <div
+            {/* Below water section */}
+            <div className="pb-6 pt-2">
+              {/* Level 3: Insight-Driven - Below water */}
+              <button
+                onClick={() => onSelectLevel?.('insight-driven')}
                 className={`
-                  bg-gradient-to-br from-slate-700 to-slate-900 rounded-b-3xl p-5 shadow-2xl border border-slate-600
-                  ${highlightLevel === 'insight-driven' ? 'ring-4 ring-amber-400' : ''}
+                  relative mx-auto block w-full px-4 transition-all
+                  ${highlightLevel === 'insight-driven' ? 'scale-105' : 'hover:scale-102'}
                 `}
               >
-                <div className="flex items-center justify-center gap-2 text-white mb-3">
-                  <Sparkles className="w-5 h-5 text-amber-400" />
-                  <span className="font-semibold">Insight-Driven Experiences</span>
-                  <Sparkles className="w-5 h-5 text-amber-400" />
+                <div
+                  className={`
+                    bg-gradient-to-br from-slate-700/95 to-slate-900/95 rounded-b-3xl p-5 shadow-2xl border border-slate-500/50 backdrop-blur-sm
+                    ${highlightLevel === 'insight-driven' ? 'ring-4 ring-amber-400' : ''}
+                  `}
+                >
+                  <div className="flex items-center justify-center gap-2 text-white mb-3">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    <span className="font-semibold">Insight-Driven Experiences</span>
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <p className="text-center text-slate-300 text-sm mb-3">
+                    Brand-unique experiences powered by proprietary data and predictive models.
+                    <br />
+                    <span className="text-amber-400 font-medium">
+                      Competitors cannot replicate these.
+                    </span>
+                  </p>
+                  <div className="flex justify-center gap-4 text-xs text-slate-400">
+                    <span>Predictive Triggers</span>
+                    <span>•</span>
+                    <span>Next-Best-Action</span>
+                    <span>•</span>
+                    <span>Anomaly-Based</span>
+                  </div>
+                  <div className="mt-3 text-center">
+                    <span className="inline-block px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-xs text-amber-400 font-medium">
+                      Competitive Advantage
+                    </span>
+                  </div>
                 </div>
-                <p className="text-center text-slate-300 text-sm mb-3">
-                  Brand-unique experiences powered by proprietary data and predictive models.
-                  <br />
-                  <span className="text-amber-400 font-medium">
-                    Competitors cannot replicate these.
-                  </span>
-                </p>
-                <div className="flex justify-center gap-4 text-xs text-slate-400">
-                  <span>Predictive Triggers</span>
-                  <span>•</span>
-                  <span>Next-Best-Action</span>
-                  <span>•</span>
-                  <span>Anomaly-Based</span>
-                </div>
-                <div className="mt-3 text-center">
-                  <span className="inline-block px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-xs text-amber-400 font-medium">
-                    Competitive Advantage
-                  </span>
-                </div>
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
         </div>
 
