@@ -17,19 +17,22 @@ import {
   Sparkles,
   Copy,
   Check,
+  Cloud,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import type { GeneratedPlan, PlanPhase, PlannedCapability } from '../types';
+import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment } from '../types';
+import { SalesforceExport } from './SalesforceExport';
 
 interface PlanOutputProps {
   plan: GeneratedPlan;
+  assessment?: OpportunityAssessment | null;
   onClose: () => void;
 }
 
-export function PlanOutput({ plan, onClose }: PlanOutputProps) {
+export function PlanOutput({ plan, assessment, onClose }: PlanOutputProps) {
   const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
   // If AI content exists, default to showing it
-  const [activeTab, setActiveTab] = useState<'ai-plan' | 'overview' | 'phases' | 'commercial' | 'risks'>(
+  const [activeTab, setActiveTab] = useState<'ai-plan' | 'overview' | 'phases' | 'commercial' | 'risks' | 'salesforce'>(
     plan.aiGenerated ? 'ai-plan' : 'overview'
   );
   const [copied, setCopied] = useState(false);
@@ -105,6 +108,7 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
               { id: 'phases', label: 'Phases', labelFull: 'Implementation Plan', icon: <Calendar className="w-4 h-4" /> },
               { id: 'commercial', label: 'Commercial', labelFull: 'Commercial', icon: <DollarSign className="w-4 h-4" /> },
               { id: 'risks', label: 'Risks', labelFull: 'Risks & Success', icon: <AlertTriangle className="w-4 h-4" /> },
+              { id: 'salesforce', label: 'Salesforce', labelFull: 'Export to Salesforce', icon: <Cloud className="w-4 h-4" /> },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -449,6 +453,10 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeTab === 'salesforce' && (
+            <SalesforceExport plan={plan} assessment={assessment} />
           )}
         </div>
 
