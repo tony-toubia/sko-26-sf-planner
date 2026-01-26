@@ -16,9 +16,10 @@ export function AssessmentView() {
   const {
     assessment,
     generatedPlan,
+    showPlanModal,
     generateRecommendationPlan,
     generateQuickPlan,
-    clearGeneratedPlan,
+    closePlanModal,
     isAssessmentMode,
     selectedIndustry,
     isGeneratingPlan,
@@ -107,7 +108,7 @@ export function AssessmentView() {
         )}
 
         {/* Plan Output Modal */}
-        {generatedPlan && <PlanOutput plan={generatedPlan} onClose={clearGeneratedPlan} />}
+        {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} onClose={closePlanModal} />}
       </>
     );
   }
@@ -202,7 +203,7 @@ export function AssessmentView() {
       )}
 
       {/* Plan Output Modal */}
-      {generatedPlan && <PlanOutput plan={generatedPlan} onClose={clearGeneratedPlan} />}
+      {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} onClose={closePlanModal} />}
     </div>
   );
 }
