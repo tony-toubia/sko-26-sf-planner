@@ -18,6 +18,16 @@ import { INDUSTRIES } from '../data/industries';
 import { assessmentService } from '../lib/assessmentService';
 import { generateAIPlan, isAIPlanGenerationAvailable } from '../lib/planGenerationApi';
 
+// Saved assessment summary for listing
+export interface SavedAssessmentSummary {
+  id: string;
+  clientName: string;
+  industry: string | null;
+  updatedAt: Date;
+  createdAt: Date;
+  isComplete: boolean;
+}
+
 interface AssessmentContextValue {
   // Current assessment state
   assessment: OpportunityAssessment | null;
@@ -35,6 +45,9 @@ interface AssessmentContextValue {
   isGeneratingPlan: boolean;
   planGenerationError: string | null;
   isAIPlanAvailable: boolean;
+
+  // User email state
+  userEmail: string | null;
 
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
@@ -66,6 +79,11 @@ interface AssessmentContextValue {
     notes?: string
   ) => void;
   getTrackLevelAssessment: (trackId: TrackId, level: TrackLevel) => TrackLevelAssessment | undefined;
+
+  // Email-based save/retrieve
+  setUserEmail: (email: string) => Promise<boolean>;
+  loadAssessmentsByEmail: (email: string) => Promise<SavedAssessmentSummary[]>;
+  loadAssessment: (assessmentId: string) => Promise<boolean>;
 
   // Computed values
   assessedCount: number;
@@ -105,6 +123,12 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [planGenerationError, setPlanGenerationError] = useState<string | null>(null);
   const isAIPlanAvailable = isAIPlanGenerationAvailable();
+
+  // User email state (persisted in localStorage)
+  const [userEmail, setUserEmailState] = useState<string | null>(() => {
+    const stored = localStorage.getItem('mp-navigator-email');
+    return stored || null;
+  });
 
   const setSelectedIndustry = useCallback((industry: IndustryType) => {
     setSelectedIndustryState(industry);
@@ -410,6 +434,60 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     setMarketingFoundationState(null);
   }, []);
 
+  // Set user email and update current assessment
+  const setUserEmail = useCallback(async (email: string): Promise<boolean> => {
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Store in localStorage
+    localStorage.setItem('mp-navigator-email', normalizedEmail);
+    setUserEmailState(normalizedEmail);
+
+    // Update current assessment if one exists
+    if (assessment && isSupabaseAvailable) {
+      const success = await assessmentService.updateAssessment(assessment.id, { userEmail: normalizedEmail });
+      if (success) {
+        setAssessment((prev) => prev ? { ...prev, userEmail: normalizedEmail } : prev);
+        setLastSaved(new Date());
+      }
+      return success;
+    }
+
+    return true;
+  }, [assessment, isSupabaseAvailable]);
+
+  // Load assessments by email
+  const loadAssessmentsByEmail = useCallback(async (email: string): Promise<SavedAssessmentSummary[]> => {
+    if (!isSupabaseAvailable) return [];
+    return await assessmentService.listAssessmentsByEmail(email);
+  }, [isSupabaseAvailable]);
+
+  // Load a specific assessment by ID
+  const loadAssessment = useCallback(async (assessmentId: string): Promise<boolean> => {
+    if (!isSupabaseAvailable) return false;
+
+    setIsSaving(true);
+    const loaded = await assessmentService.loadAssessment(assessmentId);
+    setIsSaving(false);
+
+    if (loaded) {
+      setAssessment(loaded);
+      setSelectedIndustryState(loaded.industry || null);
+      setMarketingFoundationState(loaded.marketingFoundation || null);
+      setGeneratedPlan(loaded.generatedPlan || null);
+      setIsAssessmentMode(true);
+
+      // Update email state if the assessment has one
+      if (loaded.userEmail) {
+        localStorage.setItem('mp-navigator-email', loaded.userEmail);
+        setUserEmailState(loaded.userEmail);
+      }
+
+      return true;
+    }
+
+    return false;
+  }, [isSupabaseAvailable]);
+
   // Track-based assessment methods
   const saveTrackLevelAssessment = useCallback(
     (
@@ -556,6 +634,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     isGeneratingPlan,
     planGenerationError,
     isAIPlanAvailable,
+    userEmail,
     setSelectedIndustry,
     setMarketingFoundation,
     startAssessment,
@@ -572,6 +651,9 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     resetAssessment,
     saveTrackLevelAssessment,
     getTrackLevelAssessment,
+    setUserEmail,
+    loadAssessmentsByEmail,
+    loadAssessment,
     assessedCount,
     relevantCount,
     totalCapabilities,

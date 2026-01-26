@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage } from './components';
+import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage, PasswordGate } from './components';
 import type { ViewType } from './components';
 import { AssessmentProvider, useAssessment } from './context/AssessmentContext';
 import { ALL_CAPABILITIES } from './data/capabilities';
@@ -44,9 +44,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AssessmentProvider totalCapabilities={ALL_CAPABILITIES.length}>
-      <AppContent />
-    </AssessmentProvider>
+    <PasswordGate>
+      <AssessmentProvider totalCapabilities={ALL_CAPABILITIES.length}>
+        <AppContent />
+      </AssessmentProvider>
+    </PasswordGate>
   );
 }
 
