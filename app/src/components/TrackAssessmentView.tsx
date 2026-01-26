@@ -17,9 +17,11 @@ import {
   Cloud,
   CloudOff,
   Loader2,
+  Save,
 } from 'lucide-react';
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
+import { SaveAssessmentModal } from './SaveAssessmentModal';
 import { TRACKS, getAssessmentOrder, canStartLevel, getTrackById } from '../data/tracks';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
@@ -45,7 +47,7 @@ const TRACK_GRADIENTS: Record<TrackId, string> = {
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable } = useAssessment();
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail } = useAssessment();
 
   // Track which level is being assessed
   const [assessingLevel, setAssessingLevel] = useState<{
@@ -55,6 +57,9 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
+
+  // Save modal state
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   // Build track statuses and assessed levels from assessment context
   // Use assessment.updatedAt as additional dependency to ensure re-render on any change
@@ -490,7 +495,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           </div>
 
           {/* Save Status Indicator */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
             <div className="flex items-center gap-2">
               {isSaving ? (
                 <>
@@ -521,6 +526,31 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                 </>
               )}
             </div>
+
+            {/* Email Status */}
+            {userEmail ? (
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                <Mail className="w-4 h-4 text-slate-400" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-500">Saved to</p>
+                  <p className="text-sm text-slate-700 truncate">{userEmail}</p>
+                </div>
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  className="text-xs text-merkle-blue hover:underline"
+                >
+                  Change
+                </button>
+              </div>
+            ) : isSupabaseAvailable ? (
+              <button
+                onClick={() => setShowSaveModal(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white text-sm font-medium rounded-lg hover:shadow-md transition-all"
+              >
+                <Save className="w-4 h-4" />
+                Save to Email
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -545,6 +575,12 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           currentLevelIndex={completionStats.assessed}
         />
       )}
+
+      {/* Save Assessment Modal */}
+      <SaveAssessmentModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+      />
     </div>
   );
 }

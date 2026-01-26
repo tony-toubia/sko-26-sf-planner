@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS assessments (
   opportunity_name TEXT,
   industry TEXT,
   marketing_foundation TEXT, -- 'mc-engagement' or 'mc-advanced'
+  user_email TEXT, -- Email address for saving/retrieving assessments (stored lowercase, trimmed)
   is_complete BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -99,6 +100,7 @@ CREATE TABLE IF NOT EXISTS generated_plans (
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_assessments_client_name ON assessments(client_name);
 CREATE INDEX IF NOT EXISTS idx_assessments_created_at ON assessments(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_assessments_user_email ON assessments(user_email);
 CREATE INDEX IF NOT EXISTS idx_capability_assessments_assessment_id ON capability_assessments(assessment_id);
 CREATE INDEX IF NOT EXISTS idx_capability_assessments_relevance ON capability_assessments(relevance);
 CREATE INDEX IF NOT EXISTS idx_assessment_answers_capability_assessment_id ON assessment_answers(capability_assessment_id);

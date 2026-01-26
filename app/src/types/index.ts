@@ -298,6 +298,8 @@ export interface OpportunityAssessment {
   marketingFoundation?: MarketingFoundationType;
   // NEW: Track-based assessments
   trackAssessments?: Record<string, TrackLevelAssessment>;
+  // NEW: User email for saving/retrieving assessments
+  userEmail?: string;
 }
 
 // Global assessment inputs - collected before/after capability assessments

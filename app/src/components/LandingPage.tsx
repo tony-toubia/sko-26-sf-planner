@@ -10,11 +10,13 @@ import {
   ChevronRight,
   Database,
   Mail,
+  FolderOpen,
 } from 'lucide-react';
 import type { IndustryType, MarketingFoundationType } from '../types';
 import { INDUSTRIES } from '../data/industries';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
+import { AssessmentListModal } from './AssessmentListModal';
 
 interface LandingPageProps {
   onStartAssessment: () => void;
@@ -25,8 +27,9 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [clientName, setClientName] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
   const [selectedFoundation, setSelectedFoundation] = useState<MarketingFoundationType | null>(null);
+  const [showLoadModal, setShowLoadModal] = useState(false);
 
-  const { startAssessment } = useAssessment();
+  const { startAssessment, isSupabaseAvailable } = useAssessment();
 
   const handleBeginAssessment = async () => {
     if (clientName.trim() && selectedIndustry && selectedFoundation) {
@@ -63,14 +66,26 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
             Let's assess your maturity and build a roadmap to maximize value.
           </p>
 
-          <button
-            onClick={() => setStep('client-info')}
-            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-merkle-blue/25 transition-all text-lg"
-          >
-            <ClipboardCheck className="w-5 h-5" />
-            Start Your Assessment
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <button
+              onClick={() => setStep('client-info')}
+              className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-merkle-blue/25 transition-all text-lg"
+            >
+              <ClipboardCheck className="w-5 h-5" />
+              Start Your Assessment
+              <ArrowRight className="w-5 h-5" />
+            </button>
+
+            {isSupabaseAvailable && (
+              <button
+                onClick={() => setShowLoadModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-4 text-gray-700 font-medium rounded-xl border-2 border-gray-300 hover:border-merkle-blue hover:text-merkle-blue transition-all"
+              >
+                <FolderOpen className="w-5 h-5" />
+                Load Saved Assessment
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Value Props */}
@@ -341,5 +356,14 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
     );
   }
 
-  return null;
+  return (
+    <>
+      {/* Load Assessment Modal */}
+      <AssessmentListModal
+        isOpen={showLoadModal}
+        onClose={() => setShowLoadModal(false)}
+        onAssessmentLoaded={onStartAssessment}
+      />
+    </>
+  );
 }

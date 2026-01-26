@@ -16,6 +16,7 @@ interface DbAssessment {
   opportunity_name: string | null;
   industry: string | null;
   marketing_foundation: string | null;
+  user_email: string | null;
   is_complete: boolean;
   created_at: string;
   updated_at: string;
@@ -74,6 +75,7 @@ function dbToAssessment(
     opportunityName: db.opportunity_name || undefined,
     industry: db.industry as IndustryType | undefined,
     marketingFoundation: db.marketing_foundation as MarketingFoundationType | undefined,
+    userEmail: db.user_email || undefined,
     isComplete: db.is_complete,
     createdAt: new Date(db.created_at),
     updatedAt: new Date(db.updated_at),
@@ -198,6 +200,34 @@ export const assessmentService = {
     }));
   },
 
+  // List assessments by user email
+  async listAssessmentsByEmail(email: string): Promise<{ id: string; clientName: string; industry: string | null; updatedAt: Date; isComplete: boolean; createdAt: Date }[]> {
+    if (!supabase) return [];
+
+    // Normalize email for lookup
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const { data, error } = await supabase
+      .from('assessments')
+      .select('id, client_name, industry, updated_at, is_complete, created_at')
+      .eq('user_email', normalizedEmail)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to list assessments by email:', error);
+      return [];
+    }
+
+    return (data || []).map((d) => ({
+      id: d.id,
+      clientName: d.client_name,
+      industry: d.industry,
+      updatedAt: new Date(d.updated_at),
+      createdAt: new Date(d.created_at),
+      isComplete: d.is_complete,
+    }));
+  },
+
   // Update assessment metadata
   async updateAssessment(
     assessmentId: string,
@@ -207,6 +237,7 @@ export const assessmentService = {
       industry?: IndustryType;
       marketingFoundation?: MarketingFoundationType;
       isComplete?: boolean;
+      userEmail?: string;
     }
   ): Promise<boolean> {
     if (!supabase) return false;
@@ -217,6 +248,8 @@ export const assessmentService = {
     if (updates.industry !== undefined) dbUpdates.industry = updates.industry;
     if (updates.marketingFoundation !== undefined) dbUpdates.marketing_foundation = updates.marketingFoundation;
     if (updates.isComplete !== undefined) dbUpdates.is_complete = updates.isComplete;
+    // Normalize email: lowercase and trimmed
+    if (updates.userEmail !== undefined) dbUpdates.user_email = updates.userEmail.toLowerCase().trim();
 
     const { error } = await supabase
       .from('assessments')
