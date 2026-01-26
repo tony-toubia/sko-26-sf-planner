@@ -239,8 +239,8 @@ export function TrackLevelAssessment({
     [trackLevel, industry]
   );
 
-  // Only show questions for "not-started" status
-  const shouldShowQuestions = selectedStatus === 'not-started' && questions.length > 0;
+  // Show questions for "not-started" (Gap) and "in-progress" (Building) statuses
+  const shouldShowQuestions = (selectedStatus === 'not-started' || selectedStatus === 'in-progress') && questions.length > 0;
   const requiredQuestions = questions.filter((q) => q.required);
   const allRequiredAnswered = requiredQuestions.every((q) => {
     const answer = answers[q.id];
@@ -649,7 +649,7 @@ export function TrackLevelAssessment({
               Select a status to continue
             </div>
           )}
-          {selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0 && (
+          {(selectedStatus === 'not-started' || selectedStatus === 'in-progress') && !allRequiredAnswered && questions.length > 0 && (
             <div className="mt-2 text-xs text-amber-600 text-center sm:text-right">
               Please answer required questions
             </div>
