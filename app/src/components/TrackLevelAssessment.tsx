@@ -11,9 +11,11 @@ import {
   Brain,
   ArrowRight,
   AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { getTrackById, getTrackLevel, getCapabilitiesForTrackLevel } from '../data/tracks';
 import { getCapabilityById } from '../data/capabilities';
+import { JourneyMaturityIceberg } from './JourneyMaturityIceberg';
 import type {
   TrackId,
   TrackLevel,
@@ -80,6 +82,15 @@ const STATUS_OPTIONS: { value: TrackLevelStatus; label: string; description: str
   },
 ];
 
+// Map journey level to iceberg highlight
+const JOURNEY_LEVEL_TO_ICEBERG: Record<TrackLevel, 'subscriber' | 'lifecycle' | 'insight-driven'> = {
+  1: 'subscriber',
+  2: 'lifecycle',
+  3: 'insight-driven',
+};
+
+type AssessmentStep = 'context' | 'status' | 'questions' | 'confirm';
+
 export function TrackLevelAssessment({
   trackId,
   level,
@@ -89,7 +100,9 @@ export function TrackLevelAssessment({
   onCancel,
   onBack,
 }: TrackLevelAssessmentProps) {
-  const [step, setStep] = useState<'status' | 'questions' | 'confirm'>('status');
+  // For journeys track, start with context step to show the iceberg
+  const isJourneysTrack = trackId === 'journeys';
+  const [step, setStep] = useState<AssessmentStep>(isJourneysTrack ? 'context' : 'status');
   const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus>(initialStatus);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
     const initial: Record<string, string | string[]> = {};
@@ -157,7 +170,9 @@ export function TrackLevelAssessment({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className={`bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] flex flex-col overflow-hidden ${
+        isJourneysTrack && step === 'context' ? 'max-w-4xl' : 'max-w-2xl'
+      }`}>
         {/* Header */}
         <div className={`bg-gradient-to-r ${colors.gradient} px-6 py-4 text-white`}>
           <div className="flex items-center justify-between">
@@ -182,13 +197,16 @@ export function TrackLevelAssessment({
 
           {/* Progress dots */}
           <div className="flex items-center gap-2 mt-4">
-            {['status', 'questions', 'confirm'].map((s, idx) => (
+            {(isJourneysTrack
+              ? ['context', 'status', 'questions', 'confirm']
+              : ['status', 'questions', 'confirm']
+            ).map((s, idx, arr) => (
               <div key={s} className="flex items-center">
                 <div
                   className={`w-2 h-2 rounded-full transition-all ${
                     step === s
                       ? 'w-6 bg-white'
-                      : idx < ['status', 'questions', 'confirm'].indexOf(step)
+                      : idx < arr.indexOf(step)
                         ? 'bg-white/80'
                         : 'bg-white/40'
                   }`}
@@ -200,6 +218,41 @@ export function TrackLevelAssessment({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Context step - Journeys track only */}
+          {step === 'context' && isJourneysTrack && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-violet-50 border border-violet-200 rounded-xl">
+                <Info className="w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-violet-900 mb-1">
+                    Understanding Journey Maturity
+                  </h3>
+                  <p className="text-sm text-violet-700">
+                    Journey maturity progresses through three levels, like an iceberg. The visible tip
+                    represents table-stakes journeys everyone expects. Below the waterline are the
+                    differentiated experiences that create competitive advantage.
+                  </p>
+                </div>
+              </div>
+
+              <JourneyMaturityIceberg
+                highlightLevel={JOURNEY_LEVEL_TO_ICEBERG[level]}
+              />
+
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <p className="text-sm text-slate-600">
+                  <span className="font-semibold text-slate-900">You are assessing:</span>{' '}
+                  <span className={`font-medium ${colors.text}`}>
+                    Level {level} - {trackLevel?.name}
+                  </span>
+                </p>
+                <p className="text-sm text-slate-500 mt-1">
+                  {trackLevel?.description}
+                </p>
+              </div>
+            </div>
+          )}
+
           {step === 'status' && (
             <div className="space-y-6">
               <div>
@@ -340,8 +393,10 @@ export function TrackLevelAssessment({
         <div className="border-t border-slate-200 px-6 py-4 flex items-center justify-between bg-slate-50">
           <button
             onClick={() => {
-              if (step === 'status') {
+              if (step === 'context') {
                 onBack ? onBack() : onCancel();
+              } else if (step === 'status') {
+                isJourneysTrack ? setStep('context') : (onBack ? onBack() : onCancel());
               } else if (step === 'questions') {
                 setStep('status');
               } else {
@@ -351,12 +406,14 @@ export function TrackLevelAssessment({
             className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900"
           >
             <ChevronLeft className="w-4 h-4" />
-            {step === 'status' ? 'Cancel' : 'Back'}
+            {step === 'context' || (step === 'status' && !isJourneysTrack) ? 'Cancel' : 'Back'}
           </button>
 
           <button
             onClick={() => {
-              if (step === 'status') {
+              if (step === 'context') {
+                setStep('status');
+              } else if (step === 'status') {
                 setStep('questions');
               } else if (step === 'questions') {
                 setStep('confirm');
@@ -374,7 +431,7 @@ export function TrackLevelAssessment({
               }
             `}
           >
-            {step === 'confirm' ? 'Save Assessment' : 'Continue'}
+            {step === 'confirm' ? 'Save Assessment' : step === 'context' ? 'Begin Assessment' : 'Continue'}
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
