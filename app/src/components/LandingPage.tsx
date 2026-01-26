@@ -45,6 +45,12 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   // Intro screen
   if (step === 'intro') {
     return (
+      <>
+      <AssessmentListModal
+        isOpen={showLoadModal}
+        onClose={() => setShowLoadModal(false)}
+        onAssessmentLoaded={onStartAssessment}
+      />
       <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-12">
@@ -143,6 +149,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -356,14 +363,5 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
     );
   }
 
-  return (
-    <>
-      {/* Load Assessment Modal */}
-      <AssessmentListModal
-        isOpen={showLoadModal}
-        onClose={() => setShowLoadModal(false)}
-        onAssessmentLoaded={onStartAssessment}
-      />
-    </>
-  );
+  return null;
 }
