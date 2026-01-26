@@ -143,20 +143,22 @@ const getStatusDefinitionsForLevel = (trackId: TrackId, level: TrackLevel): Stat
     },
     'data-identity-3': {
       complete: [
-        'Identity resolution rules are active',
-        'Profiles unified across systems',
+        'dentsu.Identity integrated with Data Cloud',
+        'Identity resolution rules active and matching',
+        'Profiles unified across systems (golden record)',
+        'Third-party enrichment operational',
         'Consent management integrated',
-        'Third-party enrichment operational (if applicable)',
       ],
       inProgress: [
+        'dentsu.Identity integration underway',
         'Identity rules being configured',
         'Some profile unification in place',
-        'Consent tracking being implemented',
       ],
       notStarted: [
+        'No identity resolution solution in place',
         'Duplicate profiles across systems',
-        'No identity resolution strategy',
-        'Consent fragmented or not tracked',
+        'Cannot link online and offline identity',
+        'No third-party enrichment strategy',
       ],
     },
     'journeys-1': {

@@ -123,7 +123,7 @@ export const TRACKS: Track[] = [
         level: 3,
         name: 'Identity & Enrichment',
         shortName: 'Identity',
-        description: 'Resolve identity across touchpoints and enrich profiles with third-party data for a true golden record',
+        description: 'Resolve identity across touchpoints with dentsu.Identity (formerly Merkury) and enrich profiles with third-party data for a true golden record',
         capabilities: ['identity-resolution'],
         assessmentQuestions: [
           {
@@ -154,14 +154,15 @@ export const TRACKS: Track[] = [
             required: true,
           },
           {
-            id: 'enrichment-interest',
-            question: 'Is third-party data enrichment of interest?',
+            id: 'identity-solution',
+            question: 'Is there interest in dentsu.Identity for identity resolution and enrichment?',
             type: 'single-select',
             options: [
-              'Yes, high priority',
-              'Yes, but not immediate',
-              'Maybe, need to understand options',
-              'No, first-party data focus only',
+              'Yes, ready to implement',
+              'Yes, but need to understand integration',
+              'Already using dentsu.Identity',
+              'Need to evaluate against other options',
+              'First-party data focus only',
             ],
           },
         ],
