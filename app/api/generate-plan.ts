@@ -332,48 +332,35 @@ Please generate a comprehensive, narrative-driven implementation plan that:
 6. Creates a compelling case for action with data-backed urgency`;
 }
 
-export const config = {
-  runtime: 'edge',
-};
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    return res.status(204).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const request: PlanGenerationRequest = await req.json();
+    const request: PlanGenerationRequest = req.body;
 
     // Validate required fields
     if (!request.clientName) {
-      return new Response(JSON.stringify({ error: 'Client name is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return res.status(400).json({ error: 'Client name is required' });
     }
 
     // Check for API key
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'API key not configured' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return res.status(500).json({ error: 'API key not configured' });
     }
 
     const client = new Anthropic({ apiKey });
@@ -400,27 +387,15 @@ export default async function handler(req: Request): Promise<Response> {
       throw new Error('No text content in response');
     }
 
-    return new Response(JSON.stringify({
+    return res.status(200).json({
       plan: textContent.text,
       usage: message.usage,
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
     });
 
   } catch (error) {
     console.error('Plan generation error:', error);
-    return new Response(JSON.stringify({
+    return res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to generate plan'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
     });
   }
 }
