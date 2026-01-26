@@ -868,9 +868,22 @@ export function TrackLevelAssessment({
                   {questions.length === 0 && (
                     <div className="text-center py-8 text-slate-500">
                       <p>No additional questions for this level.</p>
-                      <p className="text-sm mt-1">Click Continue to proceed.</p>
                     </div>
                   )}
+
+                  {/* Optional notes for Not Started */}
+                  <div className="pt-4 border-t border-slate-200">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Additional notes (optional)
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Any context about priorities, constraints, or considerations for this capability..."
+                      className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-slate-500 focus:border-slate-500 resize-none"
+                      rows={3}
+                    />
+                  </div>
                 </>
               )}
             </div>
