@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';
 import type {
   OpportunityAssessment,
   CapabilityAssessment,
@@ -15,6 +15,8 @@ import type {
 } from '../types';
 import { generatePlan } from '../utils/planGenerator';
 import { INDUSTRIES } from '../data/industries';
+import { assessmentService } from '../lib/assessmentService';
+import { generateAIPlan, isAIPlanGenerationAvailable } from '../lib/planGenerationApi';
 
 interface AssessmentContextValue {
   // Current assessment state
@@ -24,10 +26,20 @@ interface AssessmentContextValue {
   selectedIndustry: IndustryType | null;
   marketingFoundation: MarketingFoundationType | null;
 
+  // Persistence state
+  isSaving: boolean;
+  lastSaved: Date | null;
+  isSupabaseAvailable: boolean;
+
+  // AI plan generation state
+  isGeneratingPlan: boolean;
+  planGenerationError: string | null;
+  isAIPlanAvailable: boolean;
+
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
   setMarketingFoundation: (foundation: MarketingFoundationType) => void;
-  startAssessment: (clientName: string, industry: IndustryType, opportunityName?: string) => void;
+  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType, opportunityName?: string) => Promise<void>;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
   saveCapabilityAssessment: (
@@ -38,9 +50,10 @@ interface AssessmentContextValue {
   ) => void;
   getCapabilityAssessment: (capabilityId: string) => CapabilityAssessment | undefined;
   saveGlobalInputs: (inputs: GlobalAssessmentInputs) => void;
-  generateRecommendationPlan: (inputs: GlobalAssessmentInputs) => GeneratedPlan | null;
+  generateRecommendationPlan: (inputs: GlobalAssessmentInputs, useAI?: boolean) => Promise<GeneratedPlan | null>;
   generateQuickPlan: () => GeneratedPlan | null;
   clearGeneratedPlan: () => void;
+  clearPlanError: () => void;
   markComplete: () => void;
   resetAssessment: () => void;
 
@@ -82,6 +95,17 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   const [selectedIndustry, setSelectedIndustryState] = useState<IndustryType | null>(null);
   const [marketingFoundation, setMarketingFoundationState] = useState<MarketingFoundationType | null>(null);
 
+  // Persistence state
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const isSupabaseAvailable = assessmentService.isAvailable();
+  const pendingSaveRef = useRef<TrackLevelAssessment | null>(null);
+
+  // AI plan generation state
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [planGenerationError, setPlanGenerationError] = useState<string | null>(null);
+  const isAIPlanAvailable = isAIPlanGenerationAvailable();
+
   const setSelectedIndustry = useCallback((industry: IndustryType) => {
     setSelectedIndustryState(industry);
   }, []);
@@ -91,17 +115,69 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     // Also update the assessment if one exists
     setAssessment((prev) => {
       if (!prev) return prev;
-      return {
+      const updated = {
         ...prev,
         marketingFoundation: foundation,
         updatedAt: new Date(),
       };
+      // Persist to Supabase
+      if (isSupabaseAvailable) {
+        assessmentService.updateAssessment(prev.id, { marketingFoundation: foundation })
+          .then((success) => {
+            if (success) setLastSaved(new Date());
+          });
+      }
+      return updated;
     });
-  }, []);
+  }, [isSupabaseAvailable]);
 
-  const startAssessment = useCallback((clientName: string, industry: IndustryType, opportunityName?: string) => {
+  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType, opportunityName?: string) => {
+    console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, isSupabaseAvailable });
+
+    // Set the marketing foundation state immediately
+    setMarketingFoundationState(foundation);
+
+    // Try to create in Supabase first if available
+    if (isSupabaseAvailable) {
+      setIsSaving(true);
+      const dbAssessment = await assessmentService.createAssessment(
+        clientName,
+        industry,
+        foundation,
+        opportunityName
+      );
+      setIsSaving(false);
+
+      console.log('[AssessmentContext] Supabase response:', dbAssessment?.id || 'null');
+
+      if (dbAssessment) {
+        // Use the database-generated ID
+        const newAssessment: OpportunityAssessment = {
+          ...dbAssessment,
+          clientName,
+          opportunityName,
+          industry: industry,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          assessments: {},
+          isComplete: false,
+          marketingFoundation: foundation,
+        };
+        console.log('[AssessmentContext] Using Supabase assessment ID:', newAssessment.id);
+        setAssessment(newAssessment);
+        setSelectedIndustryState(industry);
+        setIsAssessmentMode(true);
+        setGeneratedPlan(null);
+        setLastSaved(new Date());
+        return;
+      }
+    }
+
+    // Fallback: create local-only assessment
+    const localId = crypto.randomUUID();
+    console.log('[AssessmentContext] Falling back to local-only assessment with ID:', localId);
     const newAssessment: OpportunityAssessment = {
-      id: crypto.randomUUID(),
+      id: localId,
       clientName,
       opportunityName,
       industry: industry,
@@ -109,13 +185,13 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       updatedAt: new Date(),
       assessments: {},
       isComplete: false,
-      marketingFoundation: marketingFoundation || undefined,
+      marketingFoundation: foundation,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);
     setIsAssessmentMode(true);
     setGeneratedPlan(null);
-  }, [marketingFoundation]);
+  }, [isSupabaseAvailable]);
 
   const endAssessment = useCallback(() => {
     setIsAssessmentMode(false);
@@ -197,8 +273,11 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   );
 
   const generateRecommendationPlan = useCallback(
-    (inputs: GlobalAssessmentInputs): GeneratedPlan | null => {
+    async (inputs: GlobalAssessmentInputs, useAI: boolean = true): Promise<GeneratedPlan | null> => {
       if (!assessment) return null;
+
+      // Clear any previous error
+      setPlanGenerationError(null);
 
       // Save inputs first
       const updatedAssessment = {
@@ -208,7 +287,43 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       };
       setAssessment(updatedAssessment);
 
-      // Generate the plan
+      // Try AI generation first if available and requested
+      if (useAI && isAIPlanAvailable) {
+        setIsGeneratingPlan(true);
+        try {
+          const aiMarkdown = await generateAIPlan(updatedAssessment, inputs);
+
+          // Create a plan object that includes both structured data and AI content
+          const plan: GeneratedPlan = {
+            ...generatePlan(updatedAssessment, inputs), // Get base structure
+            aiGenerated: {
+              markdown: aiMarkdown,
+              generatedWith: 'claude-sonnet',
+            },
+          };
+
+          // Save plan to assessment
+          setAssessment((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              generatedPlan: plan,
+              updatedAt: new Date(),
+            };
+          });
+
+          setGeneratedPlan(plan);
+          setIsGeneratingPlan(false);
+          return plan;
+        } catch (error) {
+          console.error('AI plan generation failed:', error);
+          setPlanGenerationError(error instanceof Error ? error.message : 'Failed to generate AI plan');
+          setIsGeneratingPlan(false);
+          // Fall through to template-based generation
+        }
+      }
+
+      // Fallback to template-based generation
       const plan = generatePlan(updatedAssessment, inputs);
 
       // Save plan to assessment
@@ -224,8 +339,12 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       setGeneratedPlan(plan);
       return plan;
     },
-    [assessment]
+    [assessment, isAIPlanAvailable]
   );
+
+  const clearPlanError = useCallback(() => {
+    setPlanGenerationError(null);
+  }, []);
 
   // Quick plan generation - uses defaults based on industry
   const generateQuickPlan = useCallback((): GeneratedPlan | null => {
@@ -301,14 +420,21 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       notes?: string
     ) => {
       const key = `${trackId}-${level}`;
-      console.log('[saveTrackLevelAssessment] Called with:', { trackId, level, status, key, answersCount: answers.length });
+      const trackAssessmentData: TrackLevelAssessment = {
+        trackId,
+        level,
+        status,
+        answers,
+        notes,
+        assessedAt: new Date(),
+      };
+
+      // Store for async save
+      pendingSaveRef.current = trackAssessmentData;
 
       setAssessment((prev) => {
-        console.log('[saveTrackLevelAssessment] Previous assessment:', prev);
-
         // If no assessment exists, create one
         if (!prev) {
-          console.log('[saveTrackLevelAssessment] Creating new assessment');
           const newAssessment: OpportunityAssessment = {
             id: crypto.randomUUID(),
             clientName: 'Track Assessment',
@@ -317,17 +443,9 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
             assessments: {},
             isComplete: false,
             trackAssessments: {
-              [key]: {
-                trackId,
-                level,
-                status,
-                answers,
-                notes,
-                assessedAt: new Date(),
-              },
+              [key]: trackAssessmentData,
             },
           };
-          console.log('[saveTrackLevelAssessment] New assessment created:', newAssessment);
           return newAssessment;
         }
 
@@ -337,21 +455,76 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           updatedAt: new Date(),
           trackAssessments: {
             ...trackAssessments,
-            [key]: {
-              trackId,
-              level,
-              status,
-              answers,
-              notes,
-              assessedAt: new Date(),
-            },
+            [key]: trackAssessmentData,
           },
         };
-        console.log('[saveTrackLevelAssessment] Updated assessment:', updated);
+
+        // Persist to Supabase asynchronously
+        if (isSupabaseAvailable && pendingSaveRef.current) {
+          console.log('[AssessmentContext] Saving track assessment to Supabase, assessment ID:', prev.id);
+          setIsSaving(true);
+
+          // First, try to ensure the assessment exists in Supabase
+          // This handles cases where the assessment was created before Supabase integration
+          const ensureAndSave = async () => {
+            const trackData = pendingSaveRef.current;
+            if (!trackData) return false;
+
+            // Try to save directly first
+            let success = await assessmentService.saveTrackAssessment(prev.id, trackData);
+
+            // If failed (likely foreign key error), try to create the assessment first
+            if (!success && prev.clientName && prev.industry && prev.marketingFoundation) {
+              console.log('[AssessmentContext] Assessment may not exist in Supabase, trying to create it first...');
+              const dbAssessment = await assessmentService.createAssessment(
+                prev.clientName,
+                prev.industry,
+                prev.marketingFoundation,
+                prev.opportunityName
+              );
+
+              if (dbAssessment) {
+                // Update our local assessment with the DB ID
+                console.log('[AssessmentContext] Created assessment in Supabase with ID:', dbAssessment.id);
+                // Save track assessment with the new ID
+                success = await assessmentService.saveTrackAssessment(dbAssessment.id, trackData);
+
+                // Update the assessment state with the new ID
+                if (success) {
+                  setAssessment(currentAssessment => {
+                    if (!currentAssessment) return currentAssessment;
+                    return {
+                      ...currentAssessment,
+                      id: dbAssessment.id,
+                    };
+                  });
+                }
+              }
+            }
+
+            return success;
+          };
+
+          ensureAndSave()
+            .then((success) => {
+              setIsSaving(false);
+              if (success) {
+                console.log('[AssessmentContext] Track assessment saved successfully');
+                setLastSaved(new Date());
+              } else {
+                console.error('[AssessmentContext] Track assessment save returned false');
+              }
+            })
+            .catch((err) => {
+              console.error('[AssessmentContext] Track assessment save error:', err);
+              setIsSaving(false);
+            });
+        }
+
         return updated;
       });
     },
-    []
+    [isSupabaseAvailable]
   );
 
   const getTrackLevelAssessment = useCallback(
@@ -377,6 +550,12 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     generatedPlan,
     selectedIndustry,
     marketingFoundation,
+    isSaving,
+    lastSaved,
+    isSupabaseAvailable,
+    isGeneratingPlan,
+    planGenerationError,
+    isAIPlanAvailable,
     setSelectedIndustry,
     setMarketingFoundation,
     startAssessment,
@@ -388,6 +567,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     generateRecommendationPlan,
     generateQuickPlan,
     clearGeneratedPlan,
+    clearPlanError,
     markComplete,
     resetAssessment,
     saveTrackLevelAssessment,

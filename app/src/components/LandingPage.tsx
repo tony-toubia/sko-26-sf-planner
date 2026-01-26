@@ -26,12 +26,13 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
   const [selectedFoundation, setSelectedFoundation] = useState<MarketingFoundationType | null>(null);
 
-  const { startAssessment, setMarketingFoundation } = useAssessment();
+  const { startAssessment } = useAssessment();
 
-  const handleBeginAssessment = () => {
+  const handleBeginAssessment = async () => {
     if (clientName.trim() && selectedIndustry && selectedFoundation) {
-      setMarketingFoundation(selectedFoundation);
-      startAssessment(clientName.trim(), selectedIndustry);
+      // Wait for the assessment to be created (especially in Supabase)
+      // Pass foundation directly to avoid React state timing issues
+      await startAssessment(clientName.trim(), selectedIndustry, selectedFoundation);
       onStartAssessment();
     }
   };
@@ -151,7 +152,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
               <label className="block font-medium text-gray-900 mb-2">
                 Client Name <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
                   value={clientName}
@@ -163,7 +164,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                 <button
                   type="button"
                   onClick={() => setClientName('Anonymous')}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors whitespace-nowrap"
                 >
                   Anonymous
                 </button>

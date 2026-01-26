@@ -3,9 +3,9 @@ import type { Industry, IndustryType } from '../types';
 export const INDUSTRIES: Record<IndustryType, Industry> = {
   'retail-cpg-qsr': {
     id: 'retail-cpg-qsr',
-    name: 'Retail, CPG & QSR',
-    shortName: 'Retail/CPG/QSR',
-    description: 'Retailers, consumer packaged goods, quick service restaurants, and direct-to-consumer brands',
+    name: 'Retail & CPG',
+    shortName: 'Retail / CPG',
+    description: 'Retailers, consumer packaged goods, QSR, and direct-to-consumer brands',
     icon: 'ShoppingBag',
     typicalPriorities: [
       'Omnichannel customer experience',

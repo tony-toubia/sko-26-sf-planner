@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutGrid, Route, Sparkles } from 'lucide-react';
+import { LayoutGrid, Route, Sparkles, Loader2, AlertCircle, X } from 'lucide-react';
 import { TrackAssessmentView } from './TrackAssessmentView';
 import { MaturityMatrix } from './MaturityMatrix';
 import { PlanOutput } from './PlanOutput';
@@ -20,6 +20,10 @@ export function AssessmentView() {
     generateQuickPlan,
     clearGeneratedPlan,
     isAssessmentMode,
+    selectedIndustry,
+    isGeneratingPlan,
+    planGenerationError,
+    clearPlanError,
   } = useAssessment();
 
   const handleSwitchToMatrix = () => {
@@ -40,9 +44,10 @@ export function AssessmentView() {
     generateQuickPlan();
   };
 
-  const handleGlobalInputsSubmit = (inputs: GlobalAssessmentInputs) => {
-    generateRecommendationPlan(inputs);
+  const handleGlobalInputsSubmit = async (inputs: GlobalAssessmentInputs) => {
     setShowGlobalInputsModal(false);
+    // This is now async - the plan will be generated and set in context
+    await generateRecommendationPlan(inputs, true); // true = use AI generation
   };
 
   // If in assessment mode and on tracks view, show the track assessment
@@ -58,9 +63,47 @@ export function AssessmentView() {
         {showGlobalInputsModal && assessment && (
           <GlobalInputsModal
             clientName={assessment.clientName}
+            selectedIndustry={selectedIndustry}
             onSubmit={handleGlobalInputsSubmit}
             onClose={() => setShowGlobalInputsModal(false)}
           />
+        )}
+
+        {/* AI Generation Loading Overlay */}
+        {isGeneratingPlan && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-xl">
+              <div className="relative w-16 h-16 mx-auto mb-4">
+                <Loader2 className="w-16 h-16 text-merkle-blue animate-spin" />
+                <Sparkles className="w-6 h-6 text-violet-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Generating AI Plan</h3>
+              <p className="text-gray-600 mb-4">
+                Claude is analyzing your assessment and creating a personalized implementation plan...
+              </p>
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <Sparkles className="w-4 h-4" />
+                <span>This may take 15-30 seconds</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Generation Error Toast */}
+        {planGenerationError && (
+          <div className="fixed bottom-4 right-4 max-w-md bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-medium text-red-800">AI Plan Generation Failed</h4>
+                <p className="text-sm text-red-600 mt-1">{planGenerationError}</p>
+                <p className="text-sm text-red-600 mt-1">Falling back to template-based plan.</p>
+              </div>
+              <button onClick={clearPlanError} className="text-red-400 hover:text-red-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Plan Output Modal */}
@@ -115,9 +158,47 @@ export function AssessmentView() {
       {showGlobalInputsModal && assessment && (
         <GlobalInputsModal
           clientName={assessment.clientName}
+          selectedIndustry={selectedIndustry}
           onSubmit={handleGlobalInputsSubmit}
           onClose={() => setShowGlobalInputsModal(false)}
         />
+      )}
+
+      {/* AI Generation Loading Overlay */}
+      {isGeneratingPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-xl">
+            <div className="relative w-16 h-16 mx-auto mb-4">
+              <Loader2 className="w-16 h-16 text-merkle-blue animate-spin" />
+              <Sparkles className="w-6 h-6 text-violet-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Generating AI Plan</h3>
+            <p className="text-gray-600 mb-4">
+              Claude is analyzing your assessment and creating a personalized implementation plan...
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <Sparkles className="w-4 h-4" />
+              <span>This may take 15-30 seconds</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Generation Error Toast */}
+      {planGenerationError && (
+        <div className="fixed bottom-4 right-4 max-w-md bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-red-800">AI Plan Generation Failed</h4>
+              <p className="text-sm text-red-600 mt-1">{planGenerationError}</p>
+              <p className="text-sm text-red-600 mt-1">Falling back to template-based plan.</p>
+            </div>
+            <button onClick={clearPlanError} className="text-red-400 hover:text-red-600">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Plan Output Modal */}

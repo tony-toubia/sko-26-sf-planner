@@ -7,29 +7,174 @@ import type {
   RecommendedOffering,
   CapabilityRelevance,
   Capability,
+  TrackLevelAssessment,
+  TrackId,
+  TrackLevel,
 } from '../types';
 import { getCapabilityById } from '../data/capabilities';
 
+// Track to capability mapping - maps track/levels to relevant capabilities
+const TRACK_LEVEL_CAPABILITIES: Record<TrackId, Record<TrackLevel, string[]>> = {
+  'data-identity': {
+    1: ['migrate-sfmc', 'marketing-foundation'],
+    2: ['extend-data-integrations', 'identity-resolution'],
+    3: ['insight-driven-experiences', 'data-exploration'],
+  },
+  'journeys': {
+    1: ['baseline-subscriber-journeys', 'enhance-planned-campaigns'],
+    2: ['customer-lifecycle-journeys'],
+    3: ['cross-channel-activation', 'agentic-campaign-production'],
+  },
+  'content-channels': {
+    1: ['enhance-planned-campaigns'],
+    2: ['scale-dynamic-content'],
+    3: ['cross-channel-activation'],
+  },
+  'intelligence': {
+    1: ['einstein-engagement-scoring', 'einstein-send-time-optimization'],
+    2: ['einstein-frequency-optimization', 'insight-driven-experiences'],
+    3: ['clv-modeling', 'data-exploration', 'agentic-campaign-production'],
+  },
+};
+
+// Track names for display
+const TRACK_NAMES: Record<TrackId, string> = {
+  'data-identity': 'Data & Identity',
+  'journeys': 'Customer Journeys',
+  'content-channels': 'Content & Channels',
+  'intelligence': 'Intelligence & Optimization',
+};
+
+/**
+ * Derives capability relevance from track-level assessments
+ * This allows the track-based UI to generate plans using the existing capability framework
+ */
+function deriveCapabilitiesFromTracks(
+  trackAssessments: TrackLevelAssessment[],
+  _marketingFoundation?: string
+): {
+  complete: { capabilityId: string; relevance: CapabilityRelevance; answers: { questionId: string; value: string | string[] | number }[]; notes?: string; assessedAt: Date }[];
+  inProgress: { capabilityId: string; relevance: CapabilityRelevance; answers: { questionId: string; value: string | string[] | number }[]; notes?: string; assessedAt: Date }[];
+  immediate: { capabilityId: string; relevance: CapabilityRelevance; answers: { questionId: string; value: string | string[] | number }[]; notes?: string; assessedAt: Date }[];
+  nearFuture: { capabilityId: string; relevance: CapabilityRelevance; answers: { questionId: string; value: string | string[] | number }[]; notes?: string; assessedAt: Date }[];
+} {
+  const complete: { capabilityId: string; relevance: CapabilityRelevance; answers: { questionId: string; value: string | string[] | number }[]; notes?: string; assessedAt: Date }[] = [];
+  const inProgress: typeof complete = [];
+  const immediate: typeof complete = [];
+  const nearFuture: typeof complete = [];
+
+  // Track which capabilities we've already processed (avoid duplicates from overlapping track mappings)
+  const processedCapabilities = new Set<string>();
+
+  // Build a map of track/level statuses for quick lookup
+  const statusMap = new Map<string, TrackLevelAssessment>();
+  for (const ta of trackAssessments) {
+    statusMap.set(`${ta.trackId}-${ta.level}`, ta);
+  }
+
+  // For each track, determine capability recommendations based on levels
+  const trackIds: TrackId[] = ['data-identity', 'journeys', 'content-channels', 'intelligence'];
+
+  for (const trackId of trackIds) {
+    const levels: TrackLevel[] = [1, 2, 3];
+
+    for (const level of levels) {
+      const key = `${trackId}-${level}`;
+      const assessment = statusMap.get(key);
+      const capabilities = TRACK_LEVEL_CAPABILITIES[trackId][level] || [];
+
+      for (const capabilityId of capabilities) {
+        // Skip if already processed
+        if (processedCapabilities.has(capabilityId)) continue;
+        processedCapabilities.add(capabilityId);
+
+        // Convert track notes to capability notes
+        const notes = assessment?.notes
+          ? `${TRACK_NAMES[trackId]} L${level}: ${assessment.notes}`
+          : undefined;
+
+        const baseAssessment = {
+          capabilityId,
+          answers: assessment?.answers || [],
+          notes,
+          assessedAt: assessment?.assessedAt || new Date(),
+        };
+
+        if (assessment) {
+          // We have an assessment for this track/level
+          if (assessment.status === 'complete') {
+            complete.push({ ...baseAssessment, relevance: 'complete' as CapabilityRelevance });
+          } else if (assessment.status === 'in-progress') {
+            inProgress.push({ ...baseAssessment, relevance: 'in-progress' as CapabilityRelevance });
+          } else {
+            // not-started at L1 = immediate, L2+ = depends on L1 status
+            if (level === 1) {
+              immediate.push({ ...baseAssessment, relevance: 'immediately-relevant' as CapabilityRelevance });
+            } else {
+              // Check if prerequisite level is complete
+              const prevLevelKey = `${trackId}-${level - 1}`;
+              const prevAssessment = statusMap.get(prevLevelKey);
+              if (prevAssessment?.status === 'complete') {
+                immediate.push({ ...baseAssessment, relevance: 'immediately-relevant' as CapabilityRelevance });
+              } else {
+                nearFuture.push({ ...baseAssessment, relevance: 'near-future' as CapabilityRelevance });
+              }
+            }
+          }
+        } else {
+          // No assessment yet - treat as near-future unless it's L1
+          if (level === 1) {
+            immediate.push({ ...baseAssessment, relevance: 'immediately-relevant' as CapabilityRelevance });
+          } else {
+            nearFuture.push({ ...baseAssessment, relevance: 'near-future' as CapabilityRelevance });
+          }
+        }
+      }
+    }
+  }
+
+  return { complete, inProgress, immediate, nearFuture };
+}
+
 /**
  * Generates a comprehensive recommendation plan from assessment data
+ * Supports both legacy capability-based assessments and new track-based assessments
  */
 export function generatePlan(
   assessment: OpportunityAssessment,
   globalInputs: GlobalAssessmentInputs
 ): GeneratedPlan {
-  const assessments = Object.values(assessment.assessments);
+  // Check if we have track-based assessments (new model)
+  const trackAssessments = assessment.trackAssessments
+    ? Object.values(assessment.trackAssessments)
+    : [];
 
-  // Categorize assessed capabilities
-  // Complete = already implemented, can be used as foundation
-  const completeCapabilities = assessments.filter((a) => a.relevance === 'complete');
-  // In-progress = partially done, factor into sequencing
-  const inProgressCapabilities = assessments.filter((a) => a.relevance === 'in-progress');
-  // Immediate = ready to start, highest priority for recommendations
-  const immediateCapabilities = assessments.filter((a) => a.relevance === 'immediately-relevant');
-  // Near-future = planned for later phases
-  const nearFutureCapabilities = assessments.filter((a) => a.relevance === 'near-future');
-  // notReadyCapabilities could be used for future "not in scope" section
-  // const notReadyCapabilities = assessments.filter((a) => a.relevance === 'not-ready');
+  // Legacy capability-based assessments
+  const legacyAssessments = Object.values(assessment.assessments);
+
+  // If we have track assessments, derive capability relevance from them
+  let completeCapabilities: typeof legacyAssessments = [];
+  let inProgressCapabilities: typeof legacyAssessments = [];
+  let immediateCapabilities: typeof legacyAssessments = [];
+  let nearFutureCapabilities: typeof legacyAssessments = [];
+
+  if (trackAssessments.length > 0) {
+    // Convert track assessments to capability-style data for plan generation
+    const { complete, inProgress, immediate, nearFuture } = deriveCapabilitiesFromTracks(
+      trackAssessments,
+      assessment.marketingFoundation
+    );
+    completeCapabilities = complete;
+    inProgressCapabilities = inProgress;
+    immediateCapabilities = immediate;
+    nearFutureCapabilities = nearFuture;
+  } else {
+    // Fall back to legacy capability-based assessments
+    completeCapabilities = legacyAssessments.filter((a) => a.relevance === 'complete');
+    inProgressCapabilities = legacyAssessments.filter((a) => a.relevance === 'in-progress');
+    immediateCapabilities = legacyAssessments.filter((a) => a.relevance === 'immediately-relevant');
+    nearFutureCapabilities = legacyAssessments.filter((a) => a.relevance === 'near-future');
+  }
 
   // Get full capability data for assessed items
   const getCapability = (id: string) => getCapabilityById(id);

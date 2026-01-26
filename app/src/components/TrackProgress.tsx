@@ -9,12 +9,15 @@ import {
   Circle,
   ChevronRight,
   AlertCircle,
+  ClipboardCheck,
+  Pencil,
 } from 'lucide-react';
 import { TRACKS, getRequiredDependencies, getTrackById } from '../data/tracks';
 import type { TrackId, TrackLevel, TrackLevelStatus } from '../types';
 
 interface TrackProgressProps {
   trackStatuses: Record<string, TrackLevelStatus>; // key: `${trackId}-${level}`
+  assessedLevels: Set<string>; // Set of `${trackId}-${level}` keys that have been assessed
   onLevelClick?: (trackId: TrackId, level: TrackLevel) => void;
   currentTrack?: TrackId;
   currentLevel?: TrackLevel;
@@ -97,27 +100,26 @@ function getBlockingDependency(
 
 export function TrackProgress({
   trackStatuses,
+  assessedLevels,
   onLevelClick,
   currentTrack,
   currentLevel,
   compact = false,
 }: TrackProgressProps) {
   const completionStats = useMemo(() => {
-    let completed = 0;
-    let inProgress = 0;
+    let assessed = 0;
     let total = 0;
 
     for (const track of TRACKS) {
       for (const level of track.levels) {
         total++;
-        const status = getLevelStatus(track.id, level.level, trackStatuses);
-        if (status === 'complete') completed++;
-        else if (status === 'in-progress') inProgress++;
+        const key = `${track.id}-${level.level}`;
+        if (assessedLevels.has(key)) assessed++;
       }
     }
 
-    return { completed, inProgress, total, percentage: Math.round((completed / total) * 100) };
-  }, [trackStatuses]);
+    return { assessed, total, percentage: Math.round((assessed / total) * 100) };
+  }, [assessedLevels]);
 
   if (compact) {
     return (
@@ -125,7 +127,7 @@ export function TrackProgress({
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-slate-900">Assessment Progress</h3>
           <span className="text-sm font-medium text-slate-600">
-            {completionStats.completed}/{completionStats.total} complete
+            {completionStats.assessed}/{completionStats.total} assessed
           </span>
         </div>
         <div className="w-full bg-slate-100 rounded-full h-2 mb-3">
@@ -138,8 +140,8 @@ export function TrackProgress({
           {TRACKS.map((track) => {
             const Icon = TRACK_ICONS[track.id];
             const colors = TRACK_COLORS[track.id];
-            const levelsComplete = track.levels.filter(
-              (l) => getLevelStatus(track.id, l.level, trackStatuses) === 'complete'
+            const levelsAssessed = track.levels.filter(
+              (l) => assessedLevels.has(`${track.id}-${l.level}`)
             ).length;
 
             return (
@@ -149,7 +151,7 @@ export function TrackProgress({
               >
                 <Icon className={`w-4 h-4 ${colors.text} mb-1`} />
                 <span className={`text-xs font-medium ${colors.text}`}>
-                  {levelsComplete}/3
+                  {levelsAssessed}/3
                 </span>
               </div>
             );
@@ -165,13 +167,13 @@ export function TrackProgress({
         <div>
           <h2 className="text-base md:text-lg font-semibold text-slate-900">Maturity Tracks</h2>
           <p className="text-xs md:text-sm text-slate-500 mt-1">
-            Progress through each track to build your marketing maturity
+            Click each level to assess your current maturity
           </p>
         </div>
         <div className="text-left sm:text-right">
           <div className="text-xl md:text-2xl font-bold text-slate-900">{completionStats.percentage}%</div>
           <div className="text-xs text-slate-500">
-            {completionStats.completed} of {completionStats.total} levels complete
+            {completionStats.assessed} of {completionStats.total} levels assessed
           </div>
         </div>
       </div>
@@ -198,12 +200,17 @@ export function TrackProgress({
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {track.levels.map((level, idx) => {
+                  const key = `${track.id}-${level.level}`;
                   const status = getLevelStatus(track.id, level.level, trackStatuses);
+                  const isAssessed = assessedLevels.has(key);
                   const isBlocked = isLevelBlocked(track.id, level.level, trackStatuses);
                   const blockingDep = isBlocked
                     ? getBlockingDependency(track.id, level.level, trackStatuses)
                     : null;
                   const isCurrent = currentTrack === track.id && currentLevel === level.level;
+
+                  // Status label for display
+                  const statusLabel = status === 'complete' ? 'Mature' : status === 'in-progress' ? 'Building' : 'Gap';
 
                   return (
                     <div key={level.level} className="flex items-center flex-1">
@@ -217,37 +224,72 @@ export function TrackProgress({
                         title={
                           isBlocked
                             ? `Blocked: Complete ${blockingDep} first`
-                            : `${level.name}: ${status}`
+                            : isAssessed
+                              ? `${level.name}: ${statusLabel} (click to edit)`
+                              : `${level.name}: Not yet assessed`
                         }
                       >
                         <div
                           className={`
-                            rounded-lg p-2 md:p-3 border-2 transition-all
+                            rounded-lg p-2 md:p-3 border-2 transition-all relative
                             ${isCurrent ? 'ring-2 ring-offset-2 ring-slate-400' : ''}
                             ${
-                              status === 'complete'
-                                ? `${colors.fill} border-transparent text-white`
-                                : status === 'in-progress'
-                                  ? `bg-white ${colors.border} ${colors.text}`
-                                  : isBlocked
-                                    ? 'bg-slate-100 border-slate-200 text-slate-400'
-                                    : `bg-white border-slate-200 text-slate-600 hover:${colors.border}`
+                              isAssessed
+                                ? status === 'complete'
+                                  ? `${colors.fill} border-transparent text-white`
+                                  : status === 'in-progress'
+                                    ? `bg-amber-50 border-amber-300 text-amber-800`
+                                    : `bg-slate-50 border-slate-300 text-slate-700`
+                                : isBlocked
+                                  ? 'bg-slate-100 border-slate-200 text-slate-400'
+                                  : `bg-white border-dashed border-slate-300 text-slate-500 hover:border-slate-400`
                             }
                           `}
                         >
+                          {/* Assessed badge */}
+                          {isAssessed && (
+                            <div className={`absolute -top-1.5 -right-1.5 rounded-full p-0.5 ${
+                              status === 'complete' ? 'bg-white' : 'bg-slate-700'
+                            }`}>
+                              <ClipboardCheck className={`w-3 h-3 ${
+                                status === 'complete' ? colors.text : 'text-white'
+                              }`} />
+                            </div>
+                          )}
+
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-medium">L{level.level}</span>
-                            {status === 'complete' ? (
-                              <CheckCircle2 className="w-4 h-4" />
-                            ) : status === 'in-progress' ? (
-                              <Circle className="w-4 h-4 fill-current" />
+                            {isAssessed ? (
+                              status === 'complete' ? (
+                                <CheckCircle2 className="w-4 h-4" />
+                              ) : status === 'in-progress' ? (
+                                <Circle className="w-4 h-4 fill-current" />
+                              ) : (
+                                <Circle className="w-4 h-4" />
+                              )
                             ) : isBlocked ? (
                               <Lock className="w-3 h-3" />
                             ) : (
-                              <Circle className="w-4 h-4" />
+                              <Pencil className="w-3 h-3 opacity-50" />
                             )}
                           </div>
                           <div className="text-xs font-medium truncate">{level.shortName}</div>
+
+                          {/* Status indicator for assessed items */}
+                          {isAssessed && (
+                            <div className={`text-[10px] mt-1 font-medium ${
+                              status === 'complete' ? 'text-white/80' : ''
+                            }`}>
+                              {statusLabel}
+                            </div>
+                          )}
+
+                          {/* Not assessed indicator */}
+                          {!isAssessed && !isBlocked && (
+                            <div className="text-[10px] mt-1 text-slate-400 italic">
+                              Tap to assess
+                            </div>
+                          )}
                         </div>
 
                         {/* Blocked tooltip */}
@@ -277,17 +319,23 @@ export function TrackProgress({
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
+        <span className="font-medium text-slate-600">Maturity:</span>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-slate-500" />
-          <span>Complete</span>
+          <span>Mature</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded border-2 border-slate-400 bg-white" />
-          <span>In Progress</span>
+          <div className="w-3 h-3 rounded bg-amber-300" />
+          <span>Building</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded border border-slate-200 bg-white" />
-          <span>Not Started</span>
+          <div className="w-3 h-3 rounded bg-slate-200" />
+          <span>Gap</span>
+        </div>
+        <span className="mx-1">|</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded border-2 border-dashed border-slate-300 bg-white" />
+          <span>Not assessed</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Lock className="w-3 h-3 text-slate-400" />

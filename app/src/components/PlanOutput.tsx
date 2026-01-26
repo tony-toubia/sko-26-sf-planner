@@ -14,8 +14,11 @@ import {
   ChevronUp,
   Briefcase,
   Calendar,
+  Sparkles,
+  Copy,
+  Check,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { GeneratedPlan, PlanPhase, PlannedCapability } from '../types';
 
 interface PlanOutputProps {
@@ -25,7 +28,13 @@ interface PlanOutputProps {
 
 export function PlanOutput({ plan, onClose }: PlanOutputProps) {
   const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'phases' | 'commercial' | 'risks'>('overview');
+  // If AI content exists, default to showing it
+  const [activeTab, setActiveTab] = useState<'ai-plan' | 'overview' | 'phases' | 'commercial' | 'risks'>(
+    plan.aiGenerated ? 'ai-plan' : 'overview'
+  );
+  const [copied, setCopied] = useState(false);
+
+  const hasAIContent = !!plan.aiGenerated?.markdown;
 
   const togglePhase = (phaseNum: number) => {
     setExpandedPhases((prev) =>
@@ -35,9 +44,17 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
     );
   };
 
+  const handleCopyMarkdown = async () => {
+    if (plan.aiGenerated?.markdown) {
+      await navigator.clipboard.writeText(plan.aiGenerated.markdown);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const handleExport = () => {
-    // Create a simple text export for now
-    const content = generateExportContent(plan);
+    // Use AI content if available, otherwise fall back to template
+    const content = plan.aiGenerated?.markdown || generateExportContent(plan);
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -83,6 +100,7 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
           {/* Tabs */}
           <div className="flex gap-1 mt-4">
             {[
+              ...(hasAIContent ? [{ id: 'ai-plan', label: 'AI-Generated Plan', icon: <Sparkles className="w-4 h-4" /> }] : []),
               { id: 'overview', label: 'Overview', icon: <Target className="w-4 h-4" /> },
               { id: 'phases', label: 'Implementation Plan', icon: <Calendar className="w-4 h-4" /> },
               { id: 'commercial', label: 'Commercial', icon: <DollarSign className="w-4 h-4" /> },
@@ -106,6 +124,46 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
+          {activeTab === 'ai-plan' && plan.aiGenerated && (
+            <div className="p-6">
+              {/* AI Badge & Copy Button */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-violet-500" />
+                  <span className="text-sm text-gray-600">
+                    Generated with {plan.aiGenerated.generatedWith === 'claude-sonnet' ? 'Claude Sonnet' : 'Claude Opus'}
+                  </span>
+                  {plan.aiGenerated.tokenUsage && (
+                    <span className="text-xs text-gray-400">
+                      ({plan.aiGenerated.tokenUsage.output.toLocaleString()} tokens)
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={handleCopyMarkdown}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-500" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      Copy Markdown
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Rendered Markdown */}
+              <div className="prose prose-slate max-w-none bg-white rounded-xl border border-gray-200 p-8">
+                <MarkdownRenderer content={plan.aiGenerated.markdown} />
+              </div>
+            </div>
+          )}
+
           {activeTab === 'overview' && (
             <div className="p-6 space-y-6">
               {/* Executive Summary */}
@@ -569,6 +627,59 @@ function CapabilityRow({ capability }: CapabilityRowProps) {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Simple markdown renderer component
+ * Converts markdown to HTML with basic styling
+ */
+function MarkdownRenderer({ content }: { content: string }) {
+  const renderedHtml = useMemo(() => {
+    // Basic markdown to HTML conversion
+    let html = content
+      // Headers
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-4">$1</h1>')
+      // Bold and italic
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Bullet lists
+      .replace(/^- (.+)$/gm, '<li class="ml-4 mb-1">$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 mb-1"><span class="font-medium">$1.</span> $2</li>')
+      // Code blocks
+      .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-gray-100 rounded text-sm font-mono">$1</code>')
+      // Horizontal rules
+      .replace(/^---$/gm, '<hr class="my-6 border-gray-200" />')
+      // Line breaks (double newline = paragraph)
+      .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">')
+      // Tables - basic support
+      .replace(/\|(.+)\|/g, (match) => {
+        const cells = match.split('|').filter(c => c.trim());
+        const isHeader = cells.some(c => c.includes('---'));
+        if (isHeader) return '';
+        return `<tr>${cells.map(c => `<td class="px-3 py-2 border-b border-gray-100">${c.trim()}</td>`).join('')}</tr>`;
+      });
+
+    // Wrap in paragraph if not already wrapped
+    if (!html.startsWith('<h') && !html.startsWith('<p')) {
+      html = `<p class="mb-4 text-gray-700 leading-relaxed">${html}</p>`;
+    }
+
+    // Group list items
+    html = html.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, (match) => {
+      return `<ul class="list-disc list-inside space-y-1 mb-4">${match}</ul>`;
+    });
+
+    return html;
+  }, [content]);
+
+  return (
+    <div
+      className="markdown-content"
+      dangerouslySetInnerHTML={{ __html: renderedHtml }}
+    />
   );
 }
 

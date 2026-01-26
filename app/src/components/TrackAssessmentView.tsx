@@ -4,18 +4,26 @@ import {
   Route,
   Share2,
   Brain,
-  Play,
   CheckCircle2,
   ArrowRight,
   LayoutGrid,
-  ListChecks,
   Sparkles,
+  ClipboardCheck,
+  Pencil,
+  Settings,
+  Mail,
+  ChevronDown,
+  ChevronUp,
+  Cloud,
+  CloudOff,
+  Loader2,
 } from 'lucide-react';
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
 import { TRACKS, getAssessmentOrder, canStartLevel, getTrackById } from '../data/tracks';
+import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
-import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer } from '../types';
+import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer, MarketingFoundationType } from '../types';
 
 interface TrackAssessmentViewProps {
   onSwitchToMatrix?: () => void;
@@ -37,7 +45,7 @@ const TRACK_GRADIENTS: Record<TrackId, string> = {
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment } = useAssessment();
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable } = useAssessment();
 
   // Track which level is being assessed
   const [assessingLevel, setAssessingLevel] = useState<{
@@ -45,102 +53,165 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     level: TrackLevel;
   } | null>(null);
 
-  // Build track statuses from assessment context
-  const trackStatuses = useMemo(() => {
+  // Settings panel state
+  const [showSettings, setShowSettings] = useState(false);
+
+  // Build track statuses and assessed levels from assessment context
+  // Use assessment.updatedAt as additional dependency to ensure re-render on any change
+  const { trackStatuses, assessedLevels } = useMemo(() => {
     const statuses: Record<string, TrackLevelStatus> = {};
+    const assessed = new Set<string>();
 
     if (assessment?.trackAssessments) {
       for (const [key, levelAssessment] of Object.entries(assessment.trackAssessments)) {
         statuses[key] = levelAssessment.status;
+        assessed.add(key); // Any level with an assessment record has been assessed
       }
     }
 
-    return statuses;
-  }, [assessment?.trackAssessments]);
+    return { trackStatuses: statuses, assessedLevels: assessed };
+  }, [assessment?.trackAssessments, assessment?.updatedAt]);
 
-  // Calculate completion
+  // Calculate completion stats - now based on "assessed" rather than just "complete maturity"
   const completionStats = useMemo(() => {
-    let completed = 0;
+    let assessed = 0;
+    let mature = 0; // Levels marked as "complete" maturity
     let total = 0;
+    const missing: string[] = [];
 
     for (const track of TRACKS) {
       for (const level of track.levels) {
         total++;
-        if (trackStatuses[`${track.id}-${level.level}`] === 'complete') {
-          completed++;
+        const key = `${track.id}-${level.level}`;
+        if (assessedLevels.has(key)) {
+          assessed++;
+          if (trackStatuses[key] === 'complete') {
+            mature++;
+          }
+        } else {
+          missing.push(key);
         }
       }
     }
 
-    return {
-      completed,
-      total,
-      percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
-      isComplete: completed === total,
-    };
-  }, [trackStatuses]);
+    // Debug logging
+    if (missing.length > 0 && missing.length < 5) {
+      console.log('[TrackAssessmentView] Missing assessments:', missing);
+      console.log('[TrackAssessmentView] Assessed levels:', Array.from(assessedLevels));
+    }
 
-  // Get next recommended action
+    return {
+      assessed,
+      mature,
+      total,
+      percentage: total > 0 ? Math.round((assessed / total) * 100) : 0,
+      isComplete: assessed === total,
+    };
+  }, [trackStatuses, assessedLevels]);
+
+  // Get next recommended action - find next level NOT YET ASSESSED
   const nextRecommendation = useMemo(() => {
     const order = getAssessmentOrder();
-    const completedSet = new Set(
+
+    // First, check Data L1 (always first) - if not assessed yet
+    if (!assessedLevels.has('data-identity-1')) {
+      return {
+        trackId: 'data-identity' as TrackId,
+        level: 1 as TrackLevel,
+        message: 'Start with your platform foundation',
+        isFirstAssessment: assessedLevels.size === 0,
+      };
+    }
+
+    // For dependency checking, we still need to look at which levels have "complete" maturity
+    // (dependencies require mature capabilities, not just assessed)
+    const matureSet = new Set(
       Object.entries(trackStatuses)
         .filter(([, status]) => status === 'complete')
         .map(([key]) => key)
     );
 
-    // First, check Data L1 (always first)
-    if (!completedSet.has('data-identity-1')) {
-      return {
-        trackId: 'data-identity' as TrackId,
-        level: 1 as TrackLevel,
-        message: 'Start with your platform foundation',
-      };
-    }
-
-    // Then look for the next available level
+    // Then look for the next level that hasn't been assessed yet
     for (const trackId of order) {
       for (let level = 1; level <= 3; level++) {
         const key = `${trackId}-${level}`;
-        if (completedSet.has(key)) continue;
+        if (assessedLevels.has(key)) continue; // Skip already assessed
 
-        const { canStart } = canStartLevel(trackId, level as TrackLevel, completedSet);
+        const { canStart } = canStartLevel(trackId, level as TrackLevel, matureSet);
         if (canStart) {
           const track = getTrackById(trackId);
           const trackLevel = track?.levels.find((l) => l.level === level);
           return {
             trackId,
             level: level as TrackLevel,
-            message: `Continue with ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
+            message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
+            isFirstAssessment: false,
           };
         }
       }
     }
 
     return null;
-  }, [trackStatuses]);
+  }, [trackStatuses, assessedLevels]);
 
   const handleLevelClick = useCallback((trackId: TrackId, level: TrackLevel) => {
     setAssessingLevel({ trackId, level });
   }, []);
 
-  const handleAssessmentComplete = useCallback(
-    (status: TrackLevelStatus, answers: AssessmentAnswer[]) => {
-      console.log('[TrackAssessmentView] handleAssessmentComplete called:', {
-        assessingLevel,
-        status,
-        answersCount: answers.length
-      });
-      if (!assessingLevel) {
-        console.log('[TrackAssessmentView] No assessingLevel, returning early');
-        return;
-      }
+  // Get the next recommended level to assess
+  const getNextLevelToAssess = useCallback((): { trackId: TrackId; level: TrackLevel } | null => {
+    const order = getAssessmentOrder();
 
-      console.log('[TrackAssessmentView] Calling saveTrackLevelAssessment');
+    // For dependency checking, we need to look at which levels have "complete" maturity
+    const matureSet = new Set(
+      Object.entries(trackStatuses)
+        .filter(([, status]) => status === 'complete')
+        .map(([key]) => key)
+    );
+
+    // Include the current level we just assessed as assessed
+    const updatedAssessed = new Set(assessedLevels);
+    if (assessingLevel) {
+      updatedAssessed.add(`${assessingLevel.trackId}-${assessingLevel.level}`);
+    }
+
+    // Find the next unassessed level
+    for (const trackId of order) {
+      for (let level = 1; level <= 3; level++) {
+        const key = `${trackId}-${level}`;
+        if (updatedAssessed.has(key)) continue; // Skip already assessed
+
+        const { canStart } = canStartLevel(trackId, level as TrackLevel, matureSet);
+        if (canStart) {
+          return { trackId, level: level as TrackLevel };
+        }
+      }
+    }
+
+    return null;
+  }, [trackStatuses, assessedLevels, assessingLevel]);
+
+  const handleAssessmentComplete = useCallback(
+    (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => {
+      if (!assessingLevel) return;
+
       saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers);
-      setAssessingLevel(null);
+
+      if (action === 'continue') {
+        // Find and navigate to the next level
+        const nextLevel = getNextLevelToAssess();
+        if (nextLevel) {
+          setAssessingLevel(nextLevel);
+        } else {
+          // All levels assessed
+          setAssessingLevel(null);
+        }
+      } else {
+        // Exit back to the overview
+        setAssessingLevel(null);
+      }
     },
-    [assessingLevel, saveTrackLevelAssessment]
+    [assessingLevel, saveTrackLevelAssessment, getNextLevelToAssess]
   );
 
   const handleAssessmentCancel = useCallback(() => {
@@ -175,8 +246,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
         {TRACKS.map((track) => {
           const Icon = TRACK_ICONS[track.id];
           const gradient = TRACK_GRADIENTS[track.id];
-          const completed = track.levels.filter(
-            (l) => trackStatuses[`${track.id}-${l.level}`] === 'complete'
+          const assessedCount = track.levels.filter(
+            (l) => assessedLevels.has(`${track.id}-${l.level}`)
           ).length;
 
           return (
@@ -190,21 +261,25 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-slate-900 text-xs md:text-sm truncate">{track.shortName}</h3>
-                  <p className="text-xs text-slate-500">{completed}/3</p>
+                  <p className="text-xs text-slate-500">{assessedCount}/3 assessed</p>
                 </div>
               </div>
               <div className="flex gap-1">
                 {track.levels.map((level) => {
-                  const status = trackStatuses[`${track.id}-${level.level}`] || 'not-started';
+                  const key = `${track.id}-${level.level}`;
+                  const isAssessed = assessedLevels.has(key);
+                  const status = trackStatuses[key] || 'not-started';
                   return (
                     <div
                       key={level.level}
                       className={`flex-1 h-1.5 md:h-2 rounded-full ${
-                        status === 'complete'
-                          ? `bg-gradient-to-r ${gradient}`
-                          : status === 'in-progress'
-                            ? 'bg-slate-300'
-                            : 'bg-slate-100'
+                        isAssessed
+                          ? status === 'complete'
+                            ? `bg-gradient-to-r ${gradient}`
+                            : status === 'in-progress'
+                              ? 'bg-amber-300'
+                              : 'bg-slate-300'
+                          : 'bg-slate-100'
                       }`}
                     />
                   );
@@ -221,6 +296,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
         <div className="lg:col-span-2 order-2 lg:order-1">
           <TrackProgress
             trackStatuses={trackStatuses}
+            assessedLevels={assessedLevels}
             onLevelClick={handleLevelClick}
             currentTrack={assessingLevel?.trackId}
             currentLevel={assessingLevel?.level}
@@ -233,8 +309,10 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           {nextRecommendation && !completionStats.isComplete && (
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
-                <Play className="w-4 h-4" />
-                <span className="text-sm font-medium text-slate-300">Next Step</span>
+                <Pencil className="w-4 h-4" />
+                <span className="text-sm font-medium text-slate-300">
+                  {nextRecommendation.isFirstAssessment ? 'Get Started' : 'Continue Assessment'}
+                </span>
               </div>
               <p className="text-lg font-semibold mb-4">{nextRecommendation.message}</p>
               <button
@@ -243,7 +321,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                 }
                 className="w-full py-2.5 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
               >
-                Start Assessment
+                {nextRecommendation.isFirstAssessment ? 'Begin' : 'Assess This Level'}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -274,13 +352,13 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           {/* Progress Summary */}
           <div className="bg-white rounded-xl border border-slate-200 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <ListChecks className="w-4 h-4 text-slate-400" />
-              <span className="text-sm font-medium text-slate-700">Progress Summary</span>
+              <ClipboardCheck className="w-4 h-4 text-slate-400" />
+              <span className="text-sm font-medium text-slate-700">Assessment Progress</span>
             </div>
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600">Overall Completion</span>
+                  <span className="text-slate-600">Levels Assessed</span>
                   <span className="font-medium text-slate-900">{completionStats.percentage}%</span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2">
@@ -292,16 +370,29 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
               </div>
               <div className="pt-3 border-t border-slate-100 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Levels Complete</span>
-                  <span className="text-slate-700">{completionStats.completed}</span>
+                  <span className="text-slate-500">Assessed</span>
+                  <span className="text-slate-700">{completionStats.assessed} of {completionStats.total}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Levels Remaining</span>
+                  <span className="text-slate-500">Remaining</span>
                   <span className="text-slate-700">
-                    {completionStats.total - completionStats.completed}
+                    {completionStats.total - completionStats.assessed}
                   </span>
                 </div>
               </div>
+              {completionStats.assessed > 0 && (
+                <div className="pt-3 border-t border-slate-100 space-y-2">
+                  <div className="text-xs font-medium text-slate-500 mb-1">Maturity Breakdown</div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-emerald-600">Mature</span>
+                    <span className="text-slate-700">{completionStats.mature}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-amber-600">Building / Gap</span>
+                    <span className="text-slate-700">{completionStats.assessed - completionStats.mature}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -315,12 +406,130 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
               <li>• Be honest about current state for best recommendations</li>
             </ul>
           </div>
+
+          {/* Assessment Settings */}
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4 text-slate-400" />
+                <span className="text-sm font-medium text-slate-700">Assessment Settings</span>
+              </div>
+              {showSettings ? (
+                <ChevronUp className="w-4 h-4 text-slate-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
+
+            {showSettings && (
+              <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                {/* Client Name */}
+                {assessment?.clientName && (
+                  <div>
+                    <div className="text-xs text-slate-500 mb-1">Client</div>
+                    <div className="text-sm font-medium text-slate-700">{assessment.clientName}</div>
+                  </div>
+                )}
+
+                {/* Marketing Foundation Selection */}
+                <div>
+                  <div className="text-xs text-slate-500 mb-2">Marketing Platform</div>
+                  <div className="space-y-2">
+                    {MARKETING_FOUNDATIONS.map((foundation) => (
+                      <button
+                        key={foundation.id}
+                        onClick={() => setMarketingFoundation(foundation.id as MarketingFoundationType)}
+                        className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                          marketingFoundation === foundation.id
+                            ? foundation.id === 'mc-advanced'
+                              ? 'border-blue-400 bg-blue-50'
+                              : 'border-slate-400 bg-slate-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                            foundation.id === 'mc-advanced'
+                              ? 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                              : 'bg-slate-200'
+                          }`}>
+                            {foundation.id === 'mc-advanced' ? (
+                              <Database className="w-4 h-4 text-white" />
+                            ) : (
+                              <Mail className="w-4 h-4 text-slate-600" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-slate-900 truncate">
+                                {foundation.shortName}
+                              </span>
+                              {marketingFoundation === foundation.id && (
+                                <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${
+                                  foundation.id === 'mc-advanced' ? 'text-blue-600' : 'text-slate-600'
+                                }`} />
+                              )}
+                            </div>
+                            {foundation.recommended && (
+                              <span className="text-[10px] text-emerald-600 font-medium">Recommended</span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-2">
+                    Changing this affects which capabilities are available in your roadmap.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Save Status Indicator */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2">
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                  <span className="text-sm text-slate-600">Saving...</span>
+                </>
+              ) : isSupabaseAvailable ? (
+                <>
+                  <Cloud className="w-4 h-4 text-emerald-500" />
+                  <div className="flex-1">
+                    <span className="text-sm text-slate-600">Auto-saving enabled</span>
+                    {lastSaved && (
+                      <p className="text-[10px] text-slate-400">
+                        Last saved {lastSaved.toLocaleTimeString()}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <CloudOff className="w-4 h-4 text-amber-500" />
+                  <div className="flex-1">
+                    <span className="text-sm text-amber-700">Local only</span>
+                    <p className="text-[10px] text-amber-600">
+                      Data not persisted to cloud
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Assessment Modal */}
       {assessingLevel && (
         <TrackLevelAssessment
+          // Use key to force remount when track/level changes (resets internal state)
+          key={`${assessingLevel.trackId}-${assessingLevel.level}`}
           trackId={assessingLevel.trackId}
           level={assessingLevel.level}
           initialAnswers={
@@ -332,6 +541,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           }
           onComplete={handleAssessmentComplete}
           onCancel={handleAssessmentCancel}
+          totalLevels={completionStats.total}
+          currentLevelIndex={completionStats.assessed}
         />
       )}
     </div>

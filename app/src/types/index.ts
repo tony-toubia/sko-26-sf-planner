@@ -305,6 +305,7 @@ export interface GlobalAssessmentInputs {
   // Client context
   clientContext: {
     industry?: string;
+    industrySegment?: string; // Sub-segment like 'QSR', 'Retail', 'Banking', etc.
     companySize?: 'smb' | 'mid-market' | 'enterprise' | 'global-enterprise';
     currentMarketingMaturity?: 1 | 2 | 3 | 4 | 5;
     existingTechStack?: string;
@@ -515,4 +516,14 @@ export interface GeneratedPlan {
     owner: 'merkle' | 'client' | 'joint';
     timeline: string;
   }[];
+
+  // AI-generated content (when using AI plan generation)
+  aiGenerated?: {
+    markdown: string; // Full AI-generated plan as markdown
+    generatedWith: 'claude-sonnet' | 'claude-opus';
+    tokenUsage?: {
+      input: number;
+      output: number;
+    };
+  };
 }

@@ -37,9 +37,11 @@ interface TrackLevelAssessmentProps {
   level: TrackLevel;
   initialAnswers?: AssessmentAnswer[];
   initialStatus?: TrackLevelStatus;
-  onComplete: (status: TrackLevelStatus, answers: AssessmentAnswer[]) => void;
+  onComplete: (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => void;
   onCancel: () => void;
   onBack?: () => void;
+  totalLevels?: number;
+  currentLevelIndex?: number;
 }
 
 const TRACK_ICONS: Record<TrackId, React.ElementType> = {
@@ -385,6 +387,8 @@ export function TrackLevelAssessment({
   onComplete,
   onCancel,
   onBack,
+  totalLevels = 12,
+  currentLevelIndex = 0,
 }: TrackLevelAssessmentProps) {
   // All tracks start with overview, journeys adds a context step
   const isJourneysTrack = trackId === 'journeys';
@@ -439,20 +443,14 @@ export function TrackLevelAssessment({
     });
   };
 
-  const handleComplete = () => {
+  const handleComplete = (action: 'continue' | 'exit') => {
     // Default to 'not-started' if somehow no status was selected (shouldn't happen with UI validation)
     const finalStatus = selectedStatus || 'not-started';
     const formattedAnswers: AssessmentAnswer[] = Object.entries(answers).map(([id, value]) => ({
       questionId: id,
       value,
     }));
-    console.log('[TrackLevelAssessment] handleComplete called:', {
-      trackId,
-      level,
-      selectedStatus: finalStatus,
-      answersCount: formattedAnswers.length
-    });
-    onComplete(finalStatus, formattedAnswers);
+    onComplete(finalStatus, formattedAnswers, action);
   };
 
   if (!track || !trackLevel) {
@@ -688,6 +686,30 @@ export function TrackLevelAssessment({
                 </p>
               </div>
 
+              {/* Current selection indicator */}
+              {selectedStatus && (
+                <div className={`p-3 rounded-lg border-2 ${
+                  selectedStatus === 'complete'
+                    ? 'bg-emerald-50 border-emerald-300'
+                    : selectedStatus === 'in-progress'
+                      ? 'bg-amber-50 border-amber-300'
+                      : 'bg-slate-50 border-slate-300'
+                }`}>
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle2 className={`w-4 h-4 ${
+                      selectedStatus === 'complete'
+                        ? 'text-emerald-600'
+                        : selectedStatus === 'in-progress'
+                          ? 'text-amber-600'
+                          : 'text-slate-600'
+                    }`} />
+                    <span className="font-medium">
+                      Selected: {selectedStatus === 'complete' ? 'Complete' : selectedStatus === 'in-progress' ? 'In Progress' : 'Not Started'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-4">
                 {statusDefinitions.map((option) => (
                   <button
@@ -695,21 +717,33 @@ export function TrackLevelAssessment({
                     onClick={() => setSelectedStatus(option.value as TrackLevelStatus)}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                       selectedStatus === option.value
-                        ? `${colors.border} bg-slate-50`
+                        ? option.value === 'complete'
+                          ? 'border-emerald-400 bg-emerald-50 ring-2 ring-emerald-200'
+                          : option.value === 'in-progress'
+                            ? 'border-amber-400 bg-amber-50 ring-2 ring-amber-200'
+                            : 'border-slate-400 bg-slate-100 ring-2 ring-slate-200'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
                         {selectedStatus === option.value ? (
-                          <CheckCircle2 className={`w-5 h-5 ${colors.text}`} />
+                          <CheckCircle2 className={`w-5 h-5 ${
+                            option.value === 'complete'
+                              ? 'text-emerald-600'
+                              : option.value === 'in-progress'
+                                ? 'text-amber-600'
+                                : 'text-slate-600'
+                          }`} />
                         ) : (
                           <Circle className="w-5 h-5 text-slate-300" />
                         )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-900">{option.label}</span>
+                          <span className={`font-medium ${
+                            selectedStatus === option.value ? 'text-slate-900' : 'text-slate-700'
+                          }`}>{option.label}</span>
                           {option.value === 'complete' && (
                             <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
                               Operational
@@ -950,62 +984,91 @@ export function TrackLevelAssessment({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-200 px-6 py-4 flex items-center justify-between bg-slate-50">
-          <button
-            onClick={() => {
-              if (step === 'overview') {
-                onBack ? onBack() : onCancel();
-              } else if (step === 'context') {
-                setStep('overview');
-              } else if (step === 'status') {
-                isJourneysTrack ? setStep('context') : setStep('overview');
-              } else if (step === 'questions') {
-                setStep('status');
-              } else {
-                setStep('questions');
-              }
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            {step === 'overview' ? 'Cancel' : 'Back'}
-          </button>
+        <div className="border-t border-slate-200 px-6 py-4 bg-slate-50">
+          {step === 'confirm' ? (
+            // Show Save & Continue / Save & Exit on confirm step
+            <div className="space-y-3">
+              {/* Progress indicator */}
+              <div className="text-center text-xs text-slate-500">
+                Level {currentLevelIndex + 1} of {totalLevels} in assessment
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setStep('questions')}
+                  className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </button>
+                <div className="flex-1 flex items-center gap-2 justify-end">
+                  <button
+                    onClick={() => handleComplete('exit')}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-100 transition-colors"
+                  >
+                    Save & Exit
+                  </button>
+                  <button
+                    onClick={() => handleComplete('continue')}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-all bg-gradient-to-r ${colors.gradient} text-white hover:opacity-90`}
+                  >
+                    Save & Continue
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Standard navigation for other steps
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => {
+                  if (step === 'overview') {
+                    onBack ? onBack() : onCancel();
+                  } else if (step === 'context') {
+                    setStep('overview');
+                  } else if (step === 'status') {
+                    isJourneysTrack ? setStep('context') : setStep('overview');
+                  } else if (step === 'questions') {
+                    setStep('status');
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                {step === 'overview' ? 'Cancel' : 'Back'}
+              </button>
 
-          <button
-            onClick={() => {
-              if (step === 'overview') {
-                isJourneysTrack ? setStep('context') : setStep('status');
-              } else if (step === 'context') {
-                setStep('status');
-              } else if (step === 'status') {
-                setStep('questions');
-              } else if (step === 'questions') {
-                setStep('confirm');
-              } else {
-                handleComplete();
-              }
-            }}
-            disabled={
-              (step === 'status' && !selectedStatus) ||
-              (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
-            }
-            className={`
-              flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all
-              ${
-                (step === 'status' && !selectedStatus) ||
-                (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  : `bg-gradient-to-r ${colors.gradient} text-white hover:opacity-90`
-              }
-            `}
-          >
-            {step === 'confirm'
-              ? 'Save Assessment'
-              : step === 'overview'
-                ? 'Begin Assessment'
-                : 'Continue'}
-            <ChevronRight className="w-4 h-4" />
-          </button>
+              <button
+                onClick={() => {
+                  if (step === 'overview') {
+                    isJourneysTrack ? setStep('context') : setStep('status');
+                  } else if (step === 'context') {
+                    setStep('status');
+                  } else if (step === 'status') {
+                    setStep('questions');
+                  } else if (step === 'questions') {
+                    setStep('confirm');
+                  }
+                }}
+                disabled={
+                  (step === 'status' && !selectedStatus) ||
+                  (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
+                }
+                className={`
+                  flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all
+                  ${
+                    (step === 'status' && !selectedStatus) ||
+                    (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      : `bg-gradient-to-r ${colors.gradient} text-white hover:opacity-90`
+                  }
+                `}
+              >
+                {step === 'overview' ? 'Begin Assessment' : 'Continue'}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

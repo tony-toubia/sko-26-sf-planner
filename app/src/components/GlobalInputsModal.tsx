@@ -11,10 +11,12 @@ import {
   Calendar,
   Briefcase,
 } from 'lucide-react';
-import type { GlobalAssessmentInputs, MerkleOfferingType } from '../types';
+import type { GlobalAssessmentInputs, MerkleOfferingType, IndustryType } from '../types';
+import { INDUSTRIES as INDUSTRY_DATA, INDUSTRY_SPECIFIC_QUESTIONS } from '../data/industries';
 
 interface GlobalInputsModalProps {
   clientName: string;
+  selectedIndustry?: IndustryType | null;
   onSubmit: (inputs: GlobalAssessmentInputs) => void;
   onClose: () => void;
 }
@@ -27,19 +29,11 @@ const STEPS: { id: Step; title: string; icon: React.ReactNode }[] = [
   { id: 'strategic', title: 'Strategic Context', icon: <Target className="w-5 h-5" /> },
 ];
 
-const INDUSTRIES = [
-  'Retail & Consumer Goods',
-  'Quick Service Restaurant (QSR)',
-  'Financial Services',
-  'Healthcare & Life Sciences',
-  'Technology',
-  'Media & Entertainment',
-  'Travel & Hospitality',
-  'Manufacturing',
-  'Telecommunications',
-  'Energy & Utilities',
-  'Other',
-];
+// Use industry data from the shared data source
+const INDUSTRIES_LIST = Object.values(INDUSTRY_DATA).map((i) => ({
+  id: i.id,
+  name: i.name,
+}));
 
 const COMPANY_SIZES = [
   { value: 'smb', label: 'SMB', description: '<$50M revenue' },
@@ -77,10 +71,16 @@ const BUSINESS_DRIVERS = [
   'Competitive differentiation',
 ];
 
-export function GlobalInputsModal({ clientName, onSubmit, onClose }: GlobalInputsModalProps) {
+export function GlobalInputsModal({ clientName, selectedIndustry, onSubmit, onClose }: GlobalInputsModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('client-context');
+
+  // Pre-populate industry from the assessment context if available
+  const initialIndustryName = selectedIndustry ? INDUSTRY_DATA[selectedIndustry]?.name : undefined;
+
   const [inputs, setInputs] = useState<GlobalAssessmentInputs>({
-    clientContext: {},
+    clientContext: {
+      industry: initialIndustryName,
+    },
     commercialPreferences: {},
     strategicContext: {},
   });
@@ -204,19 +204,55 @@ export function GlobalInputsModal({ clientName, onSubmit, onClose }: GlobalInput
               {/* Industry */}
               <div>
                 <label className="block font-medium text-gray-700 mb-2">Industry</label>
-                <select
-                  value={inputs.clientContext.industry || ''}
-                  onChange={(e) => updateClientContext({ industry: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue"
-                >
-                  <option value="">Select industry...</option>
-                  {INDUSTRIES.map((industry) => (
-                    <option key={industry} value={industry}>
-                      {industry}
-                    </option>
-                  ))}
-                </select>
+                {selectedIndustry ? (
+                  // Show as read-only if already selected from assessment
+                  <div className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                    {inputs.clientContext.industry}
+                    <span className="text-xs text-gray-500 ml-2">(from assessment)</span>
+                  </div>
+                ) : (
+                  <select
+                    value={inputs.clientContext.industry || ''}
+                    onChange={(e) => updateClientContext({ industry: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue"
+                  >
+                    <option value="">Select industry...</option>
+                    {INDUSTRIES_LIST.map((industry) => (
+                      <option key={industry.id} value={industry.name}>
+                        {industry.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
+
+              {/* Sub-industry / Segment Selection (shown when industry is selected) */}
+              {selectedIndustry && INDUSTRY_SPECIFIC_QUESTIONS[selectedIndustry] && (() => {
+                const segmentQuestion = INDUSTRY_SPECIFIC_QUESTIONS[selectedIndustry].find(
+                  (q) => q.id.includes('segment') || q.id.includes('type') || q.id.includes('model')
+                );
+                if (!segmentQuestion || segmentQuestion.type !== 'single-select') return null;
+                return (
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-2">{segmentQuestion.question}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {segmentQuestion.options?.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => updateClientContext({ industrySegment: option })}
+                          className={`p-3 rounded-lg border-2 text-left text-sm transition-colors ${
+                            inputs.clientContext.industrySegment === option
+                              ? 'border-merkle-blue bg-merkle-blue/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Company Size */}
               <div>

@@ -685,6 +685,7 @@ export function MaturityMatrix() {
       {showGlobalInputsModal && assessment && (
         <GlobalInputsModal
           clientName={assessment.clientName}
+          selectedIndustry={selectedIndustry}
           onSubmit={handleGlobalInputsSubmit}
           onClose={() => setShowGlobalInputsModal(false)}
         />

@@ -10,9 +10,24 @@ CREATE TABLE IF NOT EXISTS assessments (
   client_name TEXT NOT NULL,
   opportunity_name TEXT,
   industry TEXT,
+  marketing_foundation TEXT, -- 'mc-engagement' or 'mc-advanced'
   is_complete BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Track assessments table - stores track-level maturity assessments
+CREATE TABLE IF NOT EXISTS track_assessments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  assessment_id UUID NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+  track_id TEXT NOT NULL, -- 'data-identity' | 'journeys' | 'content-channels' | 'intelligence'
+  level INTEGER NOT NULL, -- 1, 2, or 3
+  status TEXT NOT NULL, -- 'not-started' | 'in-progress' | 'complete'
+  answers JSONB DEFAULT '[]', -- Array of {questionId, value} objects
+  notes TEXT,
+  assessed_at TIMESTAMPTZ DEFAULT NOW(),
+
+  UNIQUE(assessment_id, track_id, level)
 );
 
 -- Global inputs table - stores commercial/strategic context for an assessment
@@ -87,6 +102,8 @@ CREATE INDEX IF NOT EXISTS idx_assessments_created_at ON assessments(created_at 
 CREATE INDEX IF NOT EXISTS idx_capability_assessments_assessment_id ON capability_assessments(assessment_id);
 CREATE INDEX IF NOT EXISTS idx_capability_assessments_relevance ON capability_assessments(relevance);
 CREATE INDEX IF NOT EXISTS idx_assessment_answers_capability_assessment_id ON assessment_answers(capability_assessment_id);
+CREATE INDEX IF NOT EXISTS idx_track_assessments_assessment_id ON track_assessments(assessment_id);
+CREATE INDEX IF NOT EXISTS idx_track_assessments_track_level ON track_assessments(track_id, level);
 
 -- Row Level Security (RLS) policies
 -- For now, we'll allow all operations. In production, you'd want proper auth.
@@ -95,6 +112,7 @@ ALTER TABLE assessment_global_inputs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE capability_assessments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assessment_answers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE generated_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE track_assessments ENABLE ROW LEVEL SECURITY;
 
 -- Permissive policies for development (allows all operations)
 -- Replace these with proper auth-based policies in production
@@ -103,6 +121,7 @@ CREATE POLICY "Allow all operations on assessment_global_inputs" ON assessment_g
 CREATE POLICY "Allow all operations on capability_assessments" ON capability_assessments FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations on assessment_answers" ON assessment_answers FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all operations on generated_plans" ON generated_plans FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all operations on track_assessments" ON track_assessments FOR ALL USING (true) WITH CHECK (true);
 
 -- Function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
