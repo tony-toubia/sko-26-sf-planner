@@ -97,26 +97,27 @@ export function PlanOutput({ plan, onClose }: PlanOutputProps) {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-1 mt-4">
+          {/* Tabs - horizontally scrollable on mobile */}
+          <div className="flex gap-1 mt-4 overflow-x-auto pb-1 -mb-1 scrollbar-hide">
             {[
-              ...(hasAIContent ? [{ id: 'ai-plan', label: 'AI-Generated Plan', icon: <Sparkles className="w-4 h-4" /> }] : []),
-              { id: 'overview', label: 'Overview', icon: <Target className="w-4 h-4" /> },
-              { id: 'phases', label: 'Implementation Plan', icon: <Calendar className="w-4 h-4" /> },
-              { id: 'commercial', label: 'Commercial', icon: <DollarSign className="w-4 h-4" /> },
-              { id: 'risks', label: 'Risks & Success', icon: <AlertTriangle className="w-4 h-4" /> },
+              ...(hasAIContent ? [{ id: 'ai-plan', label: 'AI Plan', labelFull: 'AI-Generated Plan', icon: <Sparkles className="w-4 h-4" /> }] : []),
+              { id: 'overview', label: 'Overview', labelFull: 'Overview', icon: <Target className="w-4 h-4" /> },
+              { id: 'phases', label: 'Phases', labelFull: 'Implementation Plan', icon: <Calendar className="w-4 h-4" /> },
+              { id: 'commercial', label: 'Commercial', labelFull: 'Commercial', icon: <DollarSign className="w-4 h-4" /> },
+              { id: 'risks', label: 'Risks', labelFull: 'Risks & Success', icon: <AlertTriangle className="w-4 h-4" /> },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-t-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab.id
                     ? 'bg-white text-merkle-blue'
                     : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 {tab.icon}
-                {tab.label}
+                <span className="hidden sm:inline">{tab.labelFull}</span>
+                <span className="sm:hidden">{tab.label}</span>
               </button>
             ))}
           </div>
