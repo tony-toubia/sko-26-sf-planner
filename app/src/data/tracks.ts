@@ -90,6 +90,85 @@ export const TRACKS: Track[] = [
               'Call center / service data',
             ],
             required: true,
+            industryVariants: {
+              'retail-cpg-qsr': {
+                options: [
+                  'E-commerce platform',
+                  'POS / in-store transactions',
+                  'Loyalty program',
+                  'Mobile app',
+                  'Web browsing behavior',
+                  'Call center / service data',
+                  'Inventory / product catalog',
+                ],
+              },
+              'financial-services': {
+                options: [
+                  'Core banking / policy admin',
+                  'Digital banking platform',
+                  'CRM / relationship data',
+                  'Application systems',
+                  'Call center / service data',
+                  'Web / mobile behavior',
+                  'Marketing automation history',
+                ],
+              },
+              'healthcare-life-sciences': {
+                options: [
+                  'EHR / EMR system',
+                  'Patient portal',
+                  'Scheduling system',
+                  'Pharmacy / prescription data',
+                  'Claims data',
+                  'Web / mobile behavior',
+                  'Call center / contact data',
+                ],
+              },
+              'manufacturing': {
+                options: [
+                  'CRM / Sales Cloud',
+                  'ERP system',
+                  'Marketing automation',
+                  'Dealer / partner portal',
+                  'Product registration',
+                  'Service / warranty data',
+                  'Web analytics',
+                ],
+              },
+              'travel-hospitality': {
+                options: [
+                  'Reservation / booking system',
+                  'Loyalty program',
+                  'Property management system',
+                  'Mobile app',
+                  'Web browsing behavior',
+                  'Call center / service data',
+                  'OTA / partner data',
+                ],
+              },
+              'media-entertainment': {
+                options: [
+                  'Subscription platform',
+                  'Content / viewing platform',
+                  'Mobile / OTT apps',
+                  'Web behavior',
+                  'Customer service data',
+                  'Billing system',
+                  'Social media data',
+                ],
+              },
+              'technology': {
+                options: [
+                  'Product usage / telemetry',
+                  'Subscription / billing system',
+                  'CRM / Sales Cloud',
+                  'Support / ticketing system',
+                  'Marketing automation',
+                  'Web / trial behavior',
+                  'Community / forum data',
+                ],
+              },
+            },
           },
           {
             id: 'purchase-data-state',
@@ -238,7 +317,7 @@ export const TRACKS: Track[] = [
         assessmentQuestions: [
           {
             id: 'purchase-journeys-exist',
-            question: 'Which purchase-driven journeys exist today?',
+            question: 'Which customer lifecycle journeys exist today?',
             type: 'multi-select',
             options: [
               'Abandoned cart / browse',
@@ -250,18 +329,143 @@ export const TRACKS: Track[] = [
               'None of these',
             ],
             required: true,
+            industryVariants: {
+              'retail-cpg-qsr': {
+                question: 'Which purchase-driven journeys exist today?',
+                options: [
+                  'Cart / browse abandonment',
+                  'Order confirmation',
+                  'Shipping / delivery updates',
+                  'Post-purchase follow-up',
+                  'Replenishment reminders',
+                  'Back in stock alerts',
+                  'Win-back / lapsed customer',
+                  'None of these',
+                ],
+              },
+              'financial-services': {
+                question: 'Which customer lifecycle journeys exist today?',
+                options: [
+                  'Application abandonment',
+                  'Account onboarding completion',
+                  'Product activation follow-up',
+                  'Cross-sell recommendations',
+                  'Renewal reminders',
+                  'Dormant account reactivation',
+                  'None of these',
+                ],
+              },
+              'healthcare-life-sciences': {
+                question: 'Which patient/customer lifecycle journeys exist today?',
+                options: [
+                  'Appointment reminders',
+                  'Post-visit follow-up',
+                  'Medication adherence',
+                  'Refill reminders',
+                  'Annual wellness reminders',
+                  'Program enrollment follow-up',
+                  'None of these',
+                ],
+              },
+              'manufacturing': {
+                question: 'Which customer lifecycle journeys exist today?',
+                options: [
+                  'Lead nurture sequences',
+                  'Quote follow-up',
+                  'Product registration',
+                  'Service reminders',
+                  'Warranty renewal',
+                  'Parts reorder alerts',
+                  'None of these',
+                ],
+              },
+              'travel-hospitality': {
+                question: 'Which guest lifecycle journeys exist today?',
+                options: [
+                  'Booking abandonment',
+                  'Pre-arrival communications',
+                  'On-property engagement',
+                  'Post-stay follow-up',
+                  'Review requests',
+                  'Win-back / lapsed traveler',
+                  'None of these',
+                ],
+              },
+              'media-entertainment': {
+                question: 'Which subscriber lifecycle journeys exist today?',
+                options: [
+                  'Trial onboarding',
+                  'Content recommendations',
+                  'Engagement triggers',
+                  'At-risk subscriber alerts',
+                  'Renewal reminders',
+                  'Win-back / churned subscriber',
+                  'None of these',
+                ],
+              },
+              'technology': {
+                question: 'Which customer lifecycle journeys exist today?',
+                options: [
+                  'Trial onboarding',
+                  'Feature adoption campaigns',
+                  'Usage milestone celebrations',
+                  'Expansion opportunity triggers',
+                  'Renewal campaigns',
+                  'At-risk customer intervention',
+                  'None of these',
+                ],
+              },
+            },
           },
           {
             id: 'cart-abandon-priority',
-            question: 'Is cart abandonment a significant revenue opportunity?',
+            question: 'Is abandoned transaction recovery a significant opportunity?',
             type: 'single-select',
             options: [
               'Yes, high abandonment rate',
               'Moderate opportunity',
               'Low priority - already optimized',
-              'Not applicable (no e-commerce)',
+              'Not applicable',
             ],
             required: true,
+            industryVariants: {
+              'retail-cpg-qsr': {
+                question: 'Is cart abandonment a significant revenue opportunity?',
+                options: [
+                  'Yes, high abandonment rate',
+                  'Moderate opportunity',
+                  'Low priority - already optimized',
+                  'Not applicable (no e-commerce)',
+                ],
+              },
+              'financial-services': {
+                question: 'Is application abandonment a significant opportunity?',
+                options: [
+                  'Yes, high abandonment rate',
+                  'Moderate opportunity',
+                  'Low priority - already optimized',
+                  'Not applicable',
+                ],
+              },
+              'travel-hospitality': {
+                question: 'Is booking abandonment a significant revenue opportunity?',
+                options: [
+                  'Yes, high abandonment rate',
+                  'Moderate opportunity',
+                  'Low priority - already optimized',
+                  'Not applicable',
+                ],
+              },
+              'technology': {
+                question: 'Is trial abandonment / drop-off a significant opportunity?',
+                options: [
+                  'Yes, high drop-off rate',
+                  'Moderate opportunity',
+                  'Low priority - already optimized',
+                  'Not applicable (no trial)',
+                ],
+              },
+            },
           },
           {
             id: 'purchase-data-ready',

@@ -216,6 +216,12 @@ Your role is to create a compelling, narrative-driven recommendation plan that:
 4. Skips empty phases - if they've completed Phase 1 work, start the plan at Phase 2
 5. Provides specific, actionable recommendations grounded in data
 
+IMPORTANT - Assumptions to AVOID:
+- Do NOT assume the client has already implemented any platform. The "Marketing Foundation" field indicates their TARGET platform choice, not what they currently have.
+- Only reference "current state" or "already implemented" if the maturity assessment explicitly shows completed capabilities.
+- The assessment tracks show what level they are WORKING TOWARD, not what they have completed (unless status is "complete").
+- When a track shows "not-started", assume they have no capabilities in that area yet.
+
 ## Reference Data
 
 ${ROI_BENCHMARKS}
@@ -303,10 +309,10 @@ function buildUserPrompt(request: PlanGenerationRequest): string {
 
   // Determine marketing foundation
   const foundationNote = request.marketingFoundation
-    ? `Marketing Foundation: ${request.marketingFoundation === 'mc-advanced-data-cloud'
-        ? 'MC Advanced with Data Cloud (Agentforce-ready)'
-        : 'MC Engagement (standard)'}`
-    : '';
+    ? `Marketing Foundation: ${request.marketingFoundation === 'mc-advanced'
+        ? 'MC Advanced with Data Cloud (Agentforce-ready) - This is the TARGET platform, not currently implemented'
+        : 'MC Engagement (standard) - This is the TARGET platform, not currently implemented'}`
+    : 'Marketing Foundation: Not specified';
 
   return `Generate a strategic implementation plan for ${request.clientName}.
 

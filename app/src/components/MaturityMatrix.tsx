@@ -239,9 +239,10 @@ export function MaturityMatrix() {
     getCapabilityAssessment,
     assessment,
     generatedPlan,
+    showPlanModal,
     generateRecommendationPlan,
     generateQuickPlan,
-    clearGeneratedPlan,
+    closePlanModal,
     selectedIndustry,
     setSelectedIndustry,
     marketingFoundation,
@@ -692,10 +693,10 @@ export function MaturityMatrix() {
       )}
 
       {/* Plan Output Modal - displays generated recommendation plan */}
-      {generatedPlan && (
+      {showPlanModal && generatedPlan && (
         <PlanOutput
           plan={generatedPlan}
-          onClose={clearGeneratedPlan}
+          onClose={closePlanModal}
         />
       )}
 

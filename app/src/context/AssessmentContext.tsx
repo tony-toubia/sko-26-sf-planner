@@ -33,6 +33,7 @@ interface AssessmentContextValue {
   assessment: OpportunityAssessment | null;
   isAssessmentMode: boolean;
   generatedPlan: GeneratedPlan | null;
+  showPlanModal: boolean;
   selectedIndustry: IndustryType | null;
   marketingFoundation: MarketingFoundationType | null;
 
@@ -66,6 +67,8 @@ interface AssessmentContextValue {
   generateRecommendationPlan: (inputs: GlobalAssessmentInputs, useAI?: boolean) => Promise<GeneratedPlan | null>;
   generateQuickPlan: () => GeneratedPlan | null;
   clearGeneratedPlan: () => void;
+  closePlanModal: () => void;
+  openPlanModal: () => void;
   clearPlanError: () => void;
   markComplete: () => void;
   resetAssessment: () => void;
@@ -110,6 +113,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   const [assessment, setAssessment] = useState<OpportunityAssessment | null>(null);
   const [isAssessmentMode, setIsAssessmentMode] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<GeneratedPlan | null>(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedIndustry, setSelectedIndustryState] = useState<IndustryType | null>(null);
   const [marketingFoundation, setMarketingFoundationState] = useState<MarketingFoundationType | null>(null);
 
@@ -337,6 +341,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           });
 
           setGeneratedPlan(plan);
+          setShowPlanModal(true);
           setIsGeneratingPlan(false);
           return plan;
         } catch (error) {
@@ -361,6 +366,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       });
 
       setGeneratedPlan(plan);
+      setShowPlanModal(true);
       return plan;
     },
     [assessment, isAIPlanAvailable]
@@ -409,12 +415,24 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     });
 
     setGeneratedPlan(plan);
+    setShowPlanModal(true);
     return plan;
   }, [assessment, selectedIndustry]);
 
   const clearGeneratedPlan = useCallback(() => {
     setGeneratedPlan(null);
+    setShowPlanModal(false);
   }, []);
+
+  const closePlanModal = useCallback(() => {
+    setShowPlanModal(false);
+  }, []);
+
+  const openPlanModal = useCallback(() => {
+    if (generatedPlan) {
+      setShowPlanModal(true);
+    }
+  }, [generatedPlan]);
 
   const markComplete = useCallback(() => {
     setAssessment((prev) => {
@@ -626,6 +644,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     assessment,
     isAssessmentMode,
     generatedPlan,
+    showPlanModal,
     selectedIndustry,
     marketingFoundation,
     isSaving,
@@ -646,6 +665,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     generateRecommendationPlan,
     generateQuickPlan,
     clearGeneratedPlan,
+    closePlanModal,
+    openPlanModal,
     clearPlanError,
     markComplete,
     resetAssessment,

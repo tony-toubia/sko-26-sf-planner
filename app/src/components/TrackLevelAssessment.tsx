@@ -23,6 +23,7 @@ import { getTrackById, getTrackLevel, getCapabilitiesForTrackLevel, getRequiredD
 import { getCapabilityById } from '../data/capabilities';
 import { getBenchmarksForCapability } from '../data/reference';
 import { JourneyMaturityIceberg } from './JourneyMaturityIceberg';
+import { useAssessment } from '../context/AssessmentContext';
 import type {
   TrackId,
   TrackLevel,
@@ -30,7 +31,32 @@ import type {
   TrackAssessmentQuestion,
   AssessmentAnswer,
   Capability,
+  IndustryType,
 } from '../types';
+
+// Helper to apply industry variants to questions
+function applyIndustryVariants(
+  questions: TrackAssessmentQuestion[],
+  industry: string | null
+): TrackAssessmentQuestion[] {
+  if (!industry) return questions;
+
+  const industryId = industry as IndustryType;
+
+  return questions.map((q) => {
+    if (!q.industryVariants || !q.industryVariants[industryId]) {
+      return q;
+    }
+
+    const variant = q.industryVariants[industryId];
+    return {
+      ...q,
+      question: variant.question || q.question,
+      options: variant.options || q.options,
+      helpText: variant.helpText || q.helpText,
+    };
+  });
+}
 
 interface TrackLevelAssessmentProps {
   trackId: TrackId;
@@ -390,6 +416,10 @@ export function TrackLevelAssessment({
   totalLevels = 12,
   currentLevelIndex = 0,
 }: TrackLevelAssessmentProps) {
+  // Get industry from assessment context
+  const { assessment } = useAssessment();
+  const industry = assessment?.industry || null;
+
   // All tracks start with overview, journeys adds a context step
   const isJourneysTrack = trackId === 'journeys';
   const [step, setStep] = useState<AssessmentStep>('overview');
@@ -421,7 +451,11 @@ export function TrackLevelAssessment({
   const colors = TRACK_COLORS[trackId];
   const Icon = TRACK_ICONS[trackId];
 
-  const questions = trackLevel?.assessmentQuestions || [];
+  // Apply industry-specific question variants
+  const questions = useMemo(
+    () => applyIndustryVariants(trackLevel?.assessmentQuestions || [], industry),
+    [trackLevel, industry]
+  );
   const requiredQuestions = questions.filter((q) => q.required);
   const allRequiredAnswered = requiredQuestions.every((q) => {
     const answer = answers[q.id];

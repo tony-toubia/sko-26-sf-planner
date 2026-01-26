@@ -18,6 +18,7 @@ import {
   CloudOff,
   Loader2,
   Save,
+  FileText,
 } from 'lucide-react';
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
@@ -47,7 +48,7 @@ const TRACK_GRADIENTS: Record<TrackId, string> = {
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail } = useAssessment();
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
 
   // Track which level is being assessed
   const [assessingLevel, setAssessingLevel] = useState<{
@@ -342,15 +343,30 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
               <p className="text-lg font-semibold mb-4">
                 All tracks assessed! Ready to generate your plan.
               </p>
-              {onGeneratePlan && (
-                <button
-                  onClick={onGeneratePlan}
-                  className="w-full py-2.5 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Generate Plan
-                </button>
-              )}
+              <div className="flex flex-col gap-2">
+                {generatedPlan && (
+                  <button
+                    onClick={openPlanModal}
+                    className="w-full py-2.5 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    View Existing Plan
+                  </button>
+                )}
+                {onGeneratePlan && (
+                  <button
+                    onClick={onGeneratePlan}
+                    className={`w-full py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                      generatedPlan
+                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                        : 'bg-white text-emerald-600 hover:bg-emerald-50'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {generatedPlan ? 'Regenerate Plan' : 'Generate Plan'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

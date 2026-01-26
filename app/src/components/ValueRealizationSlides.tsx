@@ -28,23 +28,23 @@ export function ValueRealizationSlides({ onClose }: ValueRealizationSlidesProps)
   const prevSlide = () => setCurrentSlide((prev) => Math.max(prev - 1, 0));
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-6xl w-full aspect-[16/9] overflow-hidden flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl max-w-6xl w-full h-full sm:h-auto sm:aspect-[16/9] overflow-hidden flex flex-col shadow-2xl">
         {/* Slide Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           {currentSlide === 0 && <SlideOne />}
           {currentSlide === 1 && <SlideTwo />}
           {currentSlide === 2 && <SlideThree />}
         </div>
 
         {/* Navigation Footer */}
-        <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+        <div className="px-3 sm:px-6 py-2 sm:py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between flex-shrink-0">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base"
           >
             <X className="w-4 h-4" />
-            Close
+            <span className="hidden sm:inline">Close</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -52,28 +52,28 @@ export function ValueRealizationSlides({ onClose }: ValueRealizationSlidesProps)
               <button
                 key={i}
                 onClick={() => setCurrentSlide(i)}
-                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-colors ${
                   i === currentSlide ? 'bg-merkle-blue' : 'bg-gray-300 hover:bg-gray-400'
                 }`}
               />
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={prevSlide}
               disabled={currentSlide === 0}
-              className="flex items-center gap-1 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-2 sm:px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back
+              <span className="hidden sm:inline">Back</span>
             </button>
             <button
               onClick={nextSlide}
               disabled={currentSlide === totalSlides - 1}
-              className="flex items-center gap-1 px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-2 sm:px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -86,53 +86,53 @@ export function ValueRealizationSlides({ onClose }: ValueRealizationSlidesProps)
 // Slide 1: The Problem - "The Uncomfortable Truth"
 function SlideOne() {
   return (
-    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 flex flex-col">
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-8 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">The Uncomfortable Truth</h1>
-          <p className="text-slate-400 text-lg">Why Salesforce investments underperform</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">The Uncomfortable Truth</h1>
+          <p className="text-slate-400 text-sm sm:text-lg">Why Salesforce investments underperform</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-3">
           <span className="text-slate-400 text-sm">Value Realization Framework</span>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 grid grid-cols-2 gap-8">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         {/* Left Side - The Gap */}
         <div className="flex flex-col justify-center">
           {/* C-Suite Pain */}
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-5 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 text-red-400" />
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 sm:p-5 mb-3 sm:mb-4">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-400" />
               </div>
               <div>
-                <h3 className="text-red-400 font-semibold mb-1">C-Suite</h3>
-                <p className="text-white text-lg italic">"We spent $2M on Salesforce. Where's the ROI?"</p>
+                <h3 className="text-red-400 font-semibold mb-1 text-sm sm:text-base">C-Suite</h3>
+                <p className="text-white text-sm sm:text-lg italic">"We spent $2M on Salesforce. Where's the ROI?"</p>
               </div>
             </div>
           </div>
 
           {/* The Gap */}
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center py-2 sm:py-4">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
-            <div className="px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-full mx-4">
-              <span className="text-amber-400 font-semibold text-sm">THE VALUE GAP</span>
+            <div className="px-2 sm:px-4 py-1 sm:py-2 bg-amber-500/20 border border-amber-500/40 rounded-full mx-2 sm:mx-4">
+              <span className="text-amber-400 font-semibold text-xs sm:text-sm">THE VALUE GAP</span>
             </div>
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent" />
           </div>
 
           {/* Marketing Pain */}
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-5 mt-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-blue-400" />
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 sm:p-5 mt-3 sm:mt-4">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
               </div>
               <div>
-                <h3 className="text-blue-400 font-semibold mb-1">Marketing Teams</h3>
-                <p className="text-white text-lg italic">"We've squeezed every drop from what we have."</p>
+                <h3 className="text-blue-400 font-semibold mb-1 text-sm sm:text-base">Marketing Teams</h3>
+                <p className="text-white text-sm sm:text-lg italic">"We've squeezed every drop from what we have."</p>
               </div>
             </div>
           </div>
@@ -140,40 +140,40 @@ function SlideOne() {
 
         {/* Right Side - The Stats */}
         <div className="flex flex-col justify-center">
-          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <AlertTriangle className="w-6 h-6 text-amber-400" />
-              <h3 className="text-xl font-semibold text-white">The Reality</h3>
+          <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
+              <h3 className="text-lg sm:text-xl font-semibold text-white">The Reality</h3>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">70%</span>
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg sm:text-2xl font-bold text-white">70%</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">of platform capabilities</p>
-                  <p className="text-slate-400">sit unused or underutilized</p>
+                  <p className="text-white font-medium text-sm sm:text-base">of platform capabilities</p>
+                  <p className="text-slate-400 text-xs sm:text-sm">sit unused or underutilized</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">60%</span>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg sm:text-2xl font-bold text-white">60%</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">of implementations</p>
-                  <p className="text-slate-400">never reach full potential</p>
+                  <p className="text-white font-medium text-sm sm:text-base">of implementations</p>
+                  <p className="text-slate-400 text-xs sm:text-sm">never reach full potential</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <span className="text-2xl font-bold text-white">$0</span>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg sm:text-2xl font-bold text-white">$0</span>
                 </div>
                 <div>
-                  <p className="text-white font-medium">is spent on optimization</p>
-                  <p className="text-slate-400">after initial implementation</p>
+                  <p className="text-white font-medium text-sm sm:text-base">is spent on optimization</p>
+                  <p className="text-slate-400 text-xs sm:text-sm">after initial implementation</p>
                 </div>
               </div>
             </div>
@@ -193,57 +193,57 @@ function SlideOne() {
 // Slide 2: The Iceberg - "From Shelfware to Showcase"
 function SlideTwo() {
   return (
-    <div className="h-full bg-gradient-to-br from-cyan-900 via-blue-900 to-indigo-900 p-8 flex flex-col relative overflow-hidden">
+    <div className="min-h-full bg-gradient-to-br from-cyan-900 via-blue-900 to-indigo-900 p-4 sm:p-8 flex flex-col relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-cyan-400/20 to-transparent" />
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 relative z-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 relative z-10 gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-1">From Shelfware to Showcase</h1>
-          <p className="text-cyan-300 text-lg">Unlocking the capabilities you already own</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">From Shelfware to Showcase</h1>
+          <p className="text-cyan-300 text-sm sm:text-lg">Unlocking the capabilities you already own</p>
         </div>
-        <div className="bg-white/10 backdrop-blur px-4 py-2 rounded-full">
+        <div className="hidden sm:block bg-white/10 backdrop-blur px-4 py-2 rounded-full">
           <span className="text-white font-medium">Back to Boutique</span>
         </div>
       </div>
 
       {/* Main Content - Iceberg Visual */}
-      <div className="flex-1 grid grid-cols-5 gap-6 relative z-10">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6 relative z-10">
         {/* Left Labels - Above the Line */}
-        <div className="col-span-2 flex flex-col justify-start pt-4">
-          <div className="bg-cyan-500/20 backdrop-blur border border-cyan-400/30 rounded-xl p-4 mb-3">
-            <h3 className="text-cyan-300 font-semibold mb-2 flex items-center gap-2">
+        <div className="lg:col-span-2 flex flex-col justify-start pt-2 sm:pt-4">
+          <div className="bg-cyan-500/20 backdrop-blur border border-cyan-400/30 rounded-xl p-3 sm:p-4 mb-2 sm:mb-3">
+            <h3 className="text-cyan-300 font-semibold mb-2 flex items-center gap-2 text-sm sm:text-base">
               <div className="w-2 h-2 bg-cyan-400 rounded-full" />
               What They Think They're Using
             </h3>
-            <ul className="space-y-1.5 text-white/80 text-sm">
+            <ul className="space-y-1 sm:space-y-1.5 text-white/80 text-xs sm:text-sm">
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-cyan-400" />
+                <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 flex-shrink-0" />
                 Basic email campaigns
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-cyan-400" />
+                <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 flex-shrink-0" />
                 Simple automations
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle className="w-3.5 h-3.5 text-cyan-400" />
+                <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 flex-shrink-0" />
                 Standard reporting
               </li>
             </ul>
           </div>
 
-          {/* Water Line Indicator */}
-          <div className="flex items-center gap-2 my-4 pl-4">
+          {/* Water Line Indicator - hidden on mobile, shown inline */}
+          <div className="hidden lg:flex items-center gap-2 my-4 pl-4">
             <div className="flex-1 h-px bg-gradient-to-r from-cyan-400 to-transparent" />
             <span className="text-cyan-400 text-xs font-medium px-2 py-1 bg-cyan-500/20 rounded">SURFACE</span>
           </div>
         </div>
 
-        {/* Center - Iceberg Image */}
-        <div className="col-span-1 flex items-center justify-center">
+        {/* Center - Iceberg Image - hidden on mobile */}
+        <div className="hidden lg:flex col-span-1 items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             <img
               src="/images/iceberg.png"
@@ -255,41 +255,48 @@ function SlideTwo() {
         </div>
 
         {/* Right Labels - Below the Line */}
-        <div className="col-span-2 flex flex-col justify-end pb-4">
+        <div className="lg:col-span-2 flex flex-col justify-start lg:justify-end pb-2 sm:pb-4">
           {/* Water Line Indicator */}
-          <div className="flex items-center gap-2 mb-4 pr-4">
+          <div className="hidden lg:flex items-center gap-2 mb-4 pr-4">
             <span className="text-emerald-400 text-xs font-medium px-2 py-1 bg-emerald-500/20 rounded">UNTAPPED</span>
             <div className="flex-1 h-px bg-gradient-to-l from-emerald-400 to-transparent" />
           </div>
 
-          <div className="bg-emerald-500/20 backdrop-blur border border-emerald-400/30 rounded-xl p-4">
-            <h3 className="text-emerald-300 font-semibold mb-2 flex items-center gap-2">
+          {/* Mobile divider */}
+          <div className="flex lg:hidden items-center gap-2 my-3">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+            <span className="text-emerald-400 text-xs font-medium px-2 py-1 bg-emerald-500/20 rounded">UNTAPPED</span>
+            <div className="flex-1 h-px bg-gradient-to-r from-emerald-400 via-emerald-400 to-transparent" />
+          </div>
+
+          <div className="bg-emerald-500/20 backdrop-blur border border-emerald-400/30 rounded-xl p-3 sm:p-4">
+            <h3 className="text-emerald-300 font-semibold mb-2 flex items-center gap-2 text-sm sm:text-base">
               <Sparkles className="w-4 h-4 text-emerald-400" />
               What's Actually Possible
             </h3>
-            <ul className="space-y-1.5 text-white/80 text-sm">
+            <ul className="space-y-1 sm:space-y-1.5 text-white/80 text-xs sm:text-sm">
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Agentforce autonomous campaigns
               </li>
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Real-time journey orchestration
               </li>
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Predictive CLV & churn modeling
               </li>
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Cross-cloud identity resolution
               </li>
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Einstein-powered personalization
               </li>
               <li className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-emerald-400" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 flex-shrink-0" />
                 Zero-copy data federation
               </li>
             </ul>
@@ -298,8 +305,8 @@ function SlideTwo() {
       </div>
 
       {/* Bottom Message */}
-      <div className="relative z-10 mt-4 text-center">
-        <p className="text-white/60 text-sm">
+      <div className="relative z-10 mt-2 sm:mt-4 text-center">
+        <p className="text-white/60 text-xs sm:text-sm">
           <span className="text-emerald-400 font-semibold">Our role:</span> Surface what's below the waterline and chart a path to value
         </p>
       </div>
@@ -310,14 +317,14 @@ function SlideTwo() {
 // Slide 3: The Solution - "Everyone Wins"
 function SlideThree() {
   return (
-    <div className="h-full bg-gradient-to-br from-white via-slate-50 to-blue-50 p-8 flex flex-col">
+    <div className="min-h-full bg-gradient-to-br from-white via-slate-50 to-blue-50 p-4 sm:p-8 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">The Value Realization Framework</h1>
-          <p className="text-gray-500 text-lg">Stop buying more. Start getting more.</p>
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1">The Value Realization Framework</h1>
+          <p className="text-gray-500 text-sm sm:text-lg">Stop buying more. Start getting more.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-2">
           <div className="w-8 h-8 bg-merkle-blue rounded-lg flex items-center justify-center">
             <Target className="w-4 h-4 text-white" />
           </div>
@@ -326,42 +333,42 @@ function SlideThree() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 grid grid-cols-3 gap-6">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         {/* The Flow */}
-        <div className="col-span-3 mb-2">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#00A1E0] rounded-xl flex items-center justify-center">
+        <div className="sm:col-span-3 mb-2">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#00A1E0] rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-xs">SF</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Salesforce</p>
-                  <p className="text-gray-500 text-sm">Platform Potential</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Salesforce</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Platform Potential</p>
                 </div>
               </div>
 
-              <ArrowRight className="w-8 h-8 text-gray-300" />
+              <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300 rotate-90 sm:rotate-0" />
 
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-merkle-blue rounded-xl flex items-center justify-center">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-merkle-blue rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-xs">M</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Merkle</p>
-                  <p className="text-gray-500 text-sm">Strategy & Delivery</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Merkle</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Strategy & Delivery</p>
                 </div>
               </div>
 
-              <ArrowRight className="w-8 h-8 text-gray-300" />
+              <ArrowRight className="w-6 h-6 sm:w-8 sm:h-8 text-gray-300 rotate-90 sm:rotate-0" />
 
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-2 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">Client</p>
-                  <p className="text-gray-500 text-sm">Outcomes & Value</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Client</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Outcomes & Value</p>
                 </div>
               </div>
             </div>
@@ -369,96 +376,96 @@ function SlideThree() {
         </div>
 
         {/* Stakeholder Cards */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-purple-600" />
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 sm:p-5 flex flex-col">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">CMO & Marketing</h3>
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">CMO & Marketing</h3>
           </div>
-          <ul className="space-y-2 flex-1">
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+          <ul className="space-y-1.5 sm:space-y-2 flex-1">
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Team looks like rockstars with measurable impact</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Unlock capabilities without asking for more budget</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Clear roadmap to advanced personalization</span>
             </li>
           </ul>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 hidden sm:block">
             <p className="text-xs text-gray-400 italic">"Finally, a partner who helps us use what we have."</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-blue-600" />
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 sm:p-5 flex flex-col">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">C-Suite & CFO</h3>
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">C-Suite & CFO</h3>
           </div>
-          <ul className="space-y-2 flex-1">
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+          <ul className="space-y-1.5 sm:space-y-2 flex-1">
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Visible ROI on existing Salesforce investment</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Phased approach with clear business outcomes</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Confidence that technology spend is justified</span>
             </li>
           </ul>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 hidden sm:block">
             <p className="text-xs text-gray-400 italic">"We're finally seeing returns on our platform investment."</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 flex flex-col">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
-              <Award className="w-5 h-5 text-cyan-600" />
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-3 sm:p-5 flex flex-col">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">Salesforce & Merkle</h3>
+            <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Salesforce & Merkle</h3>
           </div>
-          <ul className="space-y-2 flex-1">
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+          <ul className="space-y-1.5 sm:space-y-2 flex-1">
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Protected revenue & expansion opportunities</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Referenceable success stories</span>
             </li>
-            <li className="flex items-start gap-2 text-sm text-gray-600">
-              <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-xs sm:text-sm text-gray-600">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               <span>Ongoing delivery & strategic partnership</span>
             </li>
           </ul>
-          <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-100 hidden sm:block">
             <p className="text-xs text-gray-400 italic">"A partner that drives real value, not just implementations."</p>
           </div>
         </div>
       </div>
 
       {/* Footer CTA */}
-      <div className="mt-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue rounded-xl p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="w-6 h-6 text-white" />
+      <div className="mt-3 sm:mt-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" />
           <div>
-            <p className="text-white font-semibold">New Business Weapon</p>
-            <p className="text-white/80 text-sm">Find Salesforce customers who are tired of being sold more</p>
+            <p className="text-white font-semibold text-sm sm:text-base">New Business Weapon</p>
+            <p className="text-white/80 text-xs sm:text-sm">Find Salesforce customers who are tired of being sold more</p>
           </div>
         </div>
-        <div className="bg-white/20 px-4 py-2 rounded-lg">
-          <p className="text-white font-medium">Let's show them what's possible</p>
+        <div className="bg-white/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg">
+          <p className="text-white font-medium text-xs sm:text-sm">Let's show them what's possible</p>
         </div>
       </div>
     </div>

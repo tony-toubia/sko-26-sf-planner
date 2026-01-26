@@ -257,6 +257,13 @@ export interface MatrixFilters {
 // Order: complete > in-progress > immediately-relevant > near-future > not-ready > not-assessed
 export type CapabilityRelevance = 'complete' | 'in-progress' | 'immediately-relevant' | 'near-future' | 'not-ready' | 'not-assessed';
 
+// Industry-specific question variant
+export interface IndustryQuestionVariant {
+  question?: string; // Override the question text
+  options?: string[]; // Override the options
+  helpText?: string; // Override help text
+}
+
 // Assessment question for a capability
 export interface AssessmentQuestion {
   id: string;
@@ -265,6 +272,9 @@ export interface AssessmentQuestion {
   options?: string[];
   placeholder?: string;
   required?: boolean;
+  helpText?: string;
+  // Industry-specific overrides
+  industryVariants?: Partial<Record<IndustryType, IndustryQuestionVariant>>;
 }
 
 // Response to an assessment question
@@ -400,6 +410,8 @@ export interface TrackAssessmentQuestion {
   options?: string[];
   helpText?: string;
   required?: boolean;
+  // Industry-specific overrides
+  industryVariants?: Partial<Record<IndustryType, IndustryQuestionVariant>>;
 }
 
 // Cross-track dependency
