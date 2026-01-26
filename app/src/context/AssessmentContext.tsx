@@ -52,7 +52,7 @@ interface AssessmentContextValue {
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
   setMarketingFoundation: (foundation: MarketingFoundationType) => void;
-  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType, opportunityName?: string) => Promise<void>;
+  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string) => Promise<void>;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
   saveCapabilityAssessment: (
@@ -155,10 +155,10 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     });
   }, [isSupabaseAvailable]);
 
-  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType, opportunityName?: string) => {
+  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string) => {
     console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, isSupabaseAvailable });
 
-    // Set the marketing foundation state immediately
+    // Set the marketing foundation state immediately (can be null - will be set later in assessment)
     setMarketingFoundationState(foundation);
 
     // Try to create in Supabase first if available
@@ -185,7 +185,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           updatedAt: new Date(),
           assessments: {},
           isComplete: false,
-          marketingFoundation: foundation,
+          marketingFoundation: foundation ?? undefined,
         };
         console.log('[AssessmentContext] Using Supabase assessment ID:', newAssessment.id);
         setAssessment(newAssessment);
@@ -209,7 +209,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       updatedAt: new Date(),
       assessments: {},
       isComplete: false,
-      marketingFoundation: foundation,
+      marketingFoundation: foundation ?? undefined,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);

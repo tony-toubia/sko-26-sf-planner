@@ -101,7 +101,7 @@ export const assessmentService = {
   async createAssessment(
     clientName: string,
     industry: IndustryType,
-    marketingFoundation: MarketingFoundationType,
+    marketingFoundation: MarketingFoundationType | null,
     opportunityName?: string
   ): Promise<OpportunityAssessment | null> {
     if (!supabase) {

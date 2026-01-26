@@ -310,8 +310,59 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
         {/* Right Sidebar - show first on mobile */}
         <div className="space-y-4 order-1 lg:order-2">
+          {/* Marketing Foundation Selection - show first when not selected */}
+          {!marketingFoundation && (
+            <div className="bg-gradient-to-br from-merkle-blue to-salesforce-blue rounded-xl p-5 text-white">
+              <div className="flex items-center gap-2 mb-3">
+                <Database className="w-5 h-5" />
+                <span className="text-sm font-medium text-white/80">First Step</span>
+              </div>
+              <p className="text-lg font-semibold mb-4">Select Your Marketing Platform</p>
+              <p className="text-sm text-white/80 mb-4">
+                This determines which capabilities are available for your roadmap.
+              </p>
+              <div className="space-y-2">
+                {MARKETING_FOUNDATIONS.map((foundation) => (
+                  <button
+                    key={foundation.id}
+                    onClick={() => setMarketingFoundation(foundation.id as MarketingFoundationType)}
+                    className="w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg text-left transition-all border border-white/20"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        foundation.id === 'mc-advanced'
+                          ? 'bg-white/20'
+                          : 'bg-white/10'
+                      }`}>
+                        {foundation.id === 'mc-advanced' ? (
+                          <Database className="w-5 h-5 text-white" />
+                        ) : (
+                          <Mail className="w-5 h-5 text-white/80" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-white">
+                            {foundation.shortName}
+                          </span>
+                          {foundation.recommended && (
+                            <span className="text-[10px] bg-emerald-400/30 text-emerald-200 px-1.5 py-0.5 rounded font-medium">
+                              Recommended
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-white/70 mt-0.5">{foundation.description}</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-white/60" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Next Step Card */}
-          {nextRecommendation && !completionStats.isComplete && (
+          {marketingFoundation && nextRecommendation && !completionStats.isComplete && (
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <Pencil className="w-4 h-4" />
@@ -333,7 +384,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           )}
 
           {/* Completion Card */}
-          {completionStats.isComplete && (
+          {marketingFoundation && completionStats.isComplete && (
             <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2 className="w-5 h-5" />
