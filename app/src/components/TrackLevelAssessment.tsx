@@ -388,6 +388,7 @@ export function TrackLevelAssessment({
   const isJourneysTrack = trackId === 'journeys';
   const [step, setStep] = useState<AssessmentStep>('overview');
   const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus>(initialStatus);
+  const [notes, setNotes] = useState<string>('');
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
     const initial: Record<string, string | string[]> = {};
     for (const answer of initialAnswers) {
@@ -749,31 +750,126 @@ export function TrackLevelAssessment({
 
           {step === 'questions' && (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Tell us more</h3>
-                <p className="text-sm text-slate-500">
-                  These details help us understand your current situation and tailor recommendations.
-                </p>
-              </div>
+              {/* Different content based on status */}
+              {selectedStatus === 'complete' ? (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      Great! This level is operational.
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Since this capability is already in place, we don't need detailed discovery questions.
+                      Feel free to add any notes about how it's performing or optimization opportunities.
+                    </p>
+                  </div>
 
-              <div className="space-y-6">
-                {questions.map((question) => (
-                  <QuestionInput
-                    key={question.id}
-                    question={question}
-                    value={answers[question.id]}
-                    onChange={(value) => handleAnswerChange(question.id, value)}
-                    onMultiToggle={(option) => handleMultiSelectToggle(question.id, option)}
-                    colors={colors}
-                  />
-                ))}
-              </div>
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <span className="font-medium text-emerald-900">Status: Complete</span>
+                    </div>
+                    <p className="text-sm text-emerald-700">
+                      {trackLevel?.name} is fully implemented and operational.
+                    </p>
+                  </div>
 
-              {questions.length === 0 && (
-                <div className="text-center py-8 text-slate-500">
-                  <p>No additional questions for this level.</p>
-                  <p className="text-sm mt-1">Click Continue to proceed.</p>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Notes (optional)
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Any observations about current performance, optimization opportunities, or areas that could be enhanced..."
+                      className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                      rows={4}
+                    />
+                  </div>
+                </>
+              ) : selectedStatus === 'in-progress' ? (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                      Tell us about your progress
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Understanding where you are in the implementation helps us tailor recommendations.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="w-5 h-5 text-amber-600" />
+                      <span className="font-medium text-amber-900">Status: In Progress</span>
+                    </div>
+                    <p className="text-sm text-amber-700">
+                      Currently building or partially implementing {trackLevel?.name}.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      What's the current state? (optional)
+                    </label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Describe what's been completed, what's in flight, any blockers or dependencies..."
+                      className="w-full p-3 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+                      rows={4}
+                    />
+                  </div>
+
+                  {/* Show a subset of relevant questions for in-progress */}
+                  {questions.length > 0 && (
+                    <div className="pt-4 border-t border-slate-200">
+                      <p className="text-sm text-slate-500 mb-4">
+                        Optional: Answer any questions that help clarify your current situation.
+                      </p>
+                      <div className="space-y-6">
+                        {questions.slice(0, 2).map((question) => (
+                          <QuestionInput
+                            key={question.id}
+                            question={{ ...question, required: false }}
+                            value={answers[question.id]}
+                            onChange={(value) => handleAnswerChange(question.id, value)}
+                            onMultiToggle={(option) => handleMultiSelectToggle(question.id, option)}
+                            colors={colors}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">Tell us more</h3>
+                    <p className="text-sm text-slate-500">
+                      These details help us understand your current situation and recommend the right approach.
+                    </p>
+                  </div>
+
+                  <div className="space-y-6">
+                    {questions.map((question) => (
+                      <QuestionInput
+                        key={question.id}
+                        question={question}
+                        value={answers[question.id]}
+                        onChange={(value) => handleAnswerChange(question.id, value)}
+                        onMultiToggle={(option) => handleMultiSelectToggle(question.id, option)}
+                        colors={colors}
+                      />
+                    ))}
+                  </div>
+
+                  {questions.length === 0 && (
+                    <div className="text-center py-8 text-slate-500">
+                      <p>No additional questions for this level.</p>
+                      <p className="text-sm mt-1">Click Continue to proceed.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -799,7 +895,14 @@ export function TrackLevelAssessment({
                 </p>
               </div>
 
-              {Object.keys(answers).length > 0 && (
+              {notes && (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-slate-700">Notes:</h4>
+                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{notes}</p>
+                </div>
+              )}
+
+              {Object.keys(answers).length > 0 && selectedStatus === 'not-started' && (
                 <div className="space-y-3">
                   <h4 className="font-medium text-slate-700">Your responses:</h4>
                   {questions.map((q) => {
@@ -856,11 +959,11 @@ export function TrackLevelAssessment({
                 handleComplete();
               }
             }}
-            disabled={step === 'questions' && !allRequiredAnswered && questions.length > 0}
+            disabled={step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0}
             className={`
               flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all
               ${
-                step === 'questions' && !allRequiredAnswered && questions.length > 0
+                step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : `bg-gradient-to-r ${colors.gradient} text-white hover:opacity-90`
               }
