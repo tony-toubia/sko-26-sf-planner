@@ -8,6 +8,10 @@ import type {
   GeneratedPlan,
   IndustryType,
   MarketingFoundationType,
+  TrackId,
+  TrackLevel,
+  TrackLevelStatus,
+  TrackLevelAssessment,
 } from '../types';
 import { generatePlan } from '../utils/planGenerator';
 import { INDUSTRIES } from '../data/industries';
@@ -39,6 +43,16 @@ interface AssessmentContextValue {
   clearGeneratedPlan: () => void;
   markComplete: () => void;
   resetAssessment: () => void;
+
+  // Track-based assessment
+  saveTrackLevelAssessment: (
+    trackId: TrackId,
+    level: TrackLevel,
+    status: TrackLevelStatus,
+    answers: AssessmentAnswer[],
+    notes?: string
+  ) => void;
+  getTrackLevelAssessment: (trackId: TrackId, level: TrackLevel) => TrackLevelAssessment | undefined;
 
   // Computed values
   assessedCount: number;
@@ -277,6 +291,50 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     setMarketingFoundationState(null);
   }, []);
 
+  // Track-based assessment methods
+  const saveTrackLevelAssessment = useCallback(
+    (
+      trackId: TrackId,
+      level: TrackLevel,
+      status: TrackLevelStatus,
+      answers: AssessmentAnswer[],
+      notes?: string
+    ) => {
+      setAssessment((prev) => {
+        if (!prev) return prev;
+
+        const key = `${trackId}-${level}`;
+        const trackAssessments = prev.trackAssessments || {};
+
+        return {
+          ...prev,
+          updatedAt: new Date(),
+          trackAssessments: {
+            ...trackAssessments,
+            [key]: {
+              trackId,
+              level,
+              status,
+              answers,
+              notes,
+              assessedAt: new Date(),
+            },
+          },
+        };
+      });
+    },
+    []
+  );
+
+  const getTrackLevelAssessment = useCallback(
+    (trackId: TrackId, level: TrackLevel): TrackLevelAssessment | undefined => {
+      if (!assessment?.trackAssessments) return undefined;
+      const key = `${trackId}-${level}`;
+      return assessment.trackAssessments[key];
+    },
+    [assessment]
+  );
+
   // Computed values
   const assessedCount = assessment ? Object.keys(assessment.assessments).length : 0;
   const relevantCount = assessment
@@ -304,6 +362,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     clearGeneratedPlan,
     markComplete,
     resetAssessment,
+    saveTrackLevelAssessment,
+    getTrackLevelAssessment,
     assessedCount,
     relevantCount,
     totalCapabilities,

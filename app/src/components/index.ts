@@ -15,3 +15,7 @@ export { PlanOutput } from './PlanOutput';
 export { ValueRealizationSlides } from './ValueRealizationSlides';
 export { ChannelRoleGuide } from './ChannelRoleGuide';
 export { ConsolidatedQuestionnaire } from './ConsolidatedQuestionnaire';
+export { TrackProgress } from './TrackProgress';
+export { TrackLevelAssessment } from './TrackLevelAssessment';
+export { TrackAssessmentView } from './TrackAssessmentView';
+export { AssessmentView } from './AssessmentView';

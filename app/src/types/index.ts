@@ -296,6 +296,8 @@ export interface OpportunityAssessment {
   generatedPlan?: GeneratedPlan;
   // NEW: Marketing foundation choice
   marketingFoundation?: MarketingFoundationType;
+  // NEW: Track-based assessments
+  trackAssessments?: Record<string, TrackLevelAssessment>;
 }
 
 // Global assessment inputs - collected before/after capability assessments
@@ -362,6 +364,79 @@ export interface RecommendedOffering {
   sizing?: 'S' | 'M' | 'L' | 'custom';
   rationale: string;
   estimateRange?: string;
+}
+
+// ============================================================================
+// TRACK-BASED MATURITY MODEL
+// ============================================================================
+
+// Track identifiers
+export type TrackId = 'data-identity' | 'journeys' | 'content-channels' | 'intelligence';
+
+// Track level (1-3)
+export type TrackLevel = 1 | 2 | 3;
+
+// Track level status
+export type TrackLevelStatus = 'not-started' | 'in-progress' | 'complete';
+
+// A single level within a track
+export interface TrackLevelDefinition {
+  level: TrackLevel;
+  name: string;
+  shortName: string;
+  description: string;
+  capabilities: string[]; // Capability IDs that belong to this level
+  assessmentQuestions: TrackAssessmentQuestion[];
+}
+
+// Assessment question for a track level
+export interface TrackAssessmentQuestion {
+  id: string;
+  question: string;
+  type: 'single-select' | 'multi-select' | 'text';
+  options?: string[];
+  helpText?: string;
+  required?: boolean;
+}
+
+// Cross-track dependency
+export interface TrackDependency {
+  fromTrack: TrackId;
+  fromLevel: TrackLevel;
+  toTrack: TrackId;
+  toLevel: TrackLevel;
+  type: 'required' | 'recommended';
+  description: string;
+}
+
+// Complete track definition
+export interface Track {
+  id: TrackId;
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+  color: string; // Tailwind color class
+  journeyType: JourneyType; // above-the-line or below-the-line
+  levels: TrackLevelDefinition[];
+}
+
+// Track assessment state for a single level
+export interface TrackLevelAssessment {
+  trackId: TrackId;
+  level: TrackLevel;
+  status: TrackLevelStatus;
+  answers: AssessmentAnswer[];
+  notes?: string;
+  assessedAt?: Date;
+}
+
+// Complete track assessment for an opportunity
+export interface TrackAssessmentState {
+  trackAssessments: Record<string, TrackLevelAssessment>; // key: `${trackId}-${level}`
+  currentTrackId?: TrackId;
+  currentLevel?: TrackLevel;
+  completedAt?: Date;
 }
 
 // Complete generated plan

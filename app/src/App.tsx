@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Header, MaturityMatrix, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage } from './components';
+import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage } from './components';
 import type { ViewType } from './components';
 import { AssessmentProvider, useAssessment } from './context/AssessmentContext';
 import { ALL_CAPABILITIES } from './data/capabilities';
@@ -32,7 +32,7 @@ function AppContent() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showLanding && <LandingPage onStartAssessment={handleStartAssessment} />}
-        {!showLanding && currentView === 'capabilities' && <MaturityMatrix />}
+        {!showLanding && currentView === 'capabilities' && <AssessmentView />}
         {!showLanding && currentView === 'assistant' && <AIAssistant />}
         {!showLanding && currentView === 'value' && <SalesforceValue />}
       </main>
