@@ -6,6 +6,7 @@ export { CapabilityCard } from './CapabilityCard';
 export { CapabilityModal } from './CapabilityModal';
 export { MaturityMatrix } from './MaturityMatrix';
 export { JourneyIceberg } from './JourneyIceberg';
+export { JourneyMaturityIceberg } from './JourneyMaturityIceberg';
 export { SalesforceValue } from './SalesforceValue';
 export { AIAssistant } from './AIAssistant';
 export { AssessmentModal } from './AssessmentModal';
