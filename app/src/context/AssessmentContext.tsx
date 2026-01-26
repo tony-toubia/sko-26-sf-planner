@@ -300,21 +300,22 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       answers: AssessmentAnswer[],
       notes?: string
     ) => {
+      const key = `${trackId}-${level}`;
+      console.log('[saveTrackLevelAssessment] Called with:', { trackId, level, status, key, answersCount: answers.length });
+
       setAssessment((prev) => {
-        const key = `${trackId}-${level}`;
+        console.log('[saveTrackLevelAssessment] Previous assessment:', prev);
 
         // If no assessment exists, create one
         if (!prev) {
-          const industryData = selectedIndustry ? INDUSTRIES[selectedIndustry] : null;
-          return {
+          console.log('[saveTrackLevelAssessment] Creating new assessment');
+          const newAssessment: OpportunityAssessment = {
             id: crypto.randomUUID(),
-            clientName: industryData?.name || 'Assessment',
-            industry: selectedIndustry || undefined,
+            clientName: 'Track Assessment',
             createdAt: new Date(),
             updatedAt: new Date(),
             assessments: {},
             isComplete: false,
-            marketingFoundation: marketingFoundation || undefined,
             trackAssessments: {
               [key]: {
                 trackId,
@@ -326,11 +327,12 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
               },
             },
           };
+          console.log('[saveTrackLevelAssessment] New assessment created:', newAssessment);
+          return newAssessment;
         }
 
         const trackAssessments = prev.trackAssessments || {};
-
-        return {
+        const updated = {
           ...prev,
           updatedAt: new Date(),
           trackAssessments: {
@@ -345,9 +347,11 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
             },
           },
         };
+        console.log('[saveTrackLevelAssessment] Updated assessment:', updated);
+        return updated;
       });
     },
-    [selectedIndustry, marketingFoundation]
+    []
   );
 
   const getTrackLevelAssessment = useCallback(

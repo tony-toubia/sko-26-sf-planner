@@ -389,7 +389,10 @@ export function TrackLevelAssessment({
   // All tracks start with overview, journeys adds a context step
   const isJourneysTrack = trackId === 'journeys';
   const [step, setStep] = useState<AssessmentStep>('overview');
-  const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus>(initialStatus);
+  // Only pre-select if there's an existing status that's not 'not-started'
+  const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus | null>(
+    initialStatus !== 'not-started' ? initialStatus : null
+  );
   const [notes, setNotes] = useState<string>('');
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
     const initial: Record<string, string | string[]> = {};
@@ -437,11 +440,19 @@ export function TrackLevelAssessment({
   };
 
   const handleComplete = () => {
+    // Default to 'not-started' if somehow no status was selected (shouldn't happen with UI validation)
+    const finalStatus = selectedStatus || 'not-started';
     const formattedAnswers: AssessmentAnswer[] = Object.entries(answers).map(([id, value]) => ({
       questionId: id,
       value,
     }));
-    onComplete(selectedStatus, formattedAnswers);
+    console.log('[TrackLevelAssessment] handleComplete called:', {
+      trackId,
+      level,
+      selectedStatus: finalStatus,
+      answersCount: formattedAnswers.length
+    });
+    onComplete(finalStatus, formattedAnswers);
   };
 
   if (!track || !trackLevel) {
@@ -681,7 +692,7 @@ export function TrackLevelAssessment({
                 {statusDefinitions.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setSelectedStatus(option.value)}
+                    onClick={() => setSelectedStatus(option.value as TrackLevelStatus)}
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                       selectedStatus === option.value
                         ? `${colors.border} bg-slate-50`
@@ -974,11 +985,15 @@ export function TrackLevelAssessment({
                 handleComplete();
               }
             }}
-            disabled={step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0}
+            disabled={
+              (step === 'status' && !selectedStatus) ||
+              (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
+            }
             className={`
               flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all
               ${
-                step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0
+                (step === 'status' && !selectedStatus) ||
+                (step === 'questions' && selectedStatus === 'not-started' && !allRequiredAnswered && questions.length > 0)
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   : `bg-gradient-to-r ${colors.gradient} text-white hover:opacity-90`
               }

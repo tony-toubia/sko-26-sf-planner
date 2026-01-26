@@ -126,8 +126,17 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   const handleAssessmentComplete = useCallback(
     (status: TrackLevelStatus, answers: AssessmentAnswer[]) => {
-      if (!assessingLevel) return;
+      console.log('[TrackAssessmentView] handleAssessmentComplete called:', {
+        assessingLevel,
+        status,
+        answersCount: answers.length
+      });
+      if (!assessingLevel) {
+        console.log('[TrackAssessmentView] No assessingLevel, returning early');
+        return;
+      }
 
+      console.log('[TrackAssessmentView] Calling saveTrackLevelAssessment');
       saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers);
       setAssessingLevel(null);
     },
@@ -139,12 +148,12 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Maturity Assessment</h1>
-          <p className="text-slate-500 mt-1">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900">Maturity Assessment</h1>
+          <p className="text-sm md:text-base text-slate-500 mt-1">
             Assess your current state across four capability tracks
           </p>
         </div>
@@ -152,17 +161,17 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           {onSwitchToMatrix && (
             <button
               onClick={onSwitchToMatrix}
-              className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
             >
               <LayoutGrid className="w-4 h-4" />
-              <span className="text-sm font-medium">Matrix View</span>
+              <span className="text-sm font-medium hidden sm:inline">Matrix View</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {TRACKS.map((track) => {
           const Icon = TRACK_ICONS[track.id];
           const gradient = TRACK_GRADIENTS[track.id];
@@ -173,15 +182,15 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           return (
             <div
               key={track.id}
-              className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl border border-slate-200 p-3 md:p-4 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white`}>
-                  <Icon className="w-5 h-5" />
+              <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                <div className={`p-1.5 md:p-2 rounded-lg bg-gradient-to-br ${gradient} text-white`}>
+                  <Icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-sm">{track.shortName}</h3>
-                  <p className="text-xs text-slate-500">{completed}/3 complete</p>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-slate-900 text-xs md:text-sm truncate">{track.shortName}</h3>
+                  <p className="text-xs text-slate-500">{completed}/3</p>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -190,7 +199,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                   return (
                     <div
                       key={level.level}
-                      className={`flex-1 h-2 rounded-full ${
+                      className={`flex-1 h-1.5 md:h-2 rounded-full ${
                         status === 'complete'
                           ? `bg-gradient-to-r ${gradient}`
                           : status === 'in-progress'
@@ -207,9 +216,9 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Track Progress (2 cols) */}
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* Track Progress (2 cols on large screens) */}
+        <div className="lg:col-span-2 order-2 lg:order-1">
           <TrackProgress
             trackStatuses={trackStatuses}
             onLevelClick={handleLevelClick}
@@ -218,8 +227,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           />
         </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-4">
+        {/* Right Sidebar - show first on mobile */}
+        <div className="space-y-4 order-1 lg:order-2">
           {/* Next Step Card */}
           {nextRecommendation && !completionStats.isComplete && (
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">

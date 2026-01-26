@@ -160,16 +160,16 @@ export function TrackProgress({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Maturity Tracks</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="text-base md:text-lg font-semibold text-slate-900">Maturity Tracks</h2>
+          <p className="text-xs md:text-sm text-slate-500 mt-1">
             Progress through each track to build your marketing maturity
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-bold text-slate-900">{completionStats.percentage}%</div>
+        <div className="text-left sm:text-right">
+          <div className="text-xl md:text-2xl font-bold text-slate-900">{completionStats.percentage}%</div>
           <div className="text-xs text-slate-500">
             {completionStats.completed} of {completionStats.total} levels complete
           </div>
@@ -196,7 +196,7 @@ export function TrackProgress({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {track.levels.map((level, idx) => {
                   const status = getLevelStatus(track.id, level.level, trackStatuses);
                   const isBlocked = isLevelBlocked(track.id, level.level, trackStatuses);
@@ -222,7 +222,7 @@ export function TrackProgress({
                       >
                         <div
                           className={`
-                            rounded-lg p-3 border-2 transition-all
+                            rounded-lg p-2 md:p-3 border-2 transition-all
                             ${isCurrent ? 'ring-2 ring-offset-2 ring-slate-400' : ''}
                             ${
                               status === 'complete'
@@ -264,7 +264,7 @@ export function TrackProgress({
                       </button>
 
                       {idx < track.levels.length - 1 && (
-                        <ChevronRight className="w-4 h-4 text-slate-300 mx-1 flex-shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-slate-300 mx-1 flex-shrink-0 hidden sm:block" />
                       )}
                     </div>
                   );
@@ -276,7 +276,7 @@ export function TrackProgress({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
+      <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-slate-500" />
           <span>Complete</span>
