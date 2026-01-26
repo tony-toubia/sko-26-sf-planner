@@ -56,7 +56,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-merkle-blue/10 rounded-full mb-6">
             <Sparkles className="w-4 h-4 text-merkle-blue" />
-            <span className="text-sm font-medium text-merkle-blue">Merkle M&P Maturity Navigator</span>
+            <span className="text-sm font-medium text-merkle-blue">SF Value Realization Navigator</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">

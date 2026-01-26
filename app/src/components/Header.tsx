@@ -33,7 +33,7 @@ export function Header({ currentView, onViewChange, onShowSlides, showLanding, o
               <Mail className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-semibold text-slate-900 hidden sm:block">
-              M&P Navigator
+              SF Value Realization Navigator
             </span>
           </button>
 
