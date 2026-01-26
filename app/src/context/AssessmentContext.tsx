@@ -301,9 +301,33 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       notes?: string
     ) => {
       setAssessment((prev) => {
-        if (!prev) return prev;
-
         const key = `${trackId}-${level}`;
+
+        // If no assessment exists, create one
+        if (!prev) {
+          const industryData = selectedIndustry ? INDUSTRIES[selectedIndustry] : null;
+          return {
+            id: crypto.randomUUID(),
+            clientName: industryData?.name || 'Assessment',
+            industry: selectedIndustry || undefined,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            assessments: {},
+            isComplete: false,
+            marketingFoundation: marketingFoundation || undefined,
+            trackAssessments: {
+              [key]: {
+                trackId,
+                level,
+                status,
+                answers,
+                notes,
+                assessedAt: new Date(),
+              },
+            },
+          };
+        }
+
         const trackAssessments = prev.trackAssessments || {};
 
         return {
@@ -323,7 +347,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
         };
       });
     },
-    []
+    [selectedIndustry, marketingFoundation]
   );
 
   const getTrackLevelAssessment = useCallback(
