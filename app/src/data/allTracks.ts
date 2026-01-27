@@ -108,19 +108,52 @@ export function canStartLevel(
 
 /**
  * Get assessment order (which levels should be done first)
+ * This respects the dependency structure of the M&P maturity framework
  */
 export function getAssessmentOrder(disciplines: DisciplineType[]): string[] {
   const order: string[] = [];
   const tracks = getTracksForDisciplines(disciplines);
 
-  // Simple ordering: Level 1 of all tracks, then Level 2, then Level 3
-  for (let level = 1; level <= 3; level++) {
-    for (const track of tracks) {
-      if (track.levels.some((l: any) => l.level === level)) {
-        order.push(`${track.id}-${level}`);
+  // For M&P discipline, use the proper dependency-based ordering
+  const hasMPDiscipline = disciplines.includes('messaging-personalization');
+  const hasLoyaltyDiscipline = disciplines.includes('loyalty');
+
+  if (hasMPDiscipline) {
+    // M&P Maturity Framework order (respects dependencies):
+    // Phase 1: Data L1 (foundation for everything)
+    order.push('data-identity-1');
+
+    // Phase 1-2: Journeys L1, Content L1, Intelligence L1 (all require Data L1)
+    order.push('journeys-1');
+    order.push('content-channels-1');
+    order.push('intelligence-1');
+
+    // Phase 2-3: Data L2, then levels that depend on it
+    order.push('data-identity-2');
+    order.push('journeys-2');  // Requires Data L2
+    order.push('content-channels-2');  // Can start after Content L1
+    order.push('intelligence-2');
+
+    // Phase 3-4: Advanced capabilities
+    order.push('data-identity-3');
+    order.push('journeys-3');
+    order.push('content-channels-3');
+    order.push('intelligence-3');  // Requires Data L2
+  }
+
+  if (hasLoyaltyDiscipline) {
+    // Loyalty tracks - simple level-based progression
+    const loyaltyTracks = tracks.filter(t => t.discipline === 'loyalty');
+    for (let level = 1; level <= 3; level++) {
+      for (const track of loyaltyTracks) {
+        if (track.levels.some((l: any) => l.level === level)) {
+          order.push(`${track.id}-${level}`);
+        }
       }
     }
   }
+
+  // Future: Add Commerce and Service ordering here as they're implemented
 
   return order;
 }
