@@ -139,7 +139,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   // Get next recommended action - find next level NOT YET ASSESSED
   const nextRecommendation = useMemo(() => {
-    const order = getAssessmentOrder();
+    const disciplines = assessment?.disciplines || ['messaging-personalization'];
+    const order = getAssessmentOrder(disciplines);
 
     // First, check Data L1 (always first) - if not assessed yet
     if (!assessedLevels.has('data-identity-1')) {
@@ -160,27 +161,27 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     );
 
     // Then look for the next level that hasn't been assessed yet
-    for (const trackId of order) {
-      for (let level = 1; level <= 3; level++) {
-        const key = `${trackId}-${level}`;
-        if (assessedLevels.has(key)) continue; // Skip already assessed
+    for (const key of order) {
+      if (assessedLevels.has(key)) continue; // Skip already assessed
 
-        const { canStart } = canStartLevel(trackId, level as TrackLevel, matureSet);
-        if (canStart) {
-          const track = getTrackById(trackId);
-          const trackLevel = track?.levels.find((l) => l.level === level);
-          return {
-            trackId,
-            level: level as TrackLevel,
-            message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
-            isFirstAssessment: false,
-          };
-        }
+      const [trackId, levelStr] = key.split('-');
+      const level = parseInt(levelStr);
+
+      const canStart = canStartLevel(trackId, level as TrackLevel, matureSet);
+      if (canStart) {
+        const track = getTrackById(trackId, disciplines);
+        const trackLevel = track?.levels.find((l: any) => l.level === level);
+        return {
+          trackId: trackId as TrackId,
+          level: level as TrackLevel,
+          message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
+          isFirstAssessment: false,
+        };
       }
     }
 
     return null;
-  }, [trackStatuses, assessedLevels]);
+  }, [trackStatuses, assessedLevels, assessment?.disciplines]);
 
   const handleLevelClick = useCallback((trackId: TrackId, level: TrackLevel) => {
     setAssessingLevel({ trackId, level });
@@ -188,7 +189,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   // Get the next recommended level to assess
   const getNextLevelToAssess = useCallback((): { trackId: TrackId; level: TrackLevel } | null => {
-    const order = getAssessmentOrder();
+    const disciplines = assessment?.disciplines || ['messaging-personalization'];
+    const order = getAssessmentOrder(disciplines);
 
     // For dependency checking, we need to look at which levels have "complete" maturity
     const matureSet = new Set(
@@ -204,20 +206,20 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     }
 
     // Find the next unassessed level
-    for (const trackId of order) {
-      for (let level = 1; level <= 3; level++) {
-        const key = `${trackId}-${level}`;
-        if (updatedAssessed.has(key)) continue; // Skip already assessed
+    for (const key of order) {
+      if (updatedAssessed.has(key)) continue; // Skip already assessed
 
-        const { canStart } = canStartLevel(trackId, level as TrackLevel, matureSet);
-        if (canStart) {
-          return { trackId, level: level as TrackLevel };
-        }
+      const [trackId, levelStr] = key.split('-');
+      const level = parseInt(levelStr);
+
+      const canStart = canStartLevel(trackId, level as TrackLevel, matureSet);
+      if (canStart) {
+        return { trackId: trackId as TrackId, level: level as TrackLevel };
       }
     }
 
     return null;
-  }, [trackStatuses, assessedLevels, assessingLevel]);
+  }, [trackStatuses, assessedLevels, assessingLevel, assessment?.disciplines]);
 
   const handleAssessmentComplete = useCallback(
     (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => {
