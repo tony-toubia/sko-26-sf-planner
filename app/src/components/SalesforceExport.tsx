@@ -38,6 +38,24 @@ interface SalesforceOpportunity {
   priority: 'Critical' | 'High' | 'Medium' | 'Low';
 }
 
+// Sales funnel stages
+const SALES_FUNNEL_STAGES = [
+  '0 Unqualified',
+  '1 Qualified',
+  '2 Proposal',
+  '3 Pitch',
+  '4 Negotiate',
+  '5 Contract',
+  '6 Closed',
+] as const;
+
+// Get default opportunity stage
+// All opportunities from assessment default to "1 Qualified"
+// since the assessment process qualifies the opportunity
+function getDefaultOpportunityStage(): string {
+  return SALES_FUNNEL_STAGES[1]; // "1 Qualified"
+}
+
 // Estimate phase close dates
 function estimateCloseDate(phaseNumber: number): string {
   const today = new Date();
@@ -73,7 +91,7 @@ function generateOpportunities(plan: GeneratedPlan, assessment?: OpportunityAsse
       name: `${clientName} - ${phase.name}`,
       accountName: clientName,
       industry: industry,
-      stage: phase.phaseNumber === 1 ? 'Qualification' : 'Prospecting',
+      stage: getDefaultOpportunityStage(),
       amount: baseAmount.toLocaleString(),
       closeDate: estimateCloseDate(phase.phaseNumber),
       description: `${phase.description}\n\nKey Milestones:\n${phase.keyMilestones.map(m => `• ${m}`).join('\n')}`,
