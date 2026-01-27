@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage, PasswordGate } from './components';
+import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage, PasswordGate, OpportunityPipeline } from './components';
 import type { ViewType } from './components';
 import { AssessmentProvider, useAssessment } from './context/AssessmentContext';
 import { ALL_CAPABILITIES } from './data/capabilities';
@@ -12,8 +12,11 @@ function AppContent() {
 
   const { isAssessmentMode } = useAssessment();
 
+  // Check if we're on the pipeline route
+  const isPipelineRoute = window.location.pathname === '/pipeline';
+
   // Show landing page if user hasn't started an assessment
-  const showLanding = !hasStartedAssessment && !isAssessmentMode;
+  const showLanding = !hasStartedAssessment && !isAssessmentMode && !isPipelineRoute;
 
   const handleStartAssessment = () => {
     setHasStartedAssessment(true);
@@ -26,6 +29,15 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView, showLanding]);
+
+  // Show pipeline page if on pipeline route
+  if (isPipelineRoute) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <OpportunityPipeline />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

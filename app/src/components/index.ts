@@ -23,3 +23,4 @@ export { TrackProgress } from './TrackProgress';
 export { TrackLevelAssessment } from './TrackLevelAssessment';
 export { TrackAssessmentView } from './TrackAssessmentView';
 export { AssessmentView } from './AssessmentView';
+export { OpportunityPipeline } from './OpportunityPipeline';
