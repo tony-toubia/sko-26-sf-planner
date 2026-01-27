@@ -186,7 +186,11 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     for (const key of order) {
       if (assessedLevels.has(key)) continue; // Skip already assessed
 
-      const [trackId, levelStr] = key.split('-');
+      // Parse track-level key - handle multi-hyphen track IDs like "content-channels"
+      // Format: "track-id-level" where level is always the last segment
+      const lastDashIndex = key.lastIndexOf('-');
+      const trackId = key.substring(0, lastDashIndex);
+      const levelStr = key.substring(lastDashIndex + 1);
       const level = parseInt(levelStr);
 
       const track = getTrackById(trackId, disciplines);
@@ -228,10 +232,14 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
         continue; // Skip already assessed
       }
 
-      const [trackId, levelStr] = key.split('-');
+      // Parse track-level key - handle multi-hyphen track IDs like "content-channels"
+      // Format: "track-id-level" where level is always the last segment
+      const lastDashIndex = key.lastIndexOf('-');
+      const trackId = key.substring(0, lastDashIndex);
+      const levelStr = key.substring(lastDashIndex + 1);
       const level = parseInt(levelStr);
 
-      console.log('[getNextLevelToAssess] Next level to assess:', key);
+      console.log('[getNextLevelToAssess] Next level to assess:', key, '-> trackId:', trackId, 'level:', level);
       return { trackId: trackId as TrackId, level: level as TrackLevel };
     }
 
