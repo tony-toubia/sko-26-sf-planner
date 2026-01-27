@@ -10,14 +10,12 @@ export interface MaturityStage {
 }
 
 // Disciplines/Clouds that can have maturity matrices
-// Now supporting both Messaging & Personalization and Loyalty
-export type DisciplineType = 'messaging-personalization' | 'loyalty';
+// Now supporting M&P (others coming soon)
+export type DisciplineType = 'messaging-personalization' | 'loyalty' | 'commerce' | 'service';
 
 // Future disciplines (not yet implemented)
 export type FutureDisciplineType =
   | 'b2b'
-  | 'commerce'
-  | 'service'
   | 'data-cloud';
 
 export interface Discipline {

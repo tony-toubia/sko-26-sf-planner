@@ -254,21 +254,25 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => {
       if (!assessingLevel) return;
 
+      // Save the assessment FIRST
       saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers);
 
-      if (action === 'continue') {
-        // Find and navigate to the next level
-        const nextLevel = getNextLevelToAssess();
-        if (nextLevel) {
-          setAssessingLevel(nextLevel);
+      // Use a small delay to ensure state updates propagate
+      setTimeout(() => {
+        if (action === 'continue') {
+          // Find and navigate to the next level
+          const nextLevel = getNextLevelToAssess();
+          if (nextLevel) {
+            setAssessingLevel(nextLevel);
+          } else {
+            // All levels assessed
+            setAssessingLevel(null);
+          }
         } else {
-          // All levels assessed
+          // Exit back to the overview
           setAssessingLevel(null);
         }
-      } else {
-        // Exit back to the overview
-        setAssessingLevel(null);
-      }
+      }, 50);
     },
     [assessingLevel, saveTrackLevelAssessment, getNextLevelToAssess]
   );

@@ -58,7 +58,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
   },
 ];
 
-// Currently focused on M&P and Loyalty - other disciplines coming soon
+// Currently focused on M&P - other disciplines coming soon
 export const DISCIPLINES: Discipline[] = [
   {
     id: 'messaging-personalization',
@@ -79,7 +79,27 @@ export const DISCIPLINES: Discipline[] = [
     icon: 'Award',
     salesforceCloud: 'Loyalty Management',
     color: '#7C3AED',
-    available: true,
+    available: false, // Locked for now
+  },
+  {
+    id: 'commerce',
+    name: 'Commerce',
+    shortName: 'Commerce',
+    description: 'E-commerce, order management, fulfillment, and unified commerce experiences.',
+    icon: 'ShoppingCart',
+    salesforceCloud: 'Commerce Cloud',
+    color: '#FF6B35',
+    available: false, // Locked for now
+  },
+  {
+    id: 'service',
+    name: 'Service',
+    shortName: 'Service',
+    description: 'Customer service, case management, knowledge base, and service automation.',
+    icon: 'Headphones',
+    salesforceCloud: 'Service Cloud',
+    color: '#0176D3',
+    available: false, // Locked for now
   },
 ];
 

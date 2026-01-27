@@ -9,6 +9,9 @@ import {
   FolderOpen,
   Mail,
   Award,
+  Lock,
+  ShoppingCart,
+  Headphones,
 } from 'lucide-react';
 import type { IndustryType, DisciplineType } from '../types';
 import { INDUSTRIES } from '../data/industries';
@@ -23,6 +26,8 @@ interface LandingPageProps {
 const disciplineIcons: Record<string, React.ElementType> = {
   Mail,
   Award,
+  ShoppingCart,
+  Headphones,
 };
 
 export function LandingPage({ onStartAssessment }: LandingPageProps) {
@@ -43,7 +48,10 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
     }
   };
 
-  const toggleDiscipline = (disciplineId: DisciplineType) => {
+  const toggleDiscipline = (disciplineId: DisciplineType, available: boolean) => {
+    // Don't allow toggling locked disciplines
+    if (!available) return;
+
     setSelectedDisciplines(prev => {
       if (prev.includes(disciplineId)) {
         // Don't allow deselecting if it's the only one selected
@@ -242,26 +250,42 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                 Select one or more clouds. You can assess multiple clouds to see adjacencies and cross-cloud opportunities.
               </p>
               <div className="space-y-2">
-                {DISCIPLINES.filter(d => d.available).map((discipline) => {
+                {DISCIPLINES.map((discipline) => {
                   const Icon = disciplineIcons[discipline.icon];
                   const isSelected = selectedDisciplines.includes(discipline.id);
+                  const isLocked = !discipline.available;
                   return (
                     <button
                       key={discipline.id}
-                      onClick={() => toggleDiscipline(discipline.id)}
+                      onClick={() => toggleDiscipline(discipline.id, discipline.available)}
+                      disabled={isLocked}
                       className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${
-                        isSelected
-                          ? 'border-merkle-blue bg-merkle-blue/5'
-                          : 'border-gray-200 hover:border-gray-300'
+                        isLocked
+                          ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                          : isSelected
+                            ? 'border-merkle-blue bg-merkle-blue/5'
+                            : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                        isSelected ? 'bg-merkle-blue text-white' : 'bg-gray-100 text-gray-600'
+                        isLocked
+                          ? 'bg-gray-200 text-gray-400'
+                          : isSelected
+                            ? 'bg-merkle-blue text-white'
+                            : 'bg-gray-100 text-gray-600'
                       }`}>
                         {Icon && <Icon className="w-5 h-5" />}
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-gray-900">{discipline.name}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900">{discipline.name}</span>
+                          {isLocked && (
+                            <span className="inline-flex items-center gap-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                              <Lock className="w-3 h-3" />
+                              Coming Soon
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {discipline.description}
                         </div>
@@ -269,7 +293,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                           {discipline.salesforceCloud}
                         </div>
                       </div>
-                      {isSelected && (
+                      {isSelected && !isLocked && (
                         <div className="flex-shrink-0">
                           <ClipboardCheck className="w-5 h-5 text-merkle-blue" />
                         </div>

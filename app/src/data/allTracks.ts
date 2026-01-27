@@ -11,10 +11,12 @@ import { LOYALTY_TRACKS, type LoyaltyTrackId, type LoyaltyTrackLevel } from './l
 export type UnifiedTrackId = TrackId | LoyaltyTrackId;
 
 // Map discipline types to their track arrays
-const DISCIPLINE_TRACKS_MAP = {
+const DISCIPLINE_TRACKS_MAP: Record<string, any[]> = {
   'messaging-personalization': MP_TRACKS,
   'loyalty': LOYALTY_TRACKS as any[], // Cast to match Track[] type
-} as const;
+  'commerce': [], // Coming soon
+  'service': [], // Coming soon
+};
 
 /**
  * Get all tracks for selected disciplines

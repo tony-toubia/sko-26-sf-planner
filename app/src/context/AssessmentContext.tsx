@@ -548,6 +548,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
               [key]: trackAssessmentData,
             },
           };
+          console.log('[saveTrackLevelAssessment] Created new assessment with track:', key);
           return newAssessment;
         }
 
@@ -560,6 +561,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
             [key]: trackAssessmentData,
           },
         };
+
+        console.log('[saveTrackLevelAssessment] Updated assessment, track keys:', Object.keys(updated.trackAssessments));
 
         // Persist to Supabase asynchronously
         if (isSupabaseAvailable && pendingSaveRef.current) {
