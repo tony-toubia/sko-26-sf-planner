@@ -696,6 +696,7 @@ export function MaturityMatrix() {
       {showPlanModal && generatedPlan && (
         <PlanOutput
           plan={generatedPlan}
+          assessment={assessment}
           onClose={closePlanModal}
         />
       )}

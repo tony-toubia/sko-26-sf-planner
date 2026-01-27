@@ -108,7 +108,7 @@ export function AssessmentView() {
         )}
 
         {/* Plan Output Modal */}
-        {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} onClose={closePlanModal} />}
+        {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} assessment={assessment} onClose={closePlanModal} />}
       </>
     );
   }
@@ -203,7 +203,7 @@ export function AssessmentView() {
       )}
 
       {/* Plan Output Modal */}
-      {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} onClose={closePlanModal} />}
+      {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} assessment={assessment} onClose={closePlanModal} />}
     </div>
   );
 }
