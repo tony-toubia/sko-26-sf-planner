@@ -12,6 +12,7 @@ import type {
   TrackLevel,
   TrackLevelStatus,
   TrackLevelAssessment,
+  DisciplineType,
 } from '../types';
 import { generatePlan } from '../utils/planGenerator';
 import { INDUSTRIES } from '../data/industries';
@@ -53,7 +54,7 @@ interface AssessmentContextValue {
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
   setMarketingFoundation: (foundation: MarketingFoundationType) => void;
-  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string) => Promise<void>;
+  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[]) => Promise<void>;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
   saveCapabilityAssessment: (
@@ -159,11 +160,14 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     });
   }, [isSupabaseAvailable]);
 
-  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string) => {
-    console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, isSupabaseAvailable });
+  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[]) => {
+    console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, disciplines, isSupabaseAvailable });
 
     // Set the marketing foundation state immediately (can be null - will be set later in assessment)
     setMarketingFoundationState(foundation);
+
+    // Default to M&P if no disciplines specified
+    const selectedDisciplines = disciplines && disciplines.length > 0 ? disciplines : ['messaging-personalization' as DisciplineType];
 
     // Try to create in Supabase first if available
     if (isSupabaseAvailable) {
@@ -190,6 +194,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           assessments: {},
           isComplete: false,
           marketingFoundation: foundation ?? undefined,
+          disciplines: selectedDisciplines,
         };
         console.log('[AssessmentContext] Using Supabase assessment ID:', newAssessment.id);
         setAssessment(newAssessment);
@@ -214,6 +219,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       assessments: {},
       isComplete: false,
       marketingFoundation: foundation ?? undefined,
+      disciplines: selectedDisciplines,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);

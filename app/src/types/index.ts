@@ -334,6 +334,8 @@ export interface OpportunityAssessment {
   trackAssessments?: Record<string, TrackLevelAssessment>;
   // NEW: User email for saving/retrieving assessments
   userEmail?: string;
+  // NEW: Selected disciplines for multi-discipline assessments
+  disciplines?: DisciplineType[];
 }
 
 // Global assessment inputs - collected before/after capability assessments

@@ -19,11 +19,15 @@ import {
   Loader2,
   Save,
   FileText,
+  Building2,
+  Users,
+  Gift,
+  TrendingUp,
 } from 'lucide-react';
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
 import { SaveAssessmentModal } from './SaveAssessmentModal';
-import { TRACKS, getAssessmentOrder, canStartLevel, getTrackById } from '../data/tracks';
+import { getTracksForDisciplines, getAssessmentOrder, canStartLevel, getTrackById } from '../data/allTracks';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer, MarketingFoundationType } from '../types';
@@ -33,22 +37,40 @@ interface TrackAssessmentViewProps {
   onGeneratePlan?: () => void;
 }
 
-const TRACK_ICONS: Record<TrackId, React.ElementType> = {
+const TRACK_ICONS: Record<string, React.ElementType> = {
+  // M&P tracks
   'data-identity': Database,
-  journeys: Route,
+  'journeys': Route,
   'content-channels': Share2,
-  intelligence: Brain,
+  'intelligence': Brain,
+  // Loyalty tracks
+  'program-foundation': Building2,
+  'member-engagement': Users,
+  'rewards-offers': Gift,
+  'loyalty-intelligence': TrendingUp,
 };
 
-const TRACK_GRADIENTS: Record<TrackId, string> = {
+const TRACK_GRADIENTS: Record<string, string> = {
+  // M&P tracks
   'data-identity': 'from-blue-500 to-blue-600',
-  journeys: 'from-violet-500 to-violet-600',
+  'journeys': 'from-violet-500 to-violet-600',
   'content-channels': 'from-emerald-500 to-emerald-600',
-  intelligence: 'from-amber-500 to-amber-600',
+  'intelligence': 'from-amber-500 to-amber-600',
+  // Loyalty tracks
+  'program-foundation': 'from-indigo-500 to-indigo-600',
+  'member-engagement': 'from-purple-500 to-purple-600',
+  'rewards-offers': 'from-pink-500 to-pink-600',
+  'loyalty-intelligence': 'from-rose-500 to-rose-600',
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
   const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
+
+  // Get tracks based on selected disciplines
+  const TRACKS = useMemo(() => {
+    const disciplines = assessment?.disciplines || ['messaging-personalization'];
+    return getTracksForDisciplines(disciplines);
+  }, [assessment?.disciplines]);
 
   // Track which level is being assessed
   const [assessingLevel, setAssessingLevel] = useState<{

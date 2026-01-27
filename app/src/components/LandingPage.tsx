@@ -7,9 +7,12 @@ import {
   TrendingUp,
   Zap,
   FolderOpen,
+  Mail,
+  Award,
 } from 'lucide-react';
-import type { IndustryType } from '../types';
+import type { IndustryType, DisciplineType } from '../types';
 import { INDUSTRIES } from '../data/industries';
+import { DISCIPLINES } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import { AssessmentListModal } from './AssessmentListModal';
 
@@ -17,21 +20,39 @@ interface LandingPageProps {
   onStartAssessment: () => void;
 }
 
+const disciplineIcons: Record<string, React.ElementType> = {
+  Mail,
+  Award,
+};
+
 export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [step, setStep] = useState<'intro' | 'client-info'>('intro');
   const [clientName, setClientName] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
+  const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineType[]>(['messaging-personalization']);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
   const { startAssessment, isSupabaseAvailable } = useAssessment();
 
   const handleBeginAssessment = async () => {
-    if (clientName.trim() && selectedIndustry) {
+    if (clientName.trim() && selectedIndustry && selectedDisciplines.length > 0) {
       // Wait for the assessment to be created (especially in Supabase)
       // Marketing foundation will be selected as first step in assessment
-      await startAssessment(clientName.trim(), selectedIndustry, null);
+      await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines);
       onStartAssessment();
     }
+  };
+
+  const toggleDiscipline = (disciplineId: DisciplineType) => {
+    setSelectedDisciplines(prev => {
+      if (prev.includes(disciplineId)) {
+        // Don't allow deselecting if it's the only one selected
+        if (prev.length === 1) return prev;
+        return prev.filter(d => d !== disciplineId);
+      } else {
+        return [...prev, disciplineId];
+      }
+    });
   };
 
   const industries = Object.values(INDUSTRIES);
@@ -211,6 +232,53 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                 ))}
               </div>
             </div>
+
+            {/* Discipline Selection */}
+            <div>
+              <label className="block font-medium text-gray-900 mb-2">
+                Salesforce Clouds to Assess <span className="text-red-500">*</span>
+              </label>
+              <p className="text-sm text-gray-500 mb-3">
+                Select one or more clouds. You can assess multiple clouds to see adjacencies and cross-cloud opportunities.
+              </p>
+              <div className="space-y-2">
+                {DISCIPLINES.filter(d => d.available).map((discipline) => {
+                  const Icon = disciplineIcons[discipline.icon];
+                  const isSelected = selectedDisciplines.includes(discipline.id);
+                  return (
+                    <button
+                      key={discipline.id}
+                      onClick={() => toggleDiscipline(discipline.id)}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${
+                        isSelected
+                          ? 'border-merkle-blue bg-merkle-blue/5'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                        isSelected ? 'bg-merkle-blue text-white' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {Icon && <Icon className="w-5 h-5" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{discipline.name}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {discipline.description}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">
+                          {discipline.salesforceCloud}
+                        </div>
+                      </div>
+                      {isSelected && (
+                        <div className="flex-shrink-0">
+                          <ClipboardCheck className="w-5 h-5 text-merkle-blue" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Footer */}
@@ -223,7 +291,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
             </button>
             <button
               onClick={handleBeginAssessment}
-              disabled={!clientName.trim() || !selectedIndustry}
+              disabled={!clientName.trim() || !selectedIndustry || selectedDisciplines.length === 0}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ClipboardCheck className="w-5 h-5" />
