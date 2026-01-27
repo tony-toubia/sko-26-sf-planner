@@ -513,8 +513,9 @@ function OpportunityGraph({
       {/* User circles */}
       {users.map(([userEmail, opps], index) => {
         const angle = (index / users.length) * 2 * Math.PI;
-        const x = 50 + 35 * Math.cos(angle);
-        const y = 50 + 35 * Math.sin(angle);
+        // Increase distance to give more space for opportunity bubbles (35 -> 38)
+        const x = 50 + 38 * Math.cos(angle);
+        const y = 50 + 38 * Math.sin(angle);
         const totalValue = opps.reduce((sum, opp) => sum + (opp.estimatedValue || 0), 0);
 
         // Extract first and last initials from email (firstname.lastname@domain.com)
@@ -554,11 +555,14 @@ function OpportunityGraph({
         const userAngle = (userIndex / users.length) * 2 * Math.PI;
 
         return opps.map((opp, oppIndex) => {
-          const oppAngle = userAngle + ((oppIndex - (opps.length - 1) / 2) * 0.3);
-          const distance = 25;
+          // Increase angular separation to prevent overlap (0.3 -> 0.5)
+          const oppAngle = userAngle + ((oppIndex - (opps.length - 1) / 2) * 0.5);
+          // Increase distance from center to give more room (25 -> 28)
+          const distance = 28;
           const x = 50 + distance * Math.cos(oppAngle);
           const y = 50 + distance * Math.sin(oppAngle);
-          const size = Math.min(Math.max((opp.estimatedValue || 0) / 5000, 40), 80);
+          // Reduce max size to prevent overlap (80 -> 70)
+          const size = Math.min(Math.max((opp.estimatedValue || 0) / 5000, 40), 70);
 
           // Different animation durations for variety
           const animations = ['float', 'float-slow', 'float-slower'];
@@ -574,8 +578,11 @@ function OpportunityGraph({
                 left: `${x}%`,
                 top: `${y}%`,
                 zIndex: 5,
-                // Add padding below to reserve space for label (prevents overlap)
-                paddingBottom: '20px',
+                // Increase padding to reserve more space for label (20px -> 28px)
+                paddingBottom: '28px',
+                // Add horizontal padding to prevent side-by-side label overlap
+                paddingLeft: '10px',
+                paddingRight: '10px',
               }}
             >
               <div
