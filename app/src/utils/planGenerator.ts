@@ -312,7 +312,7 @@ function buildPhasedPlan(
     );
 
     phases.push({
-      phaseNumber: 1,
+      phaseNumber: phases.length + 1, // Dynamic numbering
       name: 'Foundation',
       description: 'Establish the data foundation and platform infrastructure required for all downstream capabilities.',
       duration: calculatePhaseDuration(plannedCaps, globalInputs),
@@ -334,7 +334,7 @@ function buildPhasedPlan(
     );
 
     phases.push({
-      phaseNumber: 2,
+      phaseNumber: phases.length + 1, // Dynamic numbering
       name: 'Activation',
       description: 'Activate key marketing capabilities leveraging the established data foundation.',
       duration: calculatePhaseDuration(plannedCaps, globalInputs),
@@ -344,7 +344,7 @@ function buildPhasedPlan(
         'Campaign framework established',
         'Initial automation in production',
       ],
-      dependencies: phases.length > 0 ? ['Phase 1 Foundation complete'] : [],
+      dependencies: phases.length > 0 ? [`Phase ${phases.length} complete`] : [],
     });
   }
 
@@ -355,7 +355,7 @@ function buildPhasedPlan(
     );
 
     phases.push({
-      phaseNumber: 3,
+      phaseNumber: phases.length + 1, // Dynamic numbering
       name: 'Optimization',
       description: 'Optimize and expand capabilities to meet contemporary consumer expectations.',
       duration: calculatePhaseDuration(plannedCaps, globalInputs),
@@ -365,7 +365,7 @@ function buildPhasedPlan(
         'Cross-channel activation enabled',
         'Analytics and insights framework live',
       ],
-      dependencies: ['Phase 2 capabilities operational'],
+      dependencies: phases.length > 0 ? [`Phase ${phases.length} complete`] : [],
     });
   }
 
@@ -381,7 +381,7 @@ function buildPhasedPlan(
     );
 
     phases.push({
-      phaseNumber: 4,
+      phaseNumber: phases.length + 1, // Dynamic numbering
       name: 'Transformation',
       description: 'Advanced capabilities for competitive differentiation and future-proofing.',
       duration: calculatePhaseDuration(plannedCaps, globalInputs),
@@ -391,7 +391,7 @@ function buildPhasedPlan(
         'Advanced personalization active',
         'Full identity resolution operational',
       ],
-      dependencies: ['Core platform maturity achieved'],
+      dependencies: phases.length > 0 ? ['Core platform maturity achieved'] : [],
     });
   }
 
