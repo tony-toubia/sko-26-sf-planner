@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage, PasswordGate } from './components';
 import type { ViewType } from './components';
 import { AssessmentProvider, useAssessment } from './context/AssessmentContext';
@@ -18,7 +18,14 @@ function AppContent() {
   const handleStartAssessment = () => {
     setHasStartedAssessment(true);
     setCurrentView('capabilities');
+    // Scroll to top when starting assessment
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Scroll to top whenever view changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView, showLanding]);
 
   return (
     <div className="min-h-screen bg-gray-50">
