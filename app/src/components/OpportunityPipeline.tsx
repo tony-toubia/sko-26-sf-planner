@@ -16,6 +16,47 @@ import {
 import { supabase } from '../lib/supabase';
 import type { OpportunityAssessment } from '../types';
 
+// Keyframes for subtle floating animation
+const floatingKeyframes = `
+@keyframes float {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-8px);
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-6px);
+  }
+}
+
+@keyframes float-slower {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+}
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleId = 'floating-animation-styles';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = floatingKeyframes;
+    document.head.appendChild(style);
+  }
+}
+
 interface OpportunityData extends OpportunityAssessment {
   estimatedValue?: number;
   stage?: 'unqualified' | 'qualified' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
@@ -512,11 +553,17 @@ function OpportunityGraph({
           const y = 50 + distance * Math.sin(oppAngle);
           const size = Math.min(Math.max((opp.estimatedValue || 0) / 5000, 40), 80);
 
+          // Different animation durations for variety
+          const animations = ['float', 'float-slow', 'float-slower'];
+          const animationName = animations[oppIndex % 3];
+          const duration = 3 + (oppIndex % 3) * 0.5; // 3s, 3.5s, 4s
+          const delay = oppIndex * 0.2; // Stagger the animations
+
           return (
             <button
               key={opp.id}
               onClick={() => onSelectOpportunity(opp)}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all hover:scale-110 shadow-lg group"
+              className="absolute rounded-full transition-all hover:scale-110 shadow-lg group"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
@@ -524,13 +571,17 @@ function OpportunityGraph({
                 height: `${size}px`,
                 backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
                 zIndex: 5,
+                animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
+              <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
                 ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
               </div>
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                <div className="text-gray-700 text-xs font-medium text-center">
+              <div
+                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap pointer-events-none"
+                style={{ zIndex: 20 }}
+              >
+                <div className="text-gray-700 text-xs font-medium text-center bg-white/80 px-1 rounded">
                   {opp.clientName}
                 </div>
               </div>
