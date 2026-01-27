@@ -277,7 +277,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           const Icon = TRACK_ICONS[track.id];
           const gradient = TRACK_GRADIENTS[track.id];
           const assessedCount = track.levels.filter(
-            (l) => assessedLevels.has(`${track.id}-${l.level}`)
+            (l: any) => assessedLevels.has(`${track.id}-${l.level}`)
           ).length;
 
           return (
@@ -295,7 +295,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                 </div>
               </div>
               <div className="flex gap-1">
-                {track.levels.map((level) => {
+                {track.levels.map((level: any) => {
                   const key = `${track.id}-${level.level}`;
                   const isAssessed = assessedLevels.has(key);
                   const status = trackStatuses[key] || 'not-started';

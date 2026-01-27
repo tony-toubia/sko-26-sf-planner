@@ -93,7 +93,7 @@ export function canStartLevel(
 ): boolean {
   // For M&P tracks, use existing logic
   if (trackId in { 'data-identity': true, 'journeys': true, 'content-channels': true, 'intelligence': true }) {
-    return mpCanStartLevel(trackId as TrackId, level as TrackLevel, assessedLevels);
+    return mpCanStartLevel(trackId as TrackId, level as TrackLevel, assessedLevels).canStart;
   }
 
   // For Loyalty tracks, simplified logic (Level 1 always available, 2 requires 1, 3 requires 2)
