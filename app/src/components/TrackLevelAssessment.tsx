@@ -239,6 +239,15 @@ export function TrackLevelAssessment({
     [trackLevel, industry]
   );
 
+  // Get industry-specific description
+  const levelDescription = useMemo(() => {
+    if (!trackLevel) return '';
+    if (industry && trackLevel.descriptionVariants?.[industry as IndustryType]) {
+      return trackLevel.descriptionVariants[industry as IndustryType];
+    }
+    return trackLevel.description;
+  }, [trackLevel, industry]);
+
   // Show questions for "not-started" (Gap) and "in-progress" (Building) statuses
   const shouldShowQuestions = (selectedStatus === 'not-started' || selectedStatus === 'in-progress') && questions.length > 0;
   const requiredQuestions = questions.filter((q) => q.required);
@@ -351,7 +360,7 @@ export function TrackLevelAssessment({
           {activeTab === 'assess' && (
             <div className="p-4 sm:p-6 space-y-5">
               {/* Quick Description */}
-              <p className="text-sm text-slate-600">{trackLevel.description}</p>
+              <p className="text-sm text-slate-600">{levelDescription}</p>
 
               {/* Prerequisites Alert (if any) */}
               {requiredDeps.length > 0 && (
@@ -479,7 +488,7 @@ export function TrackLevelAssessment({
                 <h3 className="text-base font-semibold text-slate-900 mb-2">
                   About This Level
                 </h3>
-                <p className="text-sm text-slate-600">{trackLevel.description}</p>
+                <p className="text-sm text-slate-600">{levelDescription}</p>
               </div>
 
               {/* Journey Iceberg for Journeys Track */}

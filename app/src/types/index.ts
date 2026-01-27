@@ -398,6 +398,7 @@ export interface TrackLevelDefinition {
   name: string;
   shortName: string;
   description: string;
+  descriptionVariants?: Partial<Record<IndustryType, string>>; // Industry-specific descriptions
   capabilities: string[]; // Capability IDs that belong to this level
   assessmentQuestions: TrackAssessmentQuestion[];
 }

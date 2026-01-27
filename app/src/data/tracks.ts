@@ -75,6 +75,15 @@ export const TRACKS: Track[] = [
         name: 'Extended Integration',
         shortName: 'Integration',
         description: 'Integrate commerce, loyalty, and behavioral data to power personalization and purchase-driven journeys',
+        descriptionVariants: {
+          'retail-cpg-qsr': 'Integrate commerce, loyalty, and behavioral data to power personalization and purchase-driven journeys',
+          'financial-services': 'Integrate account, application, and behavioral data to power personalization and lifecycle journeys',
+          'healthcare-life-sciences': 'Integrate EHR, patient portal, and scheduling data to power care coordination and patient journeys',
+          'manufacturing': 'Integrate CRM, ERP, and partner portal data to power account-based marketing and service journeys',
+          'travel-hospitality': 'Integrate reservation, loyalty, and behavioral data to power personalization and guest journeys',
+          'media-entertainment': 'Integrate subscription, viewing, and behavioral data to power personalization and engagement journeys',
+          'technology': 'Integrate product usage, CRM, and behavioral data to power adoption and expansion journeys',
+        },
         capabilities: ['extend-data-integrations'],
         assessmentQuestions: [
           {
@@ -266,6 +275,15 @@ export const TRACKS: Track[] = [
         name: 'Subscriber Journeys',
         shortName: 'Subscriber',
         description: 'Deploy the foundational lifecycle journeys every consumer expects: welcome, birthday, and re-engagement',
+        descriptionVariants: {
+          'retail-cpg-qsr': 'Deploy the foundational journeys every consumer expects: welcome, birthday, and re-engagement',
+          'financial-services': 'Deploy foundational relationship journeys: welcome, account onboarding, and milestone recognition',
+          'healthcare-life-sciences': 'Deploy foundational patient journeys: welcome, new patient onboarding, and engagement reminders',
+          'manufacturing': 'Deploy foundational B2B journeys: welcome, partner onboarding, and relationship nurture',
+          'travel-hospitality': 'Deploy foundational guest journeys: welcome, loyalty enrollment, and milestone recognition',
+          'media-entertainment': 'Deploy foundational subscriber journeys: welcome, onboarding, and engagement reminders',
+          'technology': 'Deploy foundational user journeys: welcome, onboarding, and activation reminders',
+        },
         capabilities: ['baseline-subscriber-journeys'],
         assessmentQuestions: [
           {
@@ -313,6 +331,15 @@ export const TRACKS: Track[] = [
         name: 'Customer Lifecycle',
         shortName: 'Lifecycle',
         description: 'Build purchase-driven journeys: cart abandonment, post-purchase, replenishment, and win-back',
+        descriptionVariants: {
+          'retail-cpg-qsr': 'Build purchase-driven journeys: cart abandonment, post-purchase, replenishment, and win-back',
+          'financial-services': 'Build customer lifecycle journeys: application abandonment, onboarding completion, cross-sell, and reactivation',
+          'healthcare-life-sciences': 'Build patient lifecycle journeys: appointment reminders, medication adherence, post-visit follow-up, and wellness programs',
+          'manufacturing': 'Build B2B lifecycle journeys: lead nurture, quote follow-up, service reminders, and warranty renewal',
+          'travel-hospitality': 'Build guest lifecycle journeys: booking abandonment, pre-arrival, post-stay follow-up, and loyalty cultivation',
+          'media-entertainment': 'Build subscriber lifecycle journeys: trial conversion, engagement triggers, renewal reminders, and win-back',
+          'technology': 'Build customer lifecycle journeys: trial onboarding, product activation, renewal, and expansion triggers',
+        },
         capabilities: ['customer-lifecycle-journeys'],
         assessmentQuestions: [
           {
@@ -487,6 +514,15 @@ export const TRACKS: Track[] = [
         name: 'Insight-Driven Experiences',
         shortName: 'Insight-Driven',
         description: 'Build brand-unique experiences powered by predictive models and next-best-action decisioning',
+        descriptionVariants: {
+          'retail-cpg-qsr': 'Build brand-unique experiences powered by predictive models, next-best-product, and CLV-based decisioning',
+          'financial-services': 'Build differentiated experiences powered by predictive models, life-event triggers, and next-best-action',
+          'healthcare-life-sciences': 'Build patient-centric experiences powered by care pathway triggers, risk models, and personalized outreach',
+          'manufacturing': 'Build account-based experiences powered by predictive scoring, propensity models, and opportunity signals',
+          'travel-hospitality': 'Build memorable guest experiences powered by preference prediction, value-based offers, and journey optimization',
+          'media-entertainment': 'Build personalized experiences powered by content affinity, churn prediction, and engagement optimization',
+          'technology': 'Build product-led experiences powered by health scoring, expansion signals, and predictive engagement',
+        },
         capabilities: ['insight-driven-experiences'],
         assessmentQuestions: [
           {
