@@ -85,7 +85,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Unlock the Full Value of Your{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-merkle-blue to-salesforce-blue">
-              Marketing Cloud
+              Salesforce
             </span>{' '}
             Investment
           </h1>
