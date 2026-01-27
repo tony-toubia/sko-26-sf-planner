@@ -68,6 +68,8 @@ export const DISCIPLINES: Discipline[] = [
       'Email, SMS, push notifications, and personalized content delivery across channels.',
     icon: 'Mail',
     salesforceCloud: 'Marketing Cloud',
+    color: '#00A5B5',
+    available: true,
   },
   {
     id: 'loyalty',
@@ -76,6 +78,8 @@ export const DISCIPLINES: Discipline[] = [
     description: 'Customer loyalty programs, rewards, tier management, and retention strategies.',
     icon: 'Award',
     salesforceCloud: 'Loyalty Management',
+    color: '#7C3AED',
+    available: true,
   },
 ];
 
