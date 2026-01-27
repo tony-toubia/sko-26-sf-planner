@@ -389,8 +389,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
         {/* Right Sidebar - show first on mobile */}
         <div className="space-y-4 order-1 lg:order-2">
-          {/* Marketing Foundation Selection - show first when not selected */}
-          {!marketingFoundation && (
+          {/* Marketing Foundation Selection - show first when not selected AND on M&P tab */}
+          {!marketingFoundation && activeDiscipline === 'messaging-personalization' && (
             <div className="bg-gradient-to-br from-merkle-blue to-salesforce-blue rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <Database className="w-5 h-5" />
@@ -440,8 +440,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
             </div>
           )}
 
-          {/* Next Step Card */}
-          {marketingFoundation && nextRecommendation && !completionStats.isComplete && (
+          {/* Next Step Card - show if foundation selected (M&P) OR on Loyalty tab */}
+          {(marketingFoundation || activeDiscipline === 'loyalty') && nextRecommendation && !completionStats.isComplete && (
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <Pencil className="w-4 h-4" />
@@ -462,8 +462,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
             </div>
           )}
 
-          {/* Completion Card */}
-          {marketingFoundation && completionStats.isComplete && (
+          {/* Completion Card - show if foundation selected (M&P) OR on Loyalty tab */}
+          {(marketingFoundation || activeDiscipline === 'loyalty') && completionStats.isComplete && (
             <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-5 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2 className="w-5 h-5" />
