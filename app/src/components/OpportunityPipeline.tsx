@@ -513,9 +513,8 @@ function OpportunityGraph({
       {/* User circles */}
       {users.map(([userEmail, opps], index) => {
         const angle = (index / users.length) * 2 * Math.PI;
-        // Increase distance to give more space for opportunity bubbles (35 -> 38)
-        const x = 50 + 38 * Math.cos(angle);
-        const y = 50 + 38 * Math.sin(angle);
+        const x = 50 + 35 * Math.cos(angle);
+        const y = 50 + 35 * Math.sin(angle);
         const totalValue = opps.reduce((sum, opp) => sum + (opp.estimatedValue || 0), 0);
 
         // Extract first and last initials from email (firstname.lastname@domain.com)
@@ -555,14 +554,11 @@ function OpportunityGraph({
         const userAngle = (userIndex / users.length) * 2 * Math.PI;
 
         return opps.map((opp, oppIndex) => {
-          // Increase angular separation to prevent overlap (0.3 -> 0.5)
-          const oppAngle = userAngle + ((oppIndex - (opps.length - 1) / 2) * 0.5);
-          // Increase distance from center to give more room (25 -> 28)
-          const distance = 28;
+          const oppAngle = userAngle + ((oppIndex - (opps.length - 1) / 2) * 0.3);
+          const distance = 25;
           const x = 50 + distance * Math.cos(oppAngle);
           const y = 50 + distance * Math.sin(oppAngle);
-          // Reduce max size to prevent overlap (80 -> 70)
-          const size = Math.min(Math.max((opp.estimatedValue || 0) / 5000, 40), 70);
+          const size = Math.min(Math.max((opp.estimatedValue || 0) / 5000, 40), 80);
 
           // Different animation durations for variety
           const animations = ['float', 'float-slow', 'float-slower'];
@@ -571,49 +567,30 @@ function OpportunityGraph({
           const delay = oppIndex * 0.2; // Stagger the animations
 
           return (
-            <div
+            <button
               key={opp.id}
-              className="absolute transform -translate-x-1/2 -translate-y-1/2"
+              onClick={() => onSelectOpportunity(opp)}
+              className="absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all hover:scale-110 shadow-lg group"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
+                width: `${size}px`,
+                height: `${size}px`,
+                backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
                 zIndex: 5,
-                // Increase padding to reserve more space for label (20px -> 28px)
-                paddingBottom: '28px',
-                // Add horizontal padding to prevent side-by-side label overlap
-                paddingLeft: '10px',
-                paddingRight: '10px',
+                animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
               }}
             >
-              <div
-                className="relative"
-                style={{
-                  animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
-                }}
-              >
-                {/* Opportunity bubble */}
-                <button
-                  onClick={() => onSelectOpportunity(opp)}
-                  className="block mx-auto rounded-full transition-all hover:scale-110 shadow-lg"
-                  style={{
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
-                  }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
-                    ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
-                  </div>
-                </button>
-
-                {/* Client name label - positioned relative to bubble */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap pointer-events-none mt-1">
-                  <div className="text-gray-700 text-xs font-medium text-center bg-white/90 px-2 py-0.5 rounded shadow-sm">
-                    {opp.clientName}
-                  </div>
+              <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
+                ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
+              </div>
+              {/* Hover tooltip */}
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg">
+                  {opp.clientName}
                 </div>
               </div>
-            </div>
+            </button>
           );
         });
       })}
