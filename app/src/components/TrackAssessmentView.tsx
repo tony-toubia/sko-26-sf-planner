@@ -217,17 +217,25 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
       updatedAssessed.add(`${assessingLevel.trackId}-${assessingLevel.level}`);
     }
 
+    console.log('[getNextLevelToAssess] Full order:', order);
+    console.log('[getNextLevelToAssess] Already assessed:', Array.from(updatedAssessed));
+
     // During initial assessment, simply follow the predefined order
     // Don't check dependencies - the order itself respects dependencies
     for (const key of order) {
-      if (updatedAssessed.has(key)) continue; // Skip already assessed
+      if (updatedAssessed.has(key)) {
+        console.log('[getNextLevelToAssess] Skipping already assessed:', key);
+        continue; // Skip already assessed
+      }
 
       const [trackId, levelStr] = key.split('-');
       const level = parseInt(levelStr);
 
+      console.log('[getNextLevelToAssess] Next level to assess:', key);
       return { trackId: trackId as TrackId, level: level as TrackLevel };
     }
 
+    console.log('[getNextLevelToAssess] No more levels to assess');
     return null;
   }, [assessedLevels, assessingLevel, assessment?.disciplines]);
 
