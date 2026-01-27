@@ -325,6 +325,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
         {/* Track Progress (2 cols on large screens) */}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <TrackProgress
+            tracks={TRACKS}
             trackStatuses={trackStatuses}
             assessedLevels={assessedLevels}
             onLevelClick={handleLevelClick}

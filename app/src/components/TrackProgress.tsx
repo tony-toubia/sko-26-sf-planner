@@ -11,11 +11,16 @@ import {
   AlertCircle,
   ClipboardCheck,
   Pencil,
+  Building2,
+  Users,
+  Gift,
+  TrendingUp,
 } from 'lucide-react';
-import { TRACKS, getRequiredDependencies, getTrackById } from '../data/tracks';
+import { getRequiredDependencies as getMPRequiredDependencies, getTrackById as getMPTrackById } from '../data/tracks';
 import type { TrackId, TrackLevel, TrackLevelStatus } from '../types';
 
 interface TrackProgressProps {
+  tracks: any[]; // Array of tracks to display
   trackStatuses: Record<string, TrackLevelStatus>; // key: `${trackId}-${level}`
   assessedLevels: Set<string>; // Set of `${trackId}-${level}` keys that have been assessed
   onLevelClick?: (trackId: TrackId, level: TrackLevel) => void;
@@ -24,14 +29,21 @@ interface TrackProgressProps {
   compact?: boolean;
 }
 
-const TRACK_ICONS: Record<TrackId, React.ElementType> = {
+const TRACK_ICONS: Record<string, React.ElementType> = {
+  // M&P tracks
   'data-identity': Database,
   journeys: Route,
   'content-channels': Share2,
   intelligence: Brain,
+  // Loyalty tracks
+  'program-foundation': Building2,
+  'member-engagement': Users,
+  'rewards-offers': Gift,
+  'loyalty-intelligence': TrendingUp,
 };
 
-const TRACK_COLORS: Record<TrackId, { bg: string; border: string; text: string; fill: string }> = {
+const TRACK_COLORS: Record<string, { bg: string; border: string; text: string; fill: string }> = {
+  // M&P tracks
   'data-identity': {
     bg: 'bg-blue-50',
     border: 'border-blue-200',
@@ -56,22 +68,47 @@ const TRACK_COLORS: Record<TrackId, { bg: string; border: string; text: string; 
     text: 'text-amber-700',
     fill: 'bg-amber-500',
   },
+  // Loyalty tracks
+  'program-foundation': {
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    text: 'text-indigo-700',
+    fill: 'bg-indigo-500',
+  },
+  'member-engagement': {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-700',
+    fill: 'bg-purple-500',
+  },
+  'rewards-offers': {
+    bg: 'bg-pink-50',
+    border: 'border-pink-200',
+    text: 'text-pink-700',
+    fill: 'bg-pink-500',
+  },
+  'loyalty-intelligence': {
+    bg: 'bg-rose-50',
+    border: 'border-rose-200',
+    text: 'text-rose-700',
+    fill: 'bg-rose-500',
+  },
 };
 
 function getLevelStatus(
-  trackId: TrackId,
-  level: TrackLevel,
+  trackId: string,
+  level: number,
   trackStatuses: Record<string, TrackLevelStatus>
 ): TrackLevelStatus {
   return trackStatuses[`${trackId}-${level}`] || 'not-started';
 }
 
 function isLevelBlocked(
-  trackId: TrackId,
-  level: TrackLevel,
+  trackId: string,
+  level: number,
   trackStatuses: Record<string, TrackLevelStatus>
 ): boolean {
-  const requiredDeps = getRequiredDependencies(trackId, level);
+  const requiredDeps = getMPRequiredDependencies(trackId as TrackId, level as TrackLevel);
   for (const dep of requiredDeps) {
     const depStatus = getLevelStatus(dep.fromTrack, dep.fromLevel, trackStatuses);
     if (depStatus !== 'complete') {
@@ -82,15 +119,15 @@ function isLevelBlocked(
 }
 
 function getBlockingDependency(
-  trackId: TrackId,
-  level: TrackLevel,
+  trackId: string,
+  level: number,
   trackStatuses: Record<string, TrackLevelStatus>
 ): string | null {
-  const requiredDeps = getRequiredDependencies(trackId, level);
+  const requiredDeps = getMPRequiredDependencies(trackId as TrackId, level as TrackLevel);
   for (const dep of requiredDeps) {
     const depStatus = getLevelStatus(dep.fromTrack, dep.fromLevel, trackStatuses);
     if (depStatus !== 'complete') {
-      const depTrack = getTrackById(dep.fromTrack);
+      const depTrack = getMPTrackById(dep.fromTrack);
       const depLevel = depTrack?.levels.find((l) => l.level === dep.fromLevel);
       return `${depTrack?.shortName} L${dep.fromLevel}: ${depLevel?.shortName}`;
     }
@@ -99,6 +136,7 @@ function getBlockingDependency(
 }
 
 export function TrackProgress({
+  tracks,
   trackStatuses,
   assessedLevels,
   onLevelClick,
@@ -110,7 +148,7 @@ export function TrackProgress({
     let assessed = 0;
     let total = 0;
 
-    for (const track of TRACKS) {
+    for (const track of tracks) {
       for (const level of track.levels) {
         total++;
         const key = `${track.id}-${level.level}`;
@@ -119,7 +157,7 @@ export function TrackProgress({
     }
 
     return { assessed, total, percentage: Math.round((assessed / total) * 100) };
-  }, [assessedLevels]);
+  }, [tracks, assessedLevels]);
 
   if (compact) {
     return (
@@ -137,11 +175,11 @@ export function TrackProgress({
           />
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {TRACKS.map((track) => {
+          {tracks.map((track) => {
             const Icon = TRACK_ICONS[track.id];
             const colors = TRACK_COLORS[track.id];
             const levelsAssessed = track.levels.filter(
-              (l) => assessedLevels.has(`${track.id}-${l.level}`)
+              (l: any) => assessedLevels.has(`${track.id}-${l.level}`)
             ).length;
 
             return (
@@ -179,7 +217,7 @@ export function TrackProgress({
       </div>
 
       <div className="space-y-4">
-        {TRACKS.map((track) => {
+        {tracks.map((track) => {
           const Icon = TRACK_ICONS[track.id];
           const colors = TRACK_COLORS[track.id];
 
@@ -199,7 +237,7 @@ export function TrackProgress({
               </div>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                {track.levels.map((level, idx) => {
+                {track.levels.map((level: any, idx: number) => {
                   const key = `${track.id}-${level.level}`;
                   const status = getLevelStatus(track.id, level.level, trackStatuses);
                   const isAssessed = assessedLevels.has(key);
