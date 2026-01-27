@@ -62,17 +62,39 @@ export function OpportunityPipeline() {
     }
 
     try {
-      const { data, error } = await supabase
+      // First, get all assessments
+      const { data: assessments, error: assessmentsError } = await supabase
         .from('assessments')
         .select('*')
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (assessmentsError) throw assessmentsError;
+
+      // Then, get all track assessments for these assessments
+      const assessmentIds = (assessments || []).map((a: any) => a.id);
+      const { data: trackAssessments, error: tracksError } = await supabase
+        .from('track_assessments')
+        .select('*')
+        .in('assessment_id', assessmentIds);
+
+      if (tracksError) throw tracksError;
+
+      // Group track assessments by assessment_id
+      const tracksByAssessment = new Map<string, any[]>();
+      (trackAssessments || []).forEach((track: any) => {
+        if (!tracksByAssessment.has(track.assessment_id)) {
+          tracksByAssessment.set(track.assessment_id, []);
+        }
+        tracksByAssessment.get(track.assessment_id)!.push(track);
+      });
 
       // Transform and enrich data
-      const enrichedData: OpportunityData[] = (data || []).map((assessment: any) => {
-        // Estimate value based on track assessments (simplified)
-        const trackCount = Object.keys(assessment.track_assessments || {}).length;
+      const enrichedData: OpportunityData[] = (assessments || []).map((assessment: any) => {
+        // Get track assessments for this assessment
+        const tracks = tracksByAssessment.get(assessment.id) || [];
+        const trackCount = tracks.length;
+
+        // Estimate value based on track assessments
         const baseValue = trackCount * 25000; // $25K per assessed track level
         const estimatedValue = Math.round(baseValue * (0.8 + Math.random() * 0.4)); // Add variance
 
@@ -87,6 +109,19 @@ export function OpportunityPipeline() {
         // Calculate probability based on stage
         const probability = stage === 'qualified' ? 25 : stage === 'proposal' ? 50 : stage === 'negotiation' ? 75 : stage === 'closed-won' ? 100 : 0;
 
+        // Build trackAssessments map
+        const trackAssessmentsMap: Record<string, any> = {};
+        tracks.forEach((track: any) => {
+          const key = `${track.track_id}-${track.level}`;
+          trackAssessmentsMap[key] = {
+            trackId: track.track_id,
+            level: track.level,
+            status: track.status,
+            answers: track.answers || [],
+            assessedAt: track.assessed_at,
+          };
+        });
+
         return {
           id: assessment.id,
           clientName: assessment.client_name,
@@ -97,7 +132,7 @@ export function OpportunityPipeline() {
           assessments: {},
           isComplete: assessment.is_complete,
           userEmail: assessment.user_email,
-          trackAssessments: assessment.track_assessments,
+          trackAssessments: trackAssessmentsMap,
           marketingFoundation: assessment.marketing_foundation,
           disciplines: assessment.disciplines,
           estimatedValue,
@@ -494,8 +529,8 @@ function OpportunityGraph({
               <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
                 ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
               </div>
-              <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded">
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <div className="text-gray-700 text-xs font-medium text-center">
                   {opp.clientName}
                 </div>
               </div>
