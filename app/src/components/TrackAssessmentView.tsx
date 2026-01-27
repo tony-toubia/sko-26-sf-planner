@@ -66,17 +66,45 @@ const TRACK_GRADIENTS: Record<string, string> = {
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
   const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
 
-  // Get tracks based on selected disciplines
-  const TRACKS = useMemo(() => {
-    const disciplines = assessment?.disciplines || ['messaging-personalization'];
-    return getTracksForDisciplines(disciplines);
-  }, [assessment?.disciplines]);
+  // Active discipline tab - defaults to first selected discipline
+  const [activeDiscipline, setActiveDiscipline] = useState<string>(() => {
+    return assessment?.disciplines?.[0] || 'messaging-personalization';
+  });
 
   // Track which level is being assessed
   const [assessingLevel, setAssessingLevel] = useState<{
     trackId: TrackId;
     level: TrackLevel;
   } | null>(null);
+
+  // Get ALL tracks for selected disciplines (for overall progress tracking)
+  const ALL_TRACKS = useMemo(() => {
+    const disciplines = assessment?.disciplines || ['messaging-personalization'];
+    return getTracksForDisciplines(disciplines);
+  }, [assessment?.disciplines]);
+
+  // Get tracks for the ACTIVE discipline only (for current view)
+  const ACTIVE_TRACKS = useMemo(() => {
+    return ALL_TRACKS.filter(track => track.discipline === activeDiscipline);
+  }, [ALL_TRACKS, activeDiscipline]);
+
+  // Get selected disciplines with metadata
+  const selectedDisciplines = useMemo(() => {
+    const disciplines = assessment?.disciplines || ['messaging-personalization'];
+    return disciplines.map(id => {
+      const disc = { id, name: '', shortName: '', icon: '' };
+      if (id === 'messaging-personalization') {
+        disc.name = 'Messaging & Personalization';
+        disc.shortName = 'M&P';
+        disc.icon = 'Mail';
+      } else if (id === 'loyalty') {
+        disc.name = 'Loyalty Management';
+        disc.shortName = 'Loyalty';
+        disc.icon = 'Award';
+      }
+      return disc;
+    });
+  }, [assessment?.disciplines]);
 
   // Settings panel state
   const [showSettings, setShowSettings] = useState(false);
@@ -101,13 +129,14 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
   }, [assessment?.trackAssessments, assessment?.updatedAt]);
 
   // Calculate completion stats - now based on "assessed" rather than just "complete maturity"
+  // Use ALL_TRACKS to show progress across all selected disciplines
   const completionStats = useMemo(() => {
     let assessed = 0;
     let mature = 0; // Levels marked as "complete" maturity
     let total = 0;
     const missing: string[] = [];
 
-    for (const track of TRACKS) {
+    for (const track of ALL_TRACKS) {
       for (const level of track.levels) {
         total++;
         const key = `${track.id}-${level.level}`;
@@ -135,7 +164,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
       percentage: total > 0 ? Math.round((assessed / total) * 100) : 0,
       isComplete: assessed === total,
     };
-  }, [trackStatuses, assessedLevels]);
+  }, [ALL_TRACKS, trackStatuses, assessedLevels]);
 
   // Get next recommended action - find next level NOT YET ASSESSED
   const nextRecommendation = useMemo(() => {
@@ -271,9 +300,33 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
         </div>
       </div>
 
-      {/* Quick Stats Bar */}
+      {/* Discipline Tabs */}
+      {selectedDisciplines.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          {selectedDisciplines.map((disc) => {
+            const Icon = disc.icon === 'Mail' ? Mail : disc.icon === 'Award' ? Gift : Mail;
+            const isActive = disc.id === activeDiscipline;
+            return (
+              <button
+                key={disc.id}
+                onClick={() => setActiveDiscipline(disc.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all whitespace-nowrap ${
+                  isActive
+                    ? 'bg-merkle-blue text-white shadow-md'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-merkle-blue hover:text-merkle-blue'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span>{disc.shortName}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Quick Stats Bar - Show only tracks for active discipline */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {TRACKS.map((track) => {
+        {ACTIVE_TRACKS.map((track) => {
           const Icon = TRACK_ICONS[track.id];
           const gradient = TRACK_GRADIENTS[track.id];
           const assessedCount = track.levels.filter(
@@ -322,10 +375,10 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Track Progress (2 cols on large screens) */}
+        {/* Track Progress (2 cols on large screens) - Show only active discipline tracks */}
         <div className="lg:col-span-2 order-2 lg:order-1">
           <TrackProgress
-            tracks={TRACKS}
+            tracks={ACTIVE_TRACKS}
             trackStatuses={trackStatuses}
             assessedLevels={assessedLevels}
             onLevelClick={handleLevelClick}
