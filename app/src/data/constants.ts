@@ -58,7 +58,7 @@ export const MATURITY_STAGES: MaturityStage[] = [
   },
 ];
 
-// Currently focused on M&P only - other disciplines coming soon
+// Currently focused on M&P and Loyalty - other disciplines coming soon
 export const DISCIPLINES: Discipline[] = [
   {
     id: 'messaging-personalization',
@@ -68,6 +68,14 @@ export const DISCIPLINES: Discipline[] = [
       'Email, SMS, push notifications, and personalized content delivery across channels.',
     icon: 'Mail',
     salesforceCloud: 'Marketing Cloud',
+  },
+  {
+    id: 'loyalty',
+    name: 'Loyalty Management',
+    shortName: 'Loyalty',
+    description: 'Customer loyalty programs, rewards, tier management, and retention strategies.',
+    icon: 'Award',
+    salesforceCloud: 'Loyalty Management',
   },
 ];
 
@@ -116,15 +124,6 @@ export const MARKETING_FOUNDATIONS: MarketingFoundation[] = [
 
 // Future disciplines - not yet implemented but defined for adjacency hints
 export const FUTURE_DISCIPLINES = [
-  {
-    id: 'loyalty',
-    name: 'Loyalty',
-    shortName: 'Loyalty',
-    description: 'Customer loyalty programs, rewards, tier management, and retention strategies.',
-    icon: 'Award',
-    salesforceCloud: 'Loyalty Management',
-    comingSoon: true,
-  },
   {
     id: 'commerce',
     name: 'Commerce',
