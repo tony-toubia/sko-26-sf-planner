@@ -4,8 +4,8 @@
  */
 
 import type { DisciplineType, TrackId, TrackLevel } from '../types';
-import { TRACKS as MP_TRACKS, getTrackById as getMPTrackById, getRequiredDependencies as getMPDependencies, canStartLevel as mpCanStartLevel } from './tracks';
-import { LOYALTY_TRACKS, type LoyaltyTrack, type LoyaltyTrackId, type LoyaltyTrackLevel } from './loyaltyTracks';
+import { TRACKS as MP_TRACKS, getTrackById as getMPTrackById, canStartLevel as mpCanStartLevel } from './tracks';
+import { LOYALTY_TRACKS, type LoyaltyTrackId, type LoyaltyTrackLevel } from './loyaltyTracks';
 
 // Unified track type that combines both M&P and Loyalty tracks
 export type UnifiedTrackId = TrackId | LoyaltyTrackId;
@@ -39,7 +39,7 @@ export function getTracksForDisciplines(disciplines: DisciplineType[]): any[] {
 /**
  * Get track by ID across all disciplines
  */
-export function getTrackById(trackId: UnifiedTrackId, disciplines?: DisciplineType[]): any {
+export function getTrackById(trackId: string, disciplines?: DisciplineType[]): any {
   // If disciplines provided, search only those
   if (disciplines) {
     const tracks = getTracksForDisciplines(disciplines);
@@ -59,7 +59,7 @@ export function getTrackById(trackId: UnifiedTrackId, disciplines?: DisciplineTy
 /**
  * Get track level definition
  */
-export function getTrackLevel(trackId: UnifiedTrackId, level: TrackLevel | LoyaltyTrackLevel, disciplines?: DisciplineType[]): any {
+export function getTrackLevel(trackId: string, level: TrackLevel | LoyaltyTrackLevel, disciplines?: DisciplineType[]): any {
   const track = getTrackById(trackId, disciplines);
   if (!track) return undefined;
   return track.levels.find((l: any) => l.level === level);
@@ -68,23 +68,18 @@ export function getTrackLevel(trackId: UnifiedTrackId, level: TrackLevel | Loyal
 /**
  * Get capabilities for a track level
  */
-export function getCapabilitiesForTrackLevel(trackId: UnifiedTrackId, level: TrackLevel | LoyaltyTrackLevel, disciplines?: DisciplineType[]): string[] {
+export function getCapabilitiesForTrackLevel(trackId: string, level: TrackLevel | LoyaltyTrackLevel, disciplines?: DisciplineType[]): string[] {
   const trackLevel = getTrackLevel(trackId, level, disciplines);
   return trackLevel?.capabilities || [];
 }
 
 /**
- * Get required dependencies (simplified - returns empty for now)
+ * Get required dependencies (always returns empty array for now)
  * TODO: Implement cross-discipline dependencies
  */
-export function getRequiredDependencies(trackId: UnifiedTrackId, level: TrackLevel | LoyaltyTrackLevel): string[] {
-  // For M&P tracks, use existing logic
-  if (trackId in { 'data-identity': true, 'journeys': true, 'content-channels': true, 'intelligence': true }) {
-    return getMPDependencies(trackId as TrackId, level as TrackLevel);
-  }
-
-  // For Loyalty tracks, return empty for now
-  // TODO: Implement loyalty dependencies
+export function getRequiredDependencies(_trackId: string, _level: TrackLevel | LoyaltyTrackLevel): string[] {
+  // Simplified - return empty array
+  // TODO: Implement proper dependency tracking
   return [];
 }
 
@@ -92,10 +87,9 @@ export function getRequiredDependencies(trackId: UnifiedTrackId, level: TrackLev
  * Check if a level can be started based on dependencies
  */
 export function canStartLevel(
-  trackId: UnifiedTrackId,
+  trackId: string,
   level: TrackLevel | LoyaltyTrackLevel,
-  assessedLevels: Set<string>,
-  disciplines?: DisciplineType[]
+  assessedLevels: Set<string>
 ): boolean {
   // For M&P tracks, use existing logic
   if (trackId in { 'data-identity': true, 'journeys': true, 'content-channels': true, 'intelligence': true }) {
