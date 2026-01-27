@@ -10,12 +10,11 @@ export interface MaturityStage {
 }
 
 // Disciplines/Clouds that can have maturity matrices
-// Currently focused on M&P only - other disciplines will be added in future releases
-export type DisciplineType = 'messaging-personalization';
+// Now supporting both Messaging & Personalization and Loyalty
+export type DisciplineType = 'messaging-personalization' | 'loyalty';
 
 // Future disciplines (not yet implemented)
 export type FutureDisciplineType =
-  | 'loyalty'
   | 'b2b'
   | 'commerce'
   | 'service'
@@ -28,6 +27,8 @@ export interface Discipline {
   description: string;
   icon: string;
   salesforceCloud: string;
+  color: string;
+  available: boolean;
 }
 
 // Marketing Foundation Choice - the key decision point
@@ -138,9 +139,32 @@ export interface ProductFeature {
 
 // Adjacency to other maturity matrices
 export interface MatrixAdjacency {
-  matrix: FutureDisciplineType;
+  matrix: DisciplineType | FutureDisciplineType;
   connectionPoint: string;
   description: string;
+}
+
+// Cross-discipline adjacency definition
+export interface DisciplineAdjacency {
+  id: string;
+  fromDiscipline: DisciplineType;
+  fromCapability?: string; // Optional specific capability
+  fromTrack?: string; // Optional specific track
+  toDiscipline: DisciplineType;
+  toCapability?: string; // Optional specific capability
+  toTrack?: string; // Optional specific track
+  type: 'unlocks' | 'enhances' | 'requires' | 'feeds';
+  name: string;
+  description: string;
+  maturityThreshold?: number; // Min maturity in source to unlock
+  businessValue: string;
+}
+
+// Assessment scope for multi-discipline support
+export interface AssessmentScope {
+  disciplines: DisciplineType[];
+  primaryDiscipline: DisciplineType;
+  adjacenciesEnabled: boolean;
 }
 
 // Capability Card - main building block of the matrix
