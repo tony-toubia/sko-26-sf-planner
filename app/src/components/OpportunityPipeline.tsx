@@ -569,35 +569,41 @@ function OpportunityGraph({
           return (
             <div
               key={opp.id}
-              className="absolute"
+              className="absolute transform -translate-x-1/2 -translate-y-1/2"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
                 zIndex: 5,
+                // Add padding below to reserve space for label (prevents overlap)
+                paddingBottom: '20px',
               }}
             >
-              <button
-                onClick={() => onSelectOpportunity(opp)}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all hover:scale-110 shadow-lg group"
+              <div
+                className="relative"
                 style={{
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
                   animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
-                  left: 0,
-                  top: 0,
                 }}
               >
-                <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
-                  ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
-                </div>
-              </button>
-              <div
-                className="absolute left-0 -bottom-12 transform -translate-x-1/2 whitespace-nowrap pointer-events-none"
-                style={{ zIndex: 30 }}
-              >
-                <div className="text-gray-700 text-xs font-medium text-center bg-white/90 px-2 py-0.5 rounded shadow-sm">
-                  {opp.clientName}
+                {/* Opportunity bubble */}
+                <button
+                  onClick={() => onSelectOpportunity(opp)}
+                  className="block mx-auto rounded-full transition-all hover:scale-110 shadow-lg"
+                  style={{
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
+                  }}
+                >
+                  <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
+                    ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
+                  </div>
+                </button>
+
+                {/* Client name label - positioned relative to bubble */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap pointer-events-none mt-1">
+                  <div className="text-gray-700 text-xs font-medium text-center bg-white/90 px-2 py-0.5 rounded shadow-sm">
+                    {opp.clientName}
+                  </div>
                 </div>
               </div>
             </div>
