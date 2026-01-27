@@ -334,6 +334,13 @@ export interface OpportunityAssessment {
   userEmail?: string;
   // NEW: Selected disciplines for multi-discipline assessments
   disciplines?: DisciplineType[];
+  // NEW: Service recommendations
+  serviceRecommendations?: {
+    serviceId: string;
+    size: 'small' | 'medium' | 'large' | 'enterprise';
+    modifiers: string[];
+    estimatedCost: { min: number; max: number };
+  }[];
 }
 
 // Global assessment inputs - collected before/after capability assessments

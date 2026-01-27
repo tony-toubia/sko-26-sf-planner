@@ -27,9 +27,11 @@ import {
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
 import { SaveAssessmentModal } from './SaveAssessmentModal';
+import { ServiceSelector, type SelectedService } from './ServiceSelector';
 import { getTracksForDisciplines, getAssessmentOrder, getTrackById } from '../data/allTracks';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
+import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
 import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer, MarketingFoundationType } from '../types';
 
 interface TrackAssessmentViewProps {
@@ -64,7 +66,7 @@ const TRACK_GRADIENTS: Record<string, string> = {
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal, selectedIndustry } = useAssessment();
 
   // Active discipline tab - defaults to first selected discipline
   const [activeDiscipline, setActiveDiscipline] = useState<string>(() => {
@@ -111,6 +113,10 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   // Save modal state
   const [showSaveModal, setShowSaveModal] = useState(false);
+
+  // Service recommendation state
+  const [showServiceSelector, setShowServiceSelector] = useState(false);
+  const [serviceRecommendations, setServiceRecommendations] = useState<any[]>([]);
 
   // Build track statuses and assessed levels from assessment context
   // Use assessment.updatedAt as additional dependency to ensure re-render on any change
@@ -262,8 +268,9 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           if (nextLevel) {
             setAssessingLevel(nextLevel);
           } else {
-            // All levels assessed
+            // All levels assessed - check if we should show service recommendations
             setAssessingLevel(null);
+            checkAndShowServiceRecommendations();
           }
         } else {
           // Exit back to the overview
@@ -277,6 +284,61 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
   const handleAssessmentCancel = useCallback(() => {
     setAssessingLevel(null);
   }, []);
+
+  // Check if assessment is complete and show service recommendations
+  const checkAndShowServiceRecommendations = useCallback(() => {
+    if (!assessment || !selectedIndustry) return;
+
+    // Build recommendation context from assessment
+    const trackAssessments = assessment.trackAssessments || {};
+    const assessedLevels = new Map(Object.entries(trackAssessments));
+
+    // Only show if we have enough assessed levels
+    if (assessedLevels.size < 3) return;
+
+    const disciplines = assessment.disciplines || ['messaging-personalization'];
+
+    const context = buildRecommendationContext(
+      assessedLevels,
+      disciplines,
+      selectedIndustry,
+      marketingFoundation || undefined
+    );
+
+    const recommendations = generateServiceRecommendations(context);
+
+    if (recommendations.length > 0) {
+      setServiceRecommendations(recommendations);
+      setShowServiceSelector(true);
+    }
+  }, [assessment, selectedIndustry, marketingFoundation]);
+
+  // Handle service confirmation
+  const handleServiceConfirm = useCallback((selectedServices: SelectedService[]) => {
+    // Save service recommendations to assessment
+    if (assessment) {
+      // Update assessment context with service recommendations
+      // (This would need to be added to AssessmentContext)
+      console.log('[TrackAssessmentView] Services confirmed:', selectedServices);
+    }
+    setShowServiceSelector(false);
+  }, [assessment]);
+
+  const handleServiceCancel = useCallback(() => {
+    setShowServiceSelector(false);
+  }, []);
+
+  // Show service selector instead of normal view when active
+  if (showServiceSelector) {
+    return (
+      <ServiceSelector
+        recommendations={serviceRecommendations}
+        industry={selectedIndustry!}
+        onConfirm={handleServiceConfirm}
+        onCancel={handleServiceCancel}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
