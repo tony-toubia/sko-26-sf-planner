@@ -29,7 +29,9 @@
       "Bash(git push:*)",
       "Bash(git config:*)",
       "Bash(cmdkey:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(npx tsx:*)",
+      "Bash(move scriptsseed-opportunities.ts appscriptsseed-opportunities.ts)"
     ]
   }
 }
