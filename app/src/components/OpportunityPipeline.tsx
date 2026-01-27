@@ -585,7 +585,7 @@ function OpportunityGraph({
                 ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
               </div>
               {/* Hover tooltip */}
-              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ zIndex: 50 }}>
                 <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg">
                   {opp.clientName}
                 </div>
