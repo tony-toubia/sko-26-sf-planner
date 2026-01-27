@@ -95,7 +95,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
             Let's assess your maturity and build a roadmap to maximize value.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => setStep('client-info')}
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-merkle-blue/25 transition-all text-lg"
