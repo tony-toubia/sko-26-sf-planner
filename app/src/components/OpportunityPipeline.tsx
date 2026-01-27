@@ -517,6 +517,13 @@ function OpportunityGraph({
         const y = 50 + 35 * Math.sin(angle);
         const totalValue = opps.reduce((sum, opp) => sum + (opp.estimatedValue || 0), 0);
 
+        // Extract first and last initials from email (firstname.lastname@domain.com)
+        const namePart = userEmail.split('@')[0];
+        const nameParts = namePart.split('.');
+        const initials = nameParts.length >= 2
+          ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+          : namePart.substring(0, 2).toUpperCase();
+
         return (
           <div
             key={userEmail}
@@ -529,7 +536,7 @@ function OpportunityGraph({
           >
             <div className="relative">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-merkle-blue to-salesforce-blue flex items-center justify-center text-white font-bold text-xl shadow-lg transition-transform group-hover:scale-110">
-                {userEmail.substring(0, 2).toUpperCase()}
+                {initials}
               </div>
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="bg-gray-900 text-white text-xs px-2 py-1 rounded">
@@ -560,32 +567,40 @@ function OpportunityGraph({
           const delay = oppIndex * 0.2; // Stagger the animations
 
           return (
-            <button
+            <div
               key={opp.id}
-              onClick={() => onSelectOpportunity(opp)}
-              className="absolute rounded-full transition-all hover:scale-110 shadow-lg group"
+              className="absolute"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,
-                width: `${size}px`,
-                height: `${size}px`,
-                backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
                 zIndex: 5,
-                animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
               }}
             >
-              <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
-                ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
-              </div>
-              <div
-                className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap pointer-events-none"
-                style={{ zIndex: 20 }}
+              <button
+                onClick={() => onSelectOpportunity(opp)}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 rounded-full transition-all hover:scale-110 shadow-lg group"
+                style={{
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  backgroundColor: STAGE_COLORS[opp.stage || 'unqualified'],
+                  animation: `${animationName} ${duration}s ease-in-out ${delay}s infinite`,
+                  left: 0,
+                  top: 0,
+                }}
               >
-                <div className="text-gray-700 text-xs font-medium text-center bg-white/80 px-1 rounded">
+                <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
+                  ${((opp.estimatedValue || 0) / 1000).toFixed(0)}K
+                </div>
+              </button>
+              <div
+                className="absolute left-0 -bottom-12 transform -translate-x-1/2 whitespace-nowrap pointer-events-none"
+                style={{ zIndex: 30 }}
+              >
+                <div className="text-gray-700 text-xs font-medium text-center bg-white/90 px-2 py-0.5 rounded shadow-sm">
                   {opp.clientName}
                 </div>
               </div>
-            </button>
+            </div>
           );
         });
       })}
