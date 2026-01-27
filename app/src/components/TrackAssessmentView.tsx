@@ -337,13 +337,18 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
             (l: any) => assessedLevels.has(`${track.id}-${l.level}`)
           ).length;
 
+          // Check if this track is locked (M&P tracks when no foundation selected)
+          const isLocked = activeDiscipline === 'messaging-personalization' && !marketingFoundation;
+
           return (
             <div
               key={track.id}
-              className="bg-white rounded-xl border border-slate-200 p-3 md:p-4 hover:shadow-md transition-shadow"
+              className={`bg-white rounded-xl border border-slate-200 p-3 md:p-4 transition-shadow ${
+                isLocked ? 'opacity-50' : 'hover:shadow-md'
+              }`}
             >
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                <div className={`p-1.5 md:p-2 rounded-lg bg-gradient-to-br ${gradient} text-white`}>
+                <div className={`p-1.5 md:p-2 rounded-lg ${isLocked ? 'bg-slate-200 text-slate-400' : `bg-gradient-to-br ${gradient} text-white`}`}>
                   <Icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div className="min-w-0">
@@ -360,13 +365,15 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                     <div
                       key={level.level}
                       className={`flex-1 h-1.5 md:h-2 rounded-full ${
-                        isAssessed
-                          ? status === 'complete'
-                            ? `bg-gradient-to-r ${gradient}`
-                            : status === 'in-progress'
-                              ? 'bg-amber-300'
-                              : 'bg-slate-300'
-                          : 'bg-slate-100'
+                        isLocked
+                          ? 'bg-slate-100'
+                          : isAssessed
+                            ? status === 'complete'
+                              ? `bg-gradient-to-r ${gradient}`
+                              : status === 'in-progress'
+                                ? 'bg-amber-300'
+                                : 'bg-slate-300'
+                            : 'bg-slate-100'
                       }`}
                     />
                   );
@@ -381,14 +388,27 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Track Progress (2 cols on large screens) - Show only active discipline tracks */}
         <div className="lg:col-span-2 order-2 lg:order-1">
-          <TrackProgress
-            tracks={ACTIVE_TRACKS}
-            trackStatuses={trackStatuses}
-            assessedLevels={assessedLevels}
-            onLevelClick={handleLevelClick}
-            currentTrack={assessingLevel?.trackId}
-            currentLevel={assessingLevel?.level}
-          />
+          {/* Show blocked message if M&P discipline and no foundation selected */}
+          {activeDiscipline === 'messaging-personalization' && !marketingFoundation ? (
+            <div className="bg-white rounded-xl border-2 border-dashed border-slate-300 p-8 text-center">
+              <Database className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                Select Marketing Platform First
+              </h3>
+              <p className="text-sm text-slate-500">
+                Please select your marketing platform (MC Engagement or MC Advanced) in the sidebar to begin the assessment.
+              </p>
+            </div>
+          ) : (
+            <TrackProgress
+              tracks={ACTIVE_TRACKS}
+              trackStatuses={trackStatuses}
+              assessedLevels={assessedLevels}
+              onLevelClick={handleLevelClick}
+              currentTrack={assessingLevel?.trackId}
+              currentLevel={assessingLevel?.level}
+            />
+          )}
         </div>
 
         {/* Right Sidebar - show first on mobile */}
