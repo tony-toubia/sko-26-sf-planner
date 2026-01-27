@@ -20,28 +20,28 @@ import type { OpportunityAssessment } from '../types';
 const floatingKeyframes = `
 @keyframes float {
   0%, 100% {
-    transform: translate(-50%, -50%) translateY(0px);
+    transform: translateY(0px);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(-8px);
+    transform: translateY(-8px);
   }
 }
 
 @keyframes float-slow {
   0%, 100% {
-    transform: translate(-50%, -50%) translateY(0px);
+    transform: translateY(0px);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(-6px);
+    transform: translateY(-6px);
   }
 }
 
 @keyframes float-slower {
   0%, 100% {
-    transform: translate(-50%, -50%) translateY(0px);
+    transform: translateY(0px);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(-10px);
+    transform: translateY(-10px);
   }
 }
 `;
