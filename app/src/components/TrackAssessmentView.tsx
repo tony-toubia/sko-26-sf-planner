@@ -27,7 +27,7 @@ import {
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
 import { SaveAssessmentModal } from './SaveAssessmentModal';
-import { getTracksForDisciplines, getAssessmentOrder, canStartLevel, getTrackById } from '../data/allTracks';
+import { getTracksForDisciplines, getAssessmentOrder, getTrackById } from '../data/allTracks';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer, MarketingFoundationType } from '../types';
@@ -181,36 +181,26 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
       };
     }
 
-    // For dependency checking, we still need to look at which levels have "complete" maturity
-    // (dependencies require mature capabilities, not just assessed)
-    const matureSet = new Set(
-      Object.entries(trackStatuses)
-        .filter(([, status]) => status === 'complete')
-        .map(([key]) => key)
-    );
-
     // Then look for the next level that hasn't been assessed yet
+    // Simply follow the predefined order - it already respects dependencies
     for (const key of order) {
       if (assessedLevels.has(key)) continue; // Skip already assessed
 
       const [trackId, levelStr] = key.split('-');
       const level = parseInt(levelStr);
 
-      const canStart = canStartLevel(trackId, level as TrackLevel, matureSet);
-      if (canStart) {
-        const track = getTrackById(trackId, disciplines);
-        const trackLevel = track?.levels.find((l: any) => l.level === level);
-        return {
-          trackId: trackId as TrackId,
-          level: level as TrackLevel,
-          message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
-          isFirstAssessment: false,
-        };
-      }
+      const track = getTrackById(trackId, disciplines);
+      const trackLevel = track?.levels.find((l: any) => l.level === level);
+      return {
+        trackId: trackId as TrackId,
+        level: level as TrackLevel,
+        message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
+        isFirstAssessment: false,
+      };
     }
 
     return null;
-  }, [trackStatuses, assessedLevels, assessment?.disciplines]);
+  }, [assessedLevels, assessment?.disciplines]);
 
   const handleLevelClick = useCallback((trackId: TrackId, level: TrackLevel) => {
     setAssessingLevel({ trackId, level });
@@ -221,34 +211,25 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
     const disciplines = assessment?.disciplines || ['messaging-personalization'];
     const order = getAssessmentOrder(disciplines);
 
-    // For dependency checking, we need to look at which levels have "complete" maturity
-    const matureSet = new Set(
-      Object.entries(trackStatuses)
-        .filter(([, status]) => status === 'complete')
-        .map(([key]) => key)
-    );
-
     // Include the current level we just assessed as assessed
     const updatedAssessed = new Set(assessedLevels);
     if (assessingLevel) {
       updatedAssessed.add(`${assessingLevel.trackId}-${assessingLevel.level}`);
     }
 
-    // Find the next unassessed level
+    // During initial assessment, simply follow the predefined order
+    // Don't check dependencies - the order itself respects dependencies
     for (const key of order) {
       if (updatedAssessed.has(key)) continue; // Skip already assessed
 
       const [trackId, levelStr] = key.split('-');
       const level = parseInt(levelStr);
 
-      const canStart = canStartLevel(trackId, level as TrackLevel, matureSet);
-      if (canStart) {
-        return { trackId: trackId as TrackId, level: level as TrackLevel };
-      }
+      return { trackId: trackId as TrackId, level: level as TrackLevel };
     }
 
     return null;
-  }, [trackStatuses, assessedLevels, assessingLevel, assessment?.disciplines]);
+  }, [assessedLevels, assessingLevel, assessment?.disciplines]);
 
   const handleAssessmentComplete = useCallback(
     (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => {
