@@ -351,7 +351,8 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {onSwitchToMatrix && (
+          {/* Matrix View button hidden per user request */}
+          {false && onSwitchToMatrix && (
             <button
               onClick={onSwitchToMatrix}
               className="flex items-center gap-2 px-3 md:px-4 py-2 text-slate-600 hover:text-slate-900 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
