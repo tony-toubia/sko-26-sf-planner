@@ -66,7 +66,7 @@ interface AssessmentContextValue {
   getCapabilityAssessment: (capabilityId: string) => CapabilityAssessment | undefined;
   saveGlobalInputs: (inputs: GlobalAssessmentInputs) => void;
   generateRecommendationPlan: (inputs: GlobalAssessmentInputs, useAI?: boolean) => Promise<GeneratedPlan | null>;
-  generateQuickPlan: () => GeneratedPlan | null;
+  generateQuickPlan: () => Promise<GeneratedPlan | null>;
   clearGeneratedPlan: () => void;
   closePlanModal: () => void;
   openPlanModal: () => void;
@@ -323,6 +323,11 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       };
       setAssessment(updatedAssessment);
 
+      // Persist global inputs to database
+      if (isSupabaseAvailable) {
+        await assessmentService.saveGlobalInputs(assessment.id, inputs);
+      }
+
       // Try AI generation first if available and requested
       if (useAI && isAIPlanAvailable) {
         setIsGeneratingPlan(true);
@@ -338,7 +343,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
             },
           };
 
-          // Save plan to assessment
+          // Save plan to assessment state
           setAssessment((prev) => {
             if (!prev) return prev;
             return {
@@ -347,6 +352,11 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
               updatedAt: new Date(),
             };
           });
+
+          // Persist plan to database
+          if (isSupabaseAvailable) {
+            await assessmentService.saveGeneratedPlan(assessment.id, plan);
+          }
 
           setGeneratedPlan(plan);
           setShowPlanModal(true);
@@ -363,7 +373,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       // Fallback to template-based generation
       const plan = generatePlan(updatedAssessment, inputs);
 
-      // Save plan to assessment
+      // Save plan to assessment state
       setAssessment((prev) => {
         if (!prev) return prev;
         return {
@@ -373,11 +383,16 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
         };
       });
 
+      // Persist plan to database
+      if (isSupabaseAvailable) {
+        await assessmentService.saveGeneratedPlan(assessment.id, plan);
+      }
+
       setGeneratedPlan(plan);
       setShowPlanModal(true);
       return plan;
     },
-    [assessment, isAIPlanAvailable]
+    [assessment, isAIPlanAvailable, isSupabaseAvailable]
   );
 
   const clearPlanError = useCallback(() => {
@@ -385,7 +400,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   }, []);
 
   // Quick plan generation - uses defaults based on industry
-  const generateQuickPlan = useCallback((): GeneratedPlan | null => {
+  const generateQuickPlan = useCallback(async (): Promise<GeneratedPlan | null> => {
     if (!assessment) return null;
 
     // Create minimal inputs based on industry
@@ -411,6 +426,11 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     };
     setAssessment(updatedAssessment);
 
+    // Persist global inputs to database
+    if (isSupabaseAvailable) {
+      await assessmentService.saveGlobalInputs(assessment.id, quickInputs);
+    }
+
     const plan = generatePlan(updatedAssessment, quickInputs);
 
     setAssessment((prev) => {
@@ -422,10 +442,15 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       };
     });
 
+    // Persist plan to database
+    if (isSupabaseAvailable) {
+      await assessmentService.saveGeneratedPlan(assessment.id, plan);
+    }
+
     setGeneratedPlan(plan);
     setShowPlanModal(true);
     return plan;
-  }, [assessment, selectedIndustry]);
+  }, [assessment, selectedIndustry, isSupabaseAvailable]);
 
   const clearGeneratedPlan = useCallback(() => {
     setGeneratedPlan(null);
