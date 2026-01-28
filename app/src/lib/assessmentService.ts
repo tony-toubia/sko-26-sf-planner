@@ -69,6 +69,18 @@ function dbToAssessment(
     };
   }
 
+  // Transform generatedPlan to convert generatedAt string to Date
+  let transformedPlan: GeneratedPlan | undefined = undefined;
+  if (generatedPlan?.plan_data) {
+    const planData = generatedPlan.plan_data;
+    transformedPlan = {
+      ...planData,
+      generatedAt: typeof planData.generatedAt === 'string'
+        ? new Date(planData.generatedAt)
+        : planData.generatedAt,
+    };
+  }
+
   return {
     id: db.id,
     clientName: db.client_name,
@@ -86,7 +98,7 @@ function dbToAssessment(
       commercialPreferences: (globalInputs.commercial_preferences || {}) as GlobalAssessmentInputs['commercialPreferences'],
       strategicContext: (globalInputs.strategic_context || {}) as GlobalAssessmentInputs['strategicContext'],
     } : undefined,
-    generatedPlan: generatedPlan?.plan_data || undefined,
+    generatedPlan: transformedPlan,
   };
 }
 
@@ -156,19 +168,19 @@ export const assessmentService = {
       .select('*')
       .eq('assessment_id', assessmentId);
 
-    // Load global inputs
+    // Load global inputs (optional - may not exist)
     const { data: globalInputs } = await supabase
       .from('assessment_global_inputs')
       .select('*')
       .eq('assessment_id', assessmentId)
-      .single();
+      .maybeSingle();
 
-    // Load generated plan
+    // Load generated plan (optional - may not exist)
     const { data: generatedPlan } = await supabase
       .from('generated_plans')
       .select('*')
       .eq('assessment_id', assessmentId)
-      .single();
+      .maybeSingle();
 
     return dbToAssessment(
       assessment,
