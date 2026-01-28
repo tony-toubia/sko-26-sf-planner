@@ -33,14 +33,22 @@ const disciplineIcons: Record<string, React.ElementType> = {
 export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [step, setStep] = useState<'intro' | 'client-info'>('intro');
   const [clientName, setClientName] = useState('');
+  const [email, setEmail] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
   const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineType[]>(['messaging-personalization']);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
-  const { startAssessment, isSupabaseAvailable } = useAssessment();
+  const { startAssessment, setUserEmail, isSupabaseAvailable } = useAssessment();
+
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  };
 
   const handleBeginAssessment = async () => {
-    if (clientName.trim() && selectedIndustry && selectedDisciplines.length > 0) {
+    if (clientName.trim() && selectedIndustry && selectedDisciplines.length > 0 && isValidEmail(email)) {
+      // Set user email first so it's available for assessment creation
+      const trimmedEmail = email.trim().toLowerCase();
+      await setUserEmail(trimmedEmail);
       // Wait for the assessment to be created (especially in Supabase)
       // Marketing foundation will be selected as first step in assessment
       await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines);
@@ -189,6 +197,27 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
 
           {/* Content */}
           <div className="p-8 space-y-6">
+            {/* Your Email */}
+            <div>
+              <label className="block font-medium text-gray-900 mb-2">
+                Your Email <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue focus:border-transparent"
+                  autoFocus
+                />
+              </div>
+              <p className="mt-1.5 text-xs text-gray-500">
+                Required to save and retrieve your assessment later.
+              </p>
+            </div>
+
             {/* Client Name */}
             <div>
               <label className="block font-medium text-gray-900 mb-2">
@@ -201,7 +230,6 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                   onChange={(e) => setClientName(e.target.value)}
                   placeholder="Enter client or opportunity name..."
                   className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-merkle-blue focus:border-transparent"
-                  autoFocus
                 />
                 <button
                   type="button"
@@ -315,7 +343,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
             </button>
             <button
               onClick={handleBeginAssessment}
-              disabled={!clientName.trim() || !selectedIndustry || selectedDisciplines.length === 0}
+              disabled={!clientName.trim() || !selectedIndustry || selectedDisciplines.length === 0 || !isValidEmail(email)}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ClipboardCheck className="w-5 h-5" />
