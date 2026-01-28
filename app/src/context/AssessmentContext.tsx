@@ -176,7 +176,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
         clientName,
         industry,
         foundation,
-        opportunityName
+        opportunityName,
+        userEmail || undefined
       );
       setIsSaving(false);
 
@@ -193,6 +194,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           updatedAt: new Date(),
           assessments: {},
           isComplete: false,
+          userEmail: userEmail || undefined,
           marketingFoundation: foundation ?? undefined,
           disciplines: selectedDisciplines,
         };
@@ -585,7 +587,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
                 prev.clientName,
                 prev.industry,
                 prev.marketingFoundation,
-                prev.opportunityName
+                prev.opportunityName,
+                prev.userEmail || userEmail || undefined
               );
 
               if (dbAssessment) {

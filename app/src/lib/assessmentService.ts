@@ -102,14 +102,15 @@ export const assessmentService = {
     clientName: string,
     industry: IndustryType,
     marketingFoundation: MarketingFoundationType | null,
-    opportunityName?: string
+    opportunityName?: string,
+    userEmail?: string
   ): Promise<OpportunityAssessment | null> {
     if (!supabase) {
       console.warn('Supabase not configured - assessment will not be persisted');
       return null;
     }
 
-    console.log('[assessmentService] Creating assessment:', { clientName, industry, marketingFoundation });
+    console.log('[assessmentService] Creating assessment:', { clientName, industry, marketingFoundation, userEmail });
 
     const { data, error } = await supabase
       .from('assessments')
@@ -118,6 +119,7 @@ export const assessmentService = {
         opportunity_name: opportunityName || null,
         industry: industry,
         marketing_foundation: marketingFoundation,
+        user_email: userEmail ? userEmail.toLowerCase().trim() : null,
         is_complete: false,
       })
       .select()
