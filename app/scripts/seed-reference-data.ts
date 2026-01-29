@@ -12,7 +12,7 @@ import { config } from 'dotenv';
 import { INDUSTRY_KPIS, INDUSTRY_JOURNEY_MAPPINGS, INDUSTRY_ROI_BENCHMARKS, INDUSTRY_CHANNEL_PRIORITIES } from '../src/data/industryReference';
 import type { IndustryType } from '../src/types';
 
-// Load env
+// Load .env
 config();
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -20,6 +20,22 @@ const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
+  process.exit(1);
+}
+
+console.log('Supabase URL:', supabaseUrl);
+console.log('Key length:', supabaseKey.length);
+
+// Quick connectivity test
+try {
+  const testRes = await fetch(`${supabaseUrl}/rest/v1/`, {
+    headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+  });
+  console.log('Connectivity test:', testRes.status, testRes.statusText);
+} catch (err: any) {
+  console.error('Connectivity test FAILED:', err.message);
+  if (err.cause) console.error('Cause:', err.cause);
+  console.error('If behind a proxy, try: set NODE_TLS_REJECT_UNAUTHORIZED=0');
   process.exit(1);
 }
 
@@ -107,7 +123,10 @@ async function seedROIBenchmarks() {
         value: benchmark.value,
         context: benchmark.context || null,
         phase: benchmark.phase || null,
-        source: benchmark.source || 'merkle-benchmark',
+        source: benchmark.source === 'merkle' ? 'merkle-benchmark'
+          : benchmark.source === 'salesforce' ? 'salesforce-benchmark'
+          : benchmark.source === 'industry' || benchmark.source === 'research' ? 'industry-average'
+          : 'merkle-benchmark',
         is_active: true,
       });
     }
@@ -309,9 +328,20 @@ async function seedAdminUser() {
   }
 }
 
+async function clearAll() {
+  console.log('Clearing existing data...');
+  const tables = ['ref_kpis', 'ref_journey_templates', 'ref_roi_benchmarks', 'ref_channel_priorities', 'tactics'];
+  for (const table of tables) {
+    const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    if (error) console.error(`  Error clearing ${table}:`, error.message);
+    else console.log(`  Cleared ${table}`);
+  }
+}
+
 async function main() {
   console.log('Starting reference data seed...\n');
 
+  await clearAll();
   await seedKPIs();
   await seedJourneyTemplates();
   await seedROIBenchmarks();

@@ -31,7 +31,21 @@
       "Bash(cmdkey:*)",
       "Bash(findstr:*)",
       "Bash(npx tsx:*)",
-      "Bash(move scriptsseed-opportunities.ts appscriptsseed-opportunities.ts)"
+      "Bash(move scriptsseed-opportunities.ts appscriptsseed-opportunities.ts)",
+      "Bash(wc:*)",
+      "Bash(npm install:*)",
+      "Bash(nslookup:*)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" config user.name)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" config user.email)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" remote -v)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" config --list --show-origin)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" config --global --list)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" status)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" push)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" diff --staged --name-only)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" diff --name-only)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" add .claude/settings.local.json)",
+      "Bash(git -C \"c:\\\\Users\\\\ttoubi01\\\\OneDrive - dentsu\\\\Desktop\\\\projects\\\\sko-26-sf-planner\" commit -m \"$\\(cat <<''EOF''\nAdd seed script fixes and dependency updates\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
