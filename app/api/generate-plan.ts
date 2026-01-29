@@ -679,13 +679,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     const cacheKey = createHash('sha256').update(normalizedRequest).digest('hex');
 
-    const cached = await getCachedPlan(cacheKey);
-    if (cached) {
-      return res.status(200).json({
-        plan: cached.plan,
-        usage: cached.usage,
-        cached: true,
-      });
+    try {
+      const cached = await getCachedPlan(cacheKey);
+      if (cached) {
+        return res.status(200).json({
+          plan: cached.plan,
+          usage: cached.usage,
+          cached: true,
+        });
+      }
+    } catch (err) {
+      console.error('[generate-plan] Cache lookup failed:', err);
     }
 
     // ===== CHUNKING: Fetch targeted reference data from DB =====
@@ -694,11 +698,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? Math.round(request.trackAssessments.filter(ta => ta.status === 'complete').length / Math.max(request.trackAssessments.length, 1) * 3)
       : 1;
 
-    const dbRefData = await fetchFormattedReferenceData({
-      industry: industryId || undefined,
-      disciplines: ['messaging-personalization'], // TODO: pass from request when multi-discipline
-      maturityLevel,
-    });
+    let dbRefData: Awaited<ReturnType<typeof fetchFormattedReferenceData>> = null;
+    try {
+      dbRefData = await fetchFormattedReferenceData({
+        industry: industryId || undefined,
+        disciplines: ['messaging-personalization'], // TODO: pass from request when multi-discipline
+        maturityLevel,
+      });
+    } catch (err) {
+      console.error('[generate-plan] Reference data fetch failed, using hardcoded fallback:', err);
+    }
 
     const client = new Anthropic({ apiKey });
 
