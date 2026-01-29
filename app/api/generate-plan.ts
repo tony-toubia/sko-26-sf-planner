@@ -490,10 +490,10 @@ function buildIndustryContext(industryName: string | undefined): string {
 }
 
 // Build the system prompt - can use DB-sourced data or fall back to hardcoded
-function buildSystemPrompt(request: PlanGenerationRequest, dbRefData?: { kpis: string; tactics: string; roiBenchmarks: string; channelPriorities: string; journeys: string } | null): string {
+function buildSystemPrompt(request: PlanGenerationRequest, dbRefData?: { kpis: string; tactics: string; roiBenchmarks: string; channelPriorities: string; journeys: string; offerings: string } | null): string {
   // If DB reference data is available, use it (chunked/targeted). Otherwise fall back to hardcoded.
   const industryContext = dbRefData
-    ? [dbRefData.kpis, dbRefData.journeys, dbRefData.roiBenchmarks, dbRefData.channelPriorities, dbRefData.tactics].filter(Boolean).join('\n\n')
+    ? [dbRefData.kpis, dbRefData.journeys, dbRefData.roiBenchmarks, dbRefData.channelPriorities, dbRefData.tactics, dbRefData.offerings].filter(Boolean).join('\n\n')
     : buildIndustryContext(request.industry);
 
   return `You are a senior Salesforce Marketing Cloud consultant at Merkle, creating a strategic implementation plan for ${request.clientName}.

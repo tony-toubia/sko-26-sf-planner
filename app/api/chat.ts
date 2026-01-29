@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { fetchFormattedReferenceData } from './lib/referenceData';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -213,9 +214,22 @@ function buildIndustryContext(industryName: string | undefined): string {
   return context;
 }
 
-// Build the system prompt
-function buildSystemPrompt(request: ChatRequest): string {
-  const industryContext = buildIndustryContext(request.industry);
+// Build the system prompt — tries DB-backed reference data first, falls back to hardcoded
+async function buildSystemPrompt(request: ChatRequest): Promise<string> {
+  const industryId = request.industry ? (INDUSTRY_TYPE_MAP[request.industry] || request.industry) : undefined;
+
+  // Try DB-backed reference data
+  let dbRefData: Awaited<ReturnType<typeof fetchFormattedReferenceData>> = null;
+  try {
+    dbRefData = await fetchFormattedReferenceData({
+      industry: industryId,
+      maturityLevel: request.currentMaturityLevel,
+    });
+  } catch { /* fall back to hardcoded */ }
+
+  const industryContext = dbRefData
+    ? [dbRefData.kpis, dbRefData.journeys, dbRefData.roiBenchmarks, dbRefData.channelPriorities, dbRefData.tactics, dbRefData.offerings].filter(Boolean).join('\n\n')
+    : buildIndustryContext(request.industry);
 
   const foundationNote = request.marketingFoundation
     ? `\n\nThe client is considering ${request.marketingFoundation === 'mc-advanced'
@@ -241,7 +255,7 @@ Your expertise includes:
 
 ${TRACK_DESCRIPTIONS}
 
-${ROI_BENCHMARKS}
+${dbRefData ? '' : ROI_BENCHMARKS}
 
 ${industryContext}${foundationNote}${maturityNote}
 
@@ -290,7 +304,7 @@ export default async function handler(req: Request): Promise<Response> {
     }
 
     const client = new Anthropic({ apiKey });
-    const systemPrompt = buildSystemPrompt(body);
+    const systemPrompt = await buildSystemPrompt(body);
 
     // Convert messages to Anthropic format
     const anthropicMessages = body.messages.map(msg => ({

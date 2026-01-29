@@ -23,6 +23,7 @@ export interface FormattedReferenceData {
   roiBenchmarks: string;
   channelPriorities: string;
   journeys: string;
+  offerings: string;
 }
 
 /**
@@ -33,12 +34,13 @@ export async function fetchFormattedReferenceData(ctx: RefDataContext): Promise<
   if (!supabase) return null;
 
   try {
-    const [kpis, tactics, benchmarks, channels, journeys] = await Promise.all([
+    const [kpis, tactics, benchmarks, channels, journeys, offerings] = await Promise.all([
       ctx.industry ? fetchKPIs(ctx.industry) : Promise.resolve([]),
       fetchTactics(ctx),
       fetchROIBenchmarks(ctx.industry),
       ctx.industry ? fetchChannelPriorities(ctx.industry) : Promise.resolve([]),
       ctx.industry ? fetchJourneyTemplates(ctx.industry) : Promise.resolve([]),
+      fetchOfferings(ctx),
     ]);
 
     // Only return if we got meaningful data from at least one source
@@ -50,6 +52,7 @@ export async function fetchFormattedReferenceData(ctx: RefDataContext): Promise<
       roiBenchmarks: formatBenchmarks(benchmarks),
       channelPriorities: formatChannels(channels),
       journeys: formatJourneys(journeys),
+      offerings: formatOfferings(offerings),
     };
   } catch (err) {
     console.error('[referenceData] Failed to fetch from DB:', err);
@@ -183,6 +186,47 @@ function formatJourneys(journeys: any[]): string {
   const lines = ['## Key Journeys'];
   for (const j of journeys) {
     lines.push(`- **${j.name}** (${j.relevance})${j.benchmark ? `: ${j.benchmark}` : ''}${j.notes ? ` — ${j.notes}` : ''}`);
+  }
+  return lines.join('\n');
+}
+
+async function fetchOfferings(ctx: RefDataContext): Promise<any[]> {
+  if (!supabase) return [];
+  let query = supabase
+    .from('ref_offerings')
+    .select('type, name, sizing, description, disciplines')
+    .eq('is_active', true);
+
+  if (ctx.disciplines?.length) {
+    query = query.overlaps('disciplines', ctx.disciplines);
+  }
+
+  const { data } = await query;
+  return data || [];
+}
+
+function formatOfferings(offerings: any[]): string {
+  if (!offerings.length) return '';
+  const grouped: Record<string, any[]> = {};
+  for (const o of offerings) {
+    const key = o.type || 'other';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(o);
+  }
+  const lines = ['## Available Service Offerings'];
+  const typeLabels: Record<string, string> = {
+    'implementation': 'Implementation / Fixed-Bid',
+    'advisory': 'Strategy & Advisory',
+    'retainer': 'Retainer',
+    'managed-services': 'Managed Services',
+    'staff-aug': 'Staff Augmentation',
+  };
+  for (const [type, items] of Object.entries(grouped)) {
+    lines.push(`### ${typeLabels[type] || type}`);
+    for (const o of items) {
+      lines.push(`- **${o.name}** (${o.sizing || 'varies'}): ${o.description || ''}`);
+    }
+    lines.push('');
   }
   return lines.join('\n');
 }
