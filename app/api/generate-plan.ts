@@ -1,6 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { createHash } from 'crypto';
 import { fetchFormattedReferenceData, getCachedPlan, cachePlan } from './lib/referenceData';
+
+async function sha256(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // Types matching the app's data structures
 interface TrackLevelAssessment {
@@ -677,7 +684,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       globalInputs: request.globalInputs,
       quality,
     });
-    const cacheKey = createHash('sha256').update(normalizedRequest).digest('hex');
+    const cacheKey = await sha256(normalizedRequest);
 
     try {
       const cached = await getCachedPlan(cacheKey);
