@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { fetchFormattedReferenceData } from './lib/referenceData';
+import { fetchFormattedReferenceData } from './lib/referenceData.js';
 
 interface ChatMessage {
   role: 'user' | 'assistant';

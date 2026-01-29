@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { fetchFormattedReferenceData, getCachedPlan, cachePlan } from './lib/referenceData';
+import { fetchFormattedReferenceData, getCachedPlan, cachePlan } from './lib/referenceData.js';
 
 async function sha256(input: string): Promise<string> {
   const encoder = new TextEncoder();
