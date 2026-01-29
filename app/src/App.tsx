@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Header, AssessmentView, SalesforceValue, AIAssistant, ValueRealizationSlides, LandingPage, OpportunityPipeline } from './components';
+import { AdminLayout } from './components/admin';
 import type { ViewType } from './components';
 import { AssessmentProvider, useAssessment } from './context/AssessmentContext';
 import { ALL_CAPABILITIES } from './data/capabilities';
@@ -12,11 +13,12 @@ function AppContent() {
 
   const { isAssessmentMode } = useAssessment();
 
-  // Check if we're on the pipeline route
+  // Check if we're on special routes
   const isPipelineRoute = window.location.pathname === '/pipeline';
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
 
   // Show landing page if user hasn't started an assessment
-  const showLanding = !hasStartedAssessment && !isAssessmentMode && !isPipelineRoute;
+  const showLanding = !hasStartedAssessment && !isAssessmentMode && !isPipelineRoute && !isAdminRoute;
 
   const handleStartAssessment = () => {
     setHasStartedAssessment(true);
@@ -29,6 +31,11 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentView, showLanding]);
+
+  // Show admin page if on admin route
+  if (isAdminRoute) {
+    return <AdminLayout />;
+  }
 
   // Show pipeline page if on pipeline route
   if (isPipelineRoute) {

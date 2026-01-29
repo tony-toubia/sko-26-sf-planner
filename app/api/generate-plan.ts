@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { createHash } from 'crypto';
+import { fetchFormattedReferenceData, getCachedPlan, cachePlan } from './lib/referenceData';
 
 // Types matching the app's data structures
 interface TrackLevelAssessment {
@@ -487,9 +489,12 @@ function buildIndustryContext(industryName: string | undefined): string {
   return context;
 }
 
-// Build the system prompt
-function buildSystemPrompt(request: PlanGenerationRequest): string {
-  const industryContext = buildIndustryContext(request.industry);
+// Build the system prompt - can use DB-sourced data or fall back to hardcoded
+function buildSystemPrompt(request: PlanGenerationRequest, dbRefData?: { kpis: string; tactics: string; roiBenchmarks: string; channelPriorities: string; journeys: string } | null): string {
+  // If DB reference data is available, use it (chunked/targeted). Otherwise fall back to hardcoded.
+  const industryContext = dbRefData
+    ? [dbRefData.kpis, dbRefData.journeys, dbRefData.roiBenchmarks, dbRefData.channelPriorities, dbRefData.tactics].filter(Boolean).join('\n\n')
+    : buildIndustryContext(request.industry);
 
   return `You are a senior Salesforce Marketing Cloud consultant at Merkle, creating a strategic implementation plan for ${request.clientName}.
 
@@ -648,6 +653,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const request: PlanGenerationRequest = req.body;
+    const quality: 'standard' | 'enhanced' = req.body.quality || 'standard';
 
     // Validate required fields
     if (!request.clientName) {
@@ -660,33 +666,110 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    const client = new Anthropic({ apiKey });
-
-    const systemPrompt = buildSystemPrompt(request);
-    const userPrompt = buildUserPrompt(request);
-
-    // Generate the plan using Claude
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
-      messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-      system: systemPrompt,
+    // ===== CACHING: Check for cached plan =====
+    const normalizedRequest = JSON.stringify({
+      clientName: request.clientName,
+      industry: request.industry,
+      marketingFoundation: request.marketingFoundation,
+      trackAssessments: (request.trackAssessments || [])
+        .map(ta => ({ trackId: ta.trackId, level: ta.level, status: ta.status }))
+        .sort((a, b) => `${a.trackId}-${a.level}`.localeCompare(`${b.trackId}-${b.level}`)),
+      globalInputs: request.globalInputs,
+      quality,
     });
+    const cacheKey = createHash('sha256').update(normalizedRequest).digest('hex');
 
-    // Extract the text content
-    const textContent = message.content.find(block => block.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content in response');
+    const cached = await getCachedPlan(cacheKey);
+    if (cached) {
+      return res.status(200).json({
+        plan: cached.plan,
+        usage: cached.usage,
+        cached: true,
+      });
     }
 
+    // ===== CHUNKING: Fetch targeted reference data from DB =====
+    const industryId = getIndustryTypeId(request.industry);
+    const maturityLevel = request.trackAssessments?.length
+      ? Math.round(request.trackAssessments.filter(ta => ta.status === 'complete').length / Math.max(request.trackAssessments.length, 1) * 3)
+      : 1;
+
+    const dbRefData = await fetchFormattedReferenceData({
+      industry: industryId || undefined,
+      disciplines: ['messaging-personalization'], // TODO: pass from request when multi-discipline
+      maturityLevel,
+    });
+
+    const client = new Anthropic({ apiKey });
+
+    const systemPrompt = buildSystemPrompt(request, dbRefData);
+    const userPrompt = buildUserPrompt(request);
+
+    let planText: string;
+    let totalUsage = { input_tokens: 0, output_tokens: 0 };
+
+    if (quality === 'enhanced') {
+      // ===== MULTI-PASS: Two-stage generation =====
+
+      // Pass 1: Generate outline
+      const outlineMessage = await client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: userPrompt }],
+        system: `${systemPrompt}\n\nIMPORTANT: For this request, generate ONLY a structured outline (not the full plan). Include:\n1. Executive summary (2-3 bullet points)\n2. Phase structure with key capabilities per phase\n3. Top 3 journey recommendations\n4. Key investment ranges\n5. Critical risks\n\nKeep it concise - this outline will be expanded into a full plan.`,
+      });
+
+      const outlineContent = outlineMessage.content.find(block => block.type === 'text');
+      if (!outlineContent || outlineContent.type !== 'text') throw new Error('No outline content');
+
+      totalUsage.input_tokens += outlineMessage.usage.input_tokens;
+      totalUsage.output_tokens += outlineMessage.usage.output_tokens;
+
+      // Pass 2: Expand outline into full plan
+      const fullMessage = await client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8192,
+        messages: [
+          { role: 'user', content: userPrompt },
+          { role: 'assistant', content: outlineContent.text },
+          { role: 'user', content: 'Now expand this outline into the full strategic implementation plan with specific benchmarks, detailed phase descriptions, journey prioritization with ROI data, channel strategy, investment framework, and concrete next steps. Write it as a cohesive narrative document.' },
+        ],
+        system: systemPrompt,
+      });
+
+      const fullContent = fullMessage.content.find(block => block.type === 'text');
+      if (!fullContent || fullContent.type !== 'text') throw new Error('No full plan content');
+
+      planText = fullContent.text;
+      totalUsage.input_tokens += fullMessage.usage.input_tokens;
+      totalUsage.output_tokens += fullMessage.usage.output_tokens;
+
+    } else {
+      // ===== STANDARD: Single-pass generation =====
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8192,
+        messages: [{ role: 'user', content: userPrompt }],
+        system: systemPrompt,
+      });
+
+      const textContent = message.content.find(block => block.type === 'text');
+      if (!textContent || textContent.type !== 'text') throw new Error('No text content in response');
+
+      planText = textContent.text;
+      totalUsage = message.usage;
+    }
+
+    // ===== CACHE the result =====
+    await cachePlan(cacheKey, planText, totalUsage).catch(err =>
+      console.error('Failed to cache plan:', err)
+    );
+
     return res.status(200).json({
-      plan: textContent.text,
-      usage: message.usage,
+      plan: planText,
+      usage: totalUsage,
+      cached: false,
+      quality,
     });
 
   } catch (error) {

@@ -573,3 +573,96 @@ export interface GeneratedPlan {
     };
   };
 }
+
+// ============================================================
+// Admin & Reference Data Types
+// ============================================================
+
+export type EffortLevel = 'low' | 'medium' | 'high';
+export type RelevanceLevel = 'critical' | 'high' | 'medium' | 'low' | 'not-applicable';
+export type KPICategory = 'engagement' | 'conversion' | 'retention' | 'revenue' | 'efficiency' | 'loyalty';
+export type BenchmarkSource = 'industry-average' | 'merkle-benchmark' | 'salesforce-benchmark';
+export type ChannelType = 'email' | 'sms' | 'push' | 'ads' | 'direct-mail' | 'in-app';
+
+export interface Tactic {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  disciplines: DisciplineType[];
+  industries: IndustryType[];
+  tracks: string[];
+  phases: number[];
+  maturityLevelMin: number;
+  maturityLevelMax: number;
+  lifecycleStages: string[];
+  channelMix: ChannelType[];
+  expectedROI?: {
+    metric: string;
+    value: string;
+    context?: string;
+  };
+  implementationEffort?: EffortLevel;
+  prerequisites: string[];
+  tags: string[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface RefKPI {
+  id: string;
+  name: string;
+  industry: string;
+  category: KPICategory;
+  benchmark?: string;
+  howToMeasure?: string;
+  improvementLevers: string[];
+  isActive: boolean;
+}
+
+export interface RefROIBenchmark {
+  id: string;
+  industry?: string;
+  metric: string;
+  value: string;
+  context?: string;
+  phase?: number;
+  source?: BenchmarkSource;
+  isActive: boolean;
+}
+
+export interface RefJourneyTemplate {
+  id: string;
+  name: string;
+  industry: string;
+  relevance: RelevanceLevel;
+  benchmark?: string;
+  notes?: string;
+  phase?: number;
+  channels: ChannelType[];
+  tacticId?: string;
+  isActive: boolean;
+}
+
+export interface RefChannelPriority {
+  id: string;
+  industry: string;
+  channel: string;
+  priority: RelevanceLevel;
+  notes?: string;
+  isActive: boolean;
+}
+
+export interface RefOffering {
+  id: string;
+  type: string;
+  name: string;
+  description?: string;
+  sizing?: string;
+  disciplines: DisciplineType[];
+  isActive: boolean;
+}
+
+// Admin entity union for generic CRUD
+export type AdminEntity = 'tactics' | 'kpis' | 'roi-benchmarks' | 'journeys' | 'channel-priorities' | 'offerings';
