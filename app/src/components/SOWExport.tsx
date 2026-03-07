@@ -105,8 +105,8 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
     if (!sow) return totals;
     for (const [phase, items] of lineItemsByPhase) {
       totals.set(phase, {
-        min: items.reduce((s, i) => s + i.estimatedCost.min, 0),
-        max: items.reduce((s, i) => s + i.estimatedCost.max, 0),
+        min: items.reduce((s: number, i: SOWLineItem) => s + i.estimatedCost.min, 0),
+        max: items.reduce((s: number, i: SOWLineItem) => s + i.estimatedCost.max, 0),
       });
     }
     return totals;
@@ -260,7 +260,7 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
         </h4>
 
         <div className="space-y-3">
-          {Array.from(lineItemsByPhase.entries()).map(([phaseNum, items]) => {
+          {Array.from(lineItemsByPhase.entries()).map(([phaseNum, items]: [number, SOWLineItem[]]) => {
             const isExpanded = expandedPhases.has(phaseNum);
             const totals = phaseTotals.get(phaseNum);
             const phaseName = items[0]?.phaseName ?? `Phase ${phaseNum}`;
@@ -307,7 +307,7 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
                 {/* Phase detail */}
                 {isExpanded && (
                   <div className="divide-y divide-gray-100">
-                    {items.map((item, idx) => (
+                    {items.map((item: SOWLineItem, idx: number) => (
                       <div key={idx} className="px-4 py-3">
                         <div className="flex items-start justify-between mb-1">
                           <h5 className="text-sm font-medium text-gray-900">
@@ -331,7 +331,7 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
                           {item.team.length > 0 && (
                             <span className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
-                              {item.team.map(t => t.role).join(', ')}
+                              {item.team.map((t: { role: string; allocation: string }) => t.role).join(', ')}
                             </span>
                           )}
                         </div>
@@ -341,7 +341,7 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
                               Deliverables:
                             </p>
                             <ul className="text-xs text-gray-500 list-disc list-inside space-y-0.5">
-                              {item.deliverables.map((d, di) => (
+                              {item.deliverables.map((d: string, di: number) => (
                                 <li key={di}>{d}</li>
                               ))}
                             </ul>
