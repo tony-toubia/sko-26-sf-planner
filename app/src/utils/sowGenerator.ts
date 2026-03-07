@@ -14,6 +14,7 @@ import type {
 } from '../types';
 
 import {
+  type ServiceOffering,
   type ServiceSize,
   type ServiceSizeDefinition,
   getServicesForCapability,
