@@ -10,17 +10,14 @@ import type {
   GeneratedPlan,
   OpportunityAssessment,
   PlanPhase,
-  PlannedCapability,
   IndustryType,
 } from '../types';
 
 import {
-  type ServiceOffering,
   type ServiceSize,
   type ServiceSizeDefinition,
   getServicesForCapability,
   calculateServiceCost,
-  ALL_SERVICES,
 } from '../data/services';
 
 // ============================================================================
@@ -331,7 +328,7 @@ function generateScopeOfWork(
 }
 
 function generateAssumptions(
-  plan: GeneratedPlan,
+  _plan: GeneratedPlan,
   assessment: OpportunityAssessment
 ): string {
   const assumptions = [
@@ -375,7 +372,7 @@ function generateAssumptions(
 
 function generateTimeline(
   plan: GeneratedPlan,
-  lineItems: SOWLineItem[]
+  _lineItems: SOWLineItem[]
 ): string {
   let timeline = 'The following timeline outlines the phased delivery approach:\n\n';
   timeline += '| Phase | Name | Duration | Key Activities |\n';

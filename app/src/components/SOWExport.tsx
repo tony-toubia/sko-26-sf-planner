@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import type { GeneratedPlan, OpportunityAssessment } from '../types';
-import { generateSOW, formatCurrency, type StatementOfWork } from '../utils/sowGenerator';
+import { generateSOW, formatCurrency, type StatementOfWork, type SOWLineItem } from '../utils/sowGenerator';
 
 interface SOWExportProps {
   plan: GeneratedPlan;
@@ -88,8 +88,8 @@ export default function SOWExport({ plan, assessment }: SOWExportProps) {
 
   // Group line items by phase
   const lineItemsByPhase = useMemo(() => {
-    if (!sow) return new Map<number, typeof sow.lineItems>();
-    const grouped = new Map<number, typeof sow.lineItems>();
+    if (!sow) return new Map<number, SOWLineItem[]>();
+    const grouped = new Map<number, SOWLineItem[]>();
     for (const item of sow.lineItems) {
       if (!grouped.has(item.phase)) {
         grouped.set(item.phase, []);
