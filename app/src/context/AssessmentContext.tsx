@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, useRef, type ReactNode } from 'react';
 import type {
   OpportunityAssessment,
   CapabilityAssessment,
@@ -17,7 +17,7 @@ import type {
 import { generatePlan } from '../utils/planGenerator';
 import { INDUSTRIES } from '../data/industries';
 import { assessmentService } from '../lib/assessmentService';
-import { generateAIPlan, isAIPlanGenerationAvailable } from '../lib/planGenerationApi';
+import { generateAIPlan, generateAIPlanStreaming, isAIPlanGenerationAvailable } from '../lib/planGenerationApi';
 
 // Saved assessment summary for listing
 export interface SavedAssessmentSummary {
@@ -47,6 +47,7 @@ interface AssessmentContextValue {
   isGeneratingPlan: boolean;
   planGenerationError: string | null;
   isAIPlanAvailable: boolean;
+  streamingPlanMarkdown: string | null; // Real-time streaming content
 
   // User email state
   userEmail: string | null;
@@ -127,6 +128,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   // AI plan generation state
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [planGenerationError, setPlanGenerationError] = useState<string | null>(null);
+  const [streamingPlanMarkdown, setStreamingPlanMarkdown] = useState<string | null>(null);
   const isAIPlanAvailable = isAIPlanGenerationAvailable();
 
   // User email state (persisted in localStorage)
@@ -331,8 +333,17 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       // Try AI generation first if available and requested
       if (useAI && isAIPlanAvailable) {
         setIsGeneratingPlan(true);
+        setStreamingPlanMarkdown(null);
+        setShowPlanModal(true); // Show modal immediately so user sees streaming content
         try {
-          const aiMarkdown = await generateAIPlan(updatedAssessment, inputs);
+          // Use streaming API - show plan building in real-time
+          const aiMarkdown = await generateAIPlanStreaming(
+            updatedAssessment,
+            inputs,
+            (accumulated) => {
+              setStreamingPlanMarkdown(accumulated);
+            }
+          );
 
           // Create a plan object that includes both structured data and AI content
           const plan: GeneratedPlan = {
@@ -359,13 +370,15 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           }
 
           setGeneratedPlan(plan);
-          setShowPlanModal(true);
+          setStreamingPlanMarkdown(null); // Clear streaming state once complete
           setIsGeneratingPlan(false);
           return plan;
         } catch (error) {
           console.error('AI plan generation failed:', error);
           setPlanGenerationError(error instanceof Error ? error.message : 'Failed to generate AI plan');
+          setStreamingPlanMarkdown(null);
           setIsGeneratingPlan(false);
+          setShowPlanModal(false);
           // Fall through to template-based generation
         }
       }
@@ -669,53 +682,77 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     [assessment]
   );
 
-  // Computed values
-  const assessedCount = assessment ? Object.keys(assessment.assessments).length : 0;
-  const relevantCount = assessment
-    ? Object.values(assessment.assessments).filter(
-        (a) => a.relevance === 'immediately-relevant' || a.relevance === 'near-future'
-      ).length
-    : 0;
+  // Memoize computed values to avoid recalculation on every render
+  const assessedCount = useMemo(
+    () => (assessment ? Object.keys(assessment.assessments).length : 0),
+    [assessment]
+  );
+  const relevantCount = useMemo(
+    () =>
+      assessment
+        ? Object.values(assessment.assessments).filter(
+            (a) => a.relevance === 'immediately-relevant' || a.relevance === 'near-future'
+          ).length
+        : 0,
+    [assessment]
+  );
 
-  const value: AssessmentContextValue = {
-    assessment,
-    isAssessmentMode,
-    generatedPlan,
-    showPlanModal,
-    selectedIndustry,
-    marketingFoundation,
-    isSaving,
-    lastSaved,
-    isSupabaseAvailable,
-    isGeneratingPlan,
-    planGenerationError,
-    isAIPlanAvailable,
-    userEmail,
-    setSelectedIndustry,
-    setMarketingFoundation,
-    startAssessment,
-    endAssessment,
-    setCapabilityRelevance,
-    saveCapabilityAssessment,
-    getCapabilityAssessment,
-    saveGlobalInputs,
-    generateRecommendationPlan,
-    generateQuickPlan,
-    clearGeneratedPlan,
-    closePlanModal,
-    openPlanModal,
-    clearPlanError,
-    markComplete,
-    resetAssessment,
-    saveTrackLevelAssessment,
-    getTrackLevelAssessment,
-    setUserEmail,
-    loadAssessmentsByEmail,
-    loadAssessment,
-    assessedCount,
-    relevantCount,
-    totalCapabilities,
-  };
+  // Memoize the context value to prevent unnecessary re-renders of consuming components
+  const value: AssessmentContextValue = useMemo(
+    () => ({
+      assessment,
+      isAssessmentMode,
+      generatedPlan,
+      showPlanModal,
+      selectedIndustry,
+      marketingFoundation,
+      isSaving,
+      lastSaved,
+      isSupabaseAvailable,
+      isGeneratingPlan,
+      planGenerationError,
+      isAIPlanAvailable,
+      streamingPlanMarkdown,
+      userEmail,
+      setSelectedIndustry,
+      setMarketingFoundation,
+      startAssessment,
+      endAssessment,
+      setCapabilityRelevance,
+      saveCapabilityAssessment,
+      getCapabilityAssessment,
+      saveGlobalInputs,
+      generateRecommendationPlan,
+      generateQuickPlan,
+      clearGeneratedPlan,
+      closePlanModal,
+      openPlanModal,
+      clearPlanError,
+      markComplete,
+      resetAssessment,
+      saveTrackLevelAssessment,
+      getTrackLevelAssessment,
+      setUserEmail,
+      loadAssessmentsByEmail,
+      loadAssessment,
+      assessedCount,
+      relevantCount,
+      totalCapabilities,
+    }),
+    [
+      assessment, isAssessmentMode, generatedPlan, showPlanModal,
+      selectedIndustry, marketingFoundation, isSaving, lastSaved,
+      isSupabaseAvailable, isGeneratingPlan, planGenerationError,
+      isAIPlanAvailable, streamingPlanMarkdown, userEmail, setSelectedIndustry, setMarketingFoundation,
+      startAssessment, endAssessment, setCapabilityRelevance,
+      saveCapabilityAssessment, getCapabilityAssessment, saveGlobalInputs,
+      generateRecommendationPlan, generateQuickPlan, clearGeneratedPlan,
+      closePlanModal, openPlanModal, clearPlanError, markComplete,
+      resetAssessment, saveTrackLevelAssessment, getTrackLevelAssessment,
+      setUserEmail, loadAssessmentsByEmail, loadAssessment,
+      assessedCount, relevantCount, totalCapabilities,
+    ]
+  );
 
   return <AssessmentContext.Provider value={value}>{children}</AssessmentContext.Provider>;
 }

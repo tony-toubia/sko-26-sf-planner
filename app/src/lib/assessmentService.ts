@@ -150,43 +150,24 @@ export const assessmentService = {
   async loadAssessment(assessmentId: string): Promise<OpportunityAssessment | null> {
     if (!supabase) return null;
 
-    // Load assessment
-    const { data: assessment, error: assessmentError } = await supabase
-      .from('assessments')
-      .select('*')
-      .eq('id', assessmentId)
-      .single();
+    // Load assessment and all related data in parallel for better performance
+    const [assessmentResult, trackResult, globalInputsResult, planResult] = await Promise.all([
+      supabase.from('assessments').select('*').eq('id', assessmentId).single(),
+      supabase.from('track_assessments').select('*').eq('assessment_id', assessmentId),
+      supabase.from('assessment_global_inputs').select('*').eq('assessment_id', assessmentId).maybeSingle(),
+      supabase.from('generated_plans').select('*').eq('assessment_id', assessmentId).maybeSingle(),
+    ]);
 
-    if (assessmentError || !assessment) {
-      console.error('Failed to load assessment:', assessmentError);
+    if (assessmentResult.error || !assessmentResult.data) {
+      console.error('Failed to load assessment:', assessmentResult.error);
       return null;
     }
 
-    // Load track assessments
-    const { data: trackAssessments } = await supabase
-      .from('track_assessments')
-      .select('*')
-      .eq('assessment_id', assessmentId);
-
-    // Load global inputs (optional - may not exist)
-    const { data: globalInputs } = await supabase
-      .from('assessment_global_inputs')
-      .select('*')
-      .eq('assessment_id', assessmentId)
-      .maybeSingle();
-
-    // Load generated plan (optional - may not exist)
-    const { data: generatedPlan } = await supabase
-      .from('generated_plans')
-      .select('*')
-      .eq('assessment_id', assessmentId)
-      .maybeSingle();
-
     return dbToAssessment(
-      assessment,
-      trackAssessments || [],
-      globalInputs || null,
-      generatedPlan || null
+      assessmentResult.data,
+      trackResult.data || [],
+      globalInputsResult.data || null,
+      planResult.data || null
     );
   },
 

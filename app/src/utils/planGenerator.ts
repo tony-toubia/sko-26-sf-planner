@@ -13,6 +13,17 @@ import type {
 } from '../types';
 import { getCapabilityById } from '../data/capabilities';
 
+// Memoized capability lookup cache to avoid repeated linear scans
+const capabilityCache = new Map<string, ReturnType<typeof getCapabilityById>>();
+function getCachedCapability(id: string) {
+  let cached = capabilityCache.get(id);
+  if (cached === undefined) {
+    cached = getCapabilityById(id) ?? null;
+    capabilityCache.set(id, cached);
+  }
+  return cached;
+}
+
 // Track to capability mapping - maps track/levels to relevant capabilities
 const TRACK_LEVEL_CAPABILITIES: Record<TrackId, Record<TrackLevel, string[]>> = {
   'data-identity': {
@@ -177,7 +188,7 @@ export function generatePlan(
   }
 
   // Get full capability data for assessed items
-  const getCapability = (id: string) => getCapabilityById(id);
+  const getCapability = (id: string) => getCachedCapability(id);
 
   // Build dependency graph and determine sequencing
   // Pass complete and in-progress items so they're factored into foundation requirements
@@ -299,11 +310,15 @@ function buildPhasedPlan(
     });
   }
 
-  // Group capabilities by their natural phase in the matrix
-  const phase1Caps = immediate.filter((a) => a.capability.phase === 1);
-  const phase2Caps = immediate.filter((a) => a.capability.phase === 2);
-  const phase3Caps = immediate.filter((a) => a.capability.phase === 3);
-  const phase4Caps = immediate.filter((a) => a.capability.phase === 4);
+  // Group capabilities by their natural phase in the matrix (single-pass)
+  const phaseGroups: Record<number, AssessmentWithCapability[]> = { 1: [], 2: [], 3: [], 4: [] };
+  for (const a of immediate) {
+    (phaseGroups[a.capability.phase] ??= []).push(a);
+  }
+  const phase1Caps = phaseGroups[1];
+  const phase2Caps = phaseGroups[2];
+  const phase3Caps = phaseGroups[3];
+  const phase4Caps = phaseGroups[4];
 
   // Build Phase 1: Foundation
   if (phase1Caps.length > 0 || hasDataCloud) {
@@ -550,7 +565,7 @@ function generateSequencingNotes(capability: Capability, _globalInputs: GlobalAs
 
   if (capability.dependencies.length > 0) {
     const depNames = capability.dependencies
-      .map((d) => getCapabilityById(d)?.shortName || d)
+      .map((d) => getCachedCapability(d)?.shortName || d)
       .join(', ');
     notes.push(`Requires: ${depNames}`);
   }
@@ -619,7 +634,7 @@ function identifyQuickWins(
   const quickWins: GeneratedPlan['quickWins'] = [];
 
   immediate.forEach((a) => {
-    const cap = getCapabilityById(a.capabilityId);
+    const cap = getCachedCapability(a.capabilityId);
     if (!cap) return;
 
     // Einstein features are often quick wins
@@ -738,7 +753,7 @@ function identifyRisks(
   );
 
   const needsDataCloud = Object.values(assessment.assessments).some((a) => {
-    const cap = getCapabilityById(a.capabilityId);
+    const cap = getCachedCapability(a.capabilityId);
     return cap?.dependencies.includes('migrate-sfmc');
   });
 
@@ -815,7 +830,7 @@ function generateSuccessMetrics(
 
   // Add capability-specific KPIs
   [...immediate, ...nearFuture].slice(0, 3).forEach((a) => {
-    const cap = getCapabilityById(a.capabilityId);
+    const cap = getCachedCapability(a.capabilityId);
     if (cap && cap.clientValue.kpis.length > 0) {
       metrics.push({
         metric: cap.clientValue.kpis[0],
