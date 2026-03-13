@@ -5,7 +5,7 @@
  * filtered, formatted markdown for injection into Claude's system prompt.
  */
 
-import knowledgeBaseData from './knowledge-base.json';
+import knowledgeBaseData from './knowledge-base.json' with { type: 'json' };
 
 function getKB(): KnowledgeBase {
   return knowledgeBaseData as unknown as KnowledgeBase;

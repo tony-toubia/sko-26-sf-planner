@@ -501,14 +501,14 @@ function recommendOfferings(
       }
     }
 
-    // Add OSP option if OPEX preferred
-    if (prefs.preferCapexOrOpex === 'opex') {
+    // Add OSP option if CAPEX preferred (OSP bundles license + services, making it capitalizable)
+    if (prefs.preferCapexOrOpex === 'capex' || prefs.preferredEngagementModel?.includes('osp')) {
       const ospOffering = capability.merkleOfferings.find((o) => o.type === 'osp');
       if (ospOffering) {
         offerings.push({
           offeringName: ospOffering.name,
           offeringType: 'osp',
-          rationale: 'OPEX model available for clients preferring operational expenditure approach.',
+          rationale: 'OSP bundles licensing and services into a single capitalizable investment, ideal for clients seeking CapEx treatment.',
         });
       }
     }
@@ -667,9 +667,9 @@ function generateCommercialRecommendation(
     modelRationale = 'Retainer model provides flexibility and ongoing strategic support aligned with stated preferences.';
   }
 
-  if (prefs.preferCapexOrOpex === 'opex') {
-    recommendedModel = 'OPEX/OSP Model';
-    modelRationale = 'Operational expenditure model bundles licensing and services for predictable monthly costs.';
+  if (prefs.preferCapexOrOpex === 'capex' || prefs.preferredEngagementModel?.includes('osp')) {
+    recommendedModel = 'OSP (CapEx Model)';
+    modelRationale = 'OSP bundles Salesforce licensing and Merkle services into a single capitalizable investment — ideal for clients looking to capitalize both license and delivery costs together.';
   }
 
   // Generate phased investment

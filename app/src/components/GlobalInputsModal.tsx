@@ -55,7 +55,7 @@ const ENGAGEMENT_MODELS: { value: MerkleOfferingType; label: string; description
   { value: 'retainer', label: 'Retainer/Managed Services', description: 'Ongoing support with predictable costs' },
   { value: 'staff-aug', label: 'Staff Augmentation', description: 'Embedded resources with client teams' },
   { value: 'strategic-advisory', label: 'Strategic Advisory', description: 'Executive guidance and roadmap' },
-  { value: 'osp', label: 'OPEX Model (OSP)', description: 'Bundled licensing + services' },
+  { value: 'osp', label: 'OSP (CapEx-eligible)', description: 'Bundled licensing + services — capitalizable' },
 ];
 
 const BUSINESS_DRIVERS = [

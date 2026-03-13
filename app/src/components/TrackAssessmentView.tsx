@@ -546,24 +546,28 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
             </div>
           )}
 
-          {/* Completion Card - show if foundation selected (M&P) OR on Loyalty tab */}
-          {(marketingFoundation || activeDiscipline === 'loyalty') && completionStats.isComplete && (
-            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-5 text-white">
+          {/* Plan actions — show when assessment is complete OR when a plan already exists */}
+          {(marketingFoundation || activeDiscipline === 'loyalty') && (completionStats.isComplete || generatedPlan) && (
+            <div className={`rounded-xl p-5 text-white ${completionStats.isComplete ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-gradient-to-br from-slate-600 to-slate-700'}`}>
               <div className="flex items-center gap-2 mb-3">
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm font-medium">Assessment Complete</span>
+                <span className="text-sm font-medium">
+                  {completionStats.isComplete ? 'Assessment Complete' : 'Plan Available'}
+                </span>
               </div>
               <p className="text-lg font-semibold mb-4">
-                All tracks assessed! Ready to generate your plan.
+                {completionStats.isComplete
+                  ? 'All tracks assessed! Ready to generate your plan.'
+                  : 'View your plan or regenerate with latest answers.'}
               </p>
               <div className="flex flex-col gap-2">
                 {generatedPlan && (
                   <button
                     onClick={openPlanModal}
-                    className="w-full py-2.5 bg-white text-emerald-600 rounded-lg font-medium hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-white text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
-                    View Existing Plan
+                    View Plan
                   </button>
                 )}
                 {onGeneratePlan && (
@@ -571,7 +575,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                     onClick={onGeneratePlan}
                     className={`w-full py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
                       generatedPlan
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                        ? 'bg-white/20 text-white hover:bg-white/30'
                         : 'bg-white text-emerald-600 hover:bg-emerald-50'
                     }`}
                   >
