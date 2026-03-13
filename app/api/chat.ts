@@ -1,6 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchFormattedReferenceData } from './lib/referenceData.js';
-import { getChatKnowledge } from './lib/knowledgeQuery.js';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -242,11 +241,7 @@ async function buildSystemPrompt(request: ChatRequest): Promise<string> {
     ? `\n\nThe client's current overall maturity level is approximately ${request.currentMaturityLevel} out of 5.`
     : '';
 
-  // Get PDF-sourced knowledge relevant to the latest user message
-  const latestUserMessage = request.messages?.filter(m => m.role === 'user').pop()?.content || '';
-  const pdfKnowledge = latestUserMessage
-    ? getChatKnowledge(latestUserMessage, industryId ? [industryId] : undefined)
-    : '';
+  const pdfKnowledge = '';
 
   return `You are a Maturity Assessment Assistant for Salesforce Marketing Cloud implementations. You help Merkle consultants assess client maturity and plan capability roadmaps.
 

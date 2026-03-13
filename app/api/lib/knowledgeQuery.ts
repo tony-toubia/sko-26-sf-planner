@@ -5,10 +5,24 @@
  * filtered, formatted markdown for injection into Claude's system prompt.
  */
 
-import knowledgeBaseData from './knowledge-base.json' with { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function loadKnowledgeBase(): KnowledgeBase {
+  const kbPath = path.join(__dirname, 'knowledge-base.json');
+  const raw = fs.readFileSync(kbPath, 'utf-8');
+  return JSON.parse(raw) as KnowledgeBase;
+}
+
+let _kb: KnowledgeBase | null = null;
 
 function getKB(): KnowledgeBase {
-  return knowledgeBaseData as unknown as KnowledgeBase;
+  if (!_kb) _kb = loadKnowledgeBase();
+  return _kb;
 }
 
 // ============================================================================
