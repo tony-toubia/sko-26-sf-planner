@@ -154,7 +154,7 @@ function recommendImplementationServices(
 
   // 1. Data Integration Service
   if (dataLevelsAssessed > 0) {
-    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'data-integration');
+    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'data-integration-setup');
     if (service) {
       let size: ServiceSize = 'small';
       let rationale = 'Data integration required for ';
@@ -303,7 +303,7 @@ function recommendImplementationServices(
 function recommendRetainerService(
   context: RecommendationContext
 ): ServiceRecommendation | null {
-  const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'marketing-ops-retainer');
+  const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'marketing-operations-retainer');
   if (!service) return null;
 
   // Recommend retainer if they're at Level 2+ maturity
@@ -355,7 +355,7 @@ function recommendStaffAugmentation(
 
   // Journey Architect for complex journey implementations
   if (journeyLevelsAssessed >= 2) {
-    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'staff-aug-journey-architect');
+    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'journey-architect-staffaug');
     if (service) {
       const size: ServiceSize = journeyLevelsAssessed >= 3 ? 'large' : 'medium';
       const cost = calculateServiceCost(service, size, [], context.industry);
@@ -374,7 +374,7 @@ function recommendStaffAugmentation(
 
   // Data Engineer for complex data integrations
   if (dataLevelsAssessed >= 2 && context.hasComplexIntegrations) {
-    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'staff-aug-data-engineer');
+    const service = ALL_SERVICES.find((s: ServiceOffering) => s.id === 'data-engineer-staffaug');
     if (service) {
       const size: ServiceSize = dataLevelsAssessed >= 3 ? 'large' : 'medium';
       const cost = calculateServiceCost(service, size, [], context.industry);
