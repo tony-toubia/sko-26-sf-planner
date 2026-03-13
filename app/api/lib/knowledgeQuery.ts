@@ -5,20 +5,10 @@
  * filtered, formatted markdown for injection into Claude's system prompt.
  */
 
-import fs from 'fs';
-import path from 'path';
+import knowledgeBaseData from './knowledge-base.json';
 
-// Load knowledge base at module init (cached by Node.js module system)
-function loadKnowledgeBase(): KnowledgeBase {
-  const kbPath = path.join(__dirname, 'knowledge-base.json');
-  const raw = fs.readFileSync(kbPath, 'utf-8');
-  return JSON.parse(raw) as KnowledgeBase;
-}
-
-let _kb: KnowledgeBase | null = null;
 function getKB(): KnowledgeBase {
-  if (!_kb) _kb = loadKnowledgeBase();
-  return _kb;
+  return knowledgeBaseData as unknown as KnowledgeBase;
 }
 
 // ============================================================================
