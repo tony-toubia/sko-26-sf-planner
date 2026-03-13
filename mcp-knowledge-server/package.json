@@ -10,10 +10,12 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/pdf-parse": "^1.1.5",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { fetchFormattedReferenceData, getCachedPlan, cachePlan } from './lib/referenceData.js';
+import { getPlanKnowledge } from './lib/knowledgeQuery.js';
 
 async function sha256(input: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -503,6 +504,9 @@ function buildSystemPrompt(request: PlanGenerationRequest, dbRefData?: { kpis: s
     ? [dbRefData.kpis, dbRefData.journeys, dbRefData.roiBenchmarks, dbRefData.channelPriorities, dbRefData.tactics, dbRefData.offerings].filter(Boolean).join('\n\n')
     : buildIndustryContext(request.industry);
 
+  // Get PDF-sourced knowledge (offerings, sales intelligence, methodology)
+  const pdfKnowledge = getPlanKnowledge(['messaging-personalization']); // TODO: pass disciplines from request
+
   return `You are a senior Salesforce Marketing Cloud consultant at Merkle, creating a strategic implementation plan for ${request.clientName}.
 
 Your role is to create a compelling, narrative-driven recommendation plan that:
@@ -527,6 +531,8 @@ ${JOURNEY_GUIDANCE}
 ${TRACK_DESCRIPTIONS}
 
 ${industryContext}
+
+${pdfKnowledge}
 
 ## Writing Guidelines
 
