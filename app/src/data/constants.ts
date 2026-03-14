@@ -79,7 +79,7 @@ export const DISCIPLINES: Discipline[] = [
     icon: 'Award',
     salesforceCloud: 'Loyalty Management',
     color: '#7C3AED',
-    available: false, // Locked for now
+    available: true,
   },
   {
     id: 'commerce',
