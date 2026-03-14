@@ -68,7 +68,9 @@ interface TrackLevelAssessmentProps {
   level: TrackLevel;
   initialAnswers?: AssessmentAnswer[];
   initialStatus?: TrackLevelStatus;
+  initialNotes?: string;
   onComplete: (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => void;
+  onAutoSave?: (status: TrackLevelStatus, answers: AssessmentAnswer[], notes: string) => void;
   onCancel: () => void;
   onBack?: () => void;
   totalLevels?: number;
@@ -245,7 +247,9 @@ export function TrackLevelAssessment({
   level,
   initialAnswers = [],
   initialStatus = 'not-started',
+  initialNotes = '',
   onComplete,
+  onAutoSave,
   onCancel,
   totalLevels = 12,
   currentLevelIndex = 0,
@@ -261,14 +265,29 @@ export function TrackLevelAssessment({
   const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus | null>(
     initialStatus !== 'not-started' ? initialStatus : null
   );
-  const [notes, setNotes] = useState<string>('');
+  const [notes, setNotes] = useState<string>(initialNotes);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
     const initial: Record<string, string | string[]> = {};
     for (const answer of initialAnswers) {
-      initial[answer.questionId] = answer.value as string | string[];
+      // Support both {value} (app format) and {answer} (legacy seed format)
+      const v = (answer as any).value ?? (answer as any).answer;
+      if (v !== undefined) initial[answer.questionId] = v as string | string[];
     }
     return initial;
   });
+
+  // Debounced auto-save — fires 800ms after any answer/notes change
+  const autoSaveTimer = useState<ReturnType<typeof setTimeout> | null>(null);
+  const scheduleAutoSave = (updatedAnswers: Record<string, string | string[]>, currentNotes: string) => {
+    if (!onAutoSave) return;
+    if (autoSaveTimer[0]) clearTimeout(autoSaveTimer[0]);
+    autoSaveTimer[1](setTimeout(() => {
+      const formatted: AssessmentAnswer[] = Object.entries(updatedAnswers)
+        .filter(([, v]) => v !== '' && !(Array.isArray(v) && v.length === 0))
+        .map(([id, value]) => ({ questionId: id, value }));
+      onAutoSave('in-progress', formatted, currentNotes);
+    }, 800));
+  };
 
   const track = useMemo(() => getTrackById(trackId), [trackId]);
   const trackLevel = useMemo(() => getTrackLevel(trackId, level), [trackId, level]);
@@ -309,7 +328,11 @@ export function TrackLevelAssessment({
   const canSave = selectedStatus !== null && (!shouldShowQuestions || allRequiredAnswered);
 
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => {
+      const updated = { ...prev, [questionId]: value };
+      scheduleAutoSave(updated, notes);
+      return updated;
+    });
   };
 
   // Options that negate all others when selected
@@ -321,17 +344,21 @@ export function TrackLevelAssessment({
   const handleMultiSelectToggle = (questionId: string, option: string) => {
     setAnswers((prev) => {
       const current = (prev[questionId] as string[]) || [];
+      let updated: string[];
       // Deselecting — just remove it
       if (current.includes(option)) {
-        return { ...prev, [questionId]: current.filter((o) => o !== option) };
+        updated = current.filter((o) => o !== option);
+      } else if (isExclusiveOption(option)) {
+        // Selecting an exclusive option → clear everything else
+        updated = [option];
+      } else {
+        // Selecting a normal option → remove any exclusive options that were checked
+        const withoutExclusive = current.filter((o) => !isExclusiveOption(o));
+        updated = [...withoutExclusive, option];
       }
-      // Selecting an exclusive option → clear everything else
-      if (isExclusiveOption(option)) {
-        return { ...prev, [questionId]: [option] };
-      }
-      // Selecting a normal option → remove any exclusive options that were checked
-      const withoutExclusive = current.filter((o) => !isExclusiveOption(o));
-      return { ...prev, [questionId]: [...withoutExclusive, option] };
+      const next = { ...prev, [questionId]: updated };
+      scheduleAutoSave(next, notes);
+      return next;
     });
   };
 
@@ -524,7 +551,7 @@ export function TrackLevelAssessment({
                     </label>
                     <textarea
                       value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
+                      onChange={(e) => { setNotes(e.target.value); scheduleAutoSave(answers, e.target.value); }}
                       placeholder={
                         selectedStatus === 'complete'
                           ? 'Any observations about current performance or optimization opportunities...'

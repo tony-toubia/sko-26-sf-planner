@@ -91,9 +91,9 @@ async function seed() {
       status: 'complete',
       notes: 'Data Cloud live since Q1 2024; MCA migrated from MCE two years ago',
       answers: [
-        { questionId: 'current-platform',  answer: 'Marketing Cloud Advanced already deployed' },
-        { questionId: 'data-cloud-status', answer: 'Fully operational with data streams' },
-        { questionId: 'platform-goals',    answer: ['Unified customer data', 'Real-time segmentation', 'Cross-cloud integration', 'AI/Einstein capabilities'] },
+        { questionId: 'current-platform',  value: 'Marketing Cloud Advanced already deployed' },
+        { questionId: 'data-cloud-status', value: 'Fully operational with data streams' },
+        { questionId: 'platform-goals',    value: ['Unified customer data', 'Real-time segmentation', 'Cross-cloud integration', 'AI/Einstein capabilities'] },
       ],
     },
     {
@@ -102,9 +102,9 @@ async function seed() {
       status: 'complete',
       notes: 'PMS (OnQ) streams bookings in near real-time via MuleSoft; Honors CDP segment refreshes every 15 min',
       answers: [
-        { questionId: 'data-sources-available', answer: ['Reservation / booking system', 'Loyalty program', 'Mobile app', 'Web browsing behavior', 'Call center / service data', 'OTA / partner data'] },
-        { questionId: 'purchase-data-state',    answer: 'Near real-time transaction data' },
-        { questionId: 'integration-blockers',   answer: ['Privacy / compliance', 'No significant blockers'] },
+        { questionId: 'data-sources-available', value: ['Reservation / booking system', 'Loyalty program', 'Mobile app', 'Web browsing behavior', 'Call center / service data', 'OTA / partner data'] },
+        { questionId: 'purchase-data-state',    value: 'Near real-time transaction data' },
+        { questionId: 'integration-blockers',   value: ['Privacy / compliance', 'No significant blockers'] },
       ],
     },
     {
@@ -113,9 +113,9 @@ async function seed() {
       status: 'complete',
       notes: 'Multiple Hilton brands (Waldorf, Conrad, Curio) create cross-brand identity gaps; GDPR/CCPA compliance is critical given global footprint',
       answers: [
-        { questionId: 'identity-challenges',  answer: ['Unknown / anonymous visitors', 'Multi-brand identity', 'Fragmented profiles across systems'] },
-        { questionId: 'consent-management',   answer: 'OneTrust or similar platform' },
-        { questionId: 'identity-solution',    answer: 'Yes, but need to understand integration' },
+        { questionId: 'identity-challenges',  value: ['Unknown / anonymous visitors', 'Multi-brand identity', 'Fragmented profiles across systems'] },
+        { questionId: 'consent-management',   value: 'OneTrust or similar platform' },
+        { questionId: 'identity-solution',    value: 'Yes, but need to understand integration' },
       ],
     },
 
@@ -126,9 +126,9 @@ async function seed() {
       status: 'complete',
       notes: 'Welcome series drives strong Honors enrollment; birthday offer sees 3.2x conversion vs standard campaigns',
       answers: [
-        { questionId: 'existing-journeys',   answer: ['Welcome / onboarding series', 'Birthday or anniversary', 'Preference center completion'] },
-        { questionId: 'journey-performance', answer: 'Meeting expectations' },
-        { questionId: 'subscriber-data',     answer: ['Name and demographics', 'Birthday / anniversary dates', 'Preferences and interests', 'Engagement history', 'Location data'] },
+        { questionId: 'existing-journeys',   value: ['Welcome / onboarding series', 'Birthday or anniversary', 'Preference center completion'] },
+        { questionId: 'journey-performance', value: 'Meeting expectations' },
+        { questionId: 'subscriber-data',     value: ['Name and demographics', 'Birthday / anniversary dates', 'Preferences and interests', 'Engagement history', 'Location data'] },
       ],
     },
     {
@@ -137,9 +137,9 @@ async function seed() {
       status: 'complete',
       notes: 'Booking abandonment recovery is #1 revenue opportunity — ~$220M in abandoned bookings monthly; pre-arrival upsell showing strong attach rates in pilot',
       answers: [
-        { questionId: 'purchase-journeys-exist', answer: ['Booking abandonment', 'Pre-arrival communications', 'Post-stay follow-up', 'Review requests', 'Win-back / lapsed traveler'] },
-        { questionId: 'cart-abandon-priority',   answer: 'Yes, high abandonment rate' },
-        { questionId: 'purchase-data-ready',     answer: 'Yes, real-time events available' },
+        { questionId: 'purchase-journeys-exist', value: ['Booking abandonment', 'Pre-arrival communications', 'Post-stay follow-up', 'Review requests', 'Win-back / lapsed traveler'] },
+        { questionId: 'cart-abandon-priority',   value: 'Yes, high abandonment rate' },
+        { questionId: 'purchase-data-ready',     value: 'Yes, real-time events available' },
       ],
     },
     {
@@ -148,9 +148,9 @@ async function seed() {
       status: 'complete',
       notes: 'Central data science team of 18; Honors tier data (Silver/Gold/Diamond) + stay history enables rich CLV and next-stay propensity models',
       answers: [
-        { questionId: 'predictive-use-cases',    answer: ['Next-best-action recommendations', 'Churn intervention triggers', 'Real-time behavioral triggers', 'Dynamic pricing / offers'] },
-        { questionId: 'data-science-capability', answer: 'In-house data science team' },
-        { questionId: 'unique-data-assets',      answer: ['Rich loyalty / rewards data', 'Service interaction history', 'In-store behavior data'] },
+        { questionId: 'predictive-use-cases',    value: ['Next-best-action recommendations', 'Churn intervention triggers', 'Real-time behavioral triggers', 'Dynamic pricing / offers'] },
+        { questionId: 'data-science-capability', value: 'In-house data science team' },
+        { questionId: 'unique-data-assets',      value: ['Rich loyalty / rewards data', 'Service interaction history', 'In-store behavior data'] },
       ],
     },
 
@@ -161,9 +161,9 @@ async function seed() {
       status: 'complete',
       notes: '40+ active campaigns/month across 18 brands; content versioning for brands is the core bottleneck — marketing ops team is stretched',
       answers: [
-        { questionId: 'current-campaign-approach', answer: 'Multi-touch journeys in Journey Builder' },
-        { questionId: 'campaign-volume',           answer: '30+ campaigns per month' },
-        { questionId: 'campaign-pain-points',      answer: ['Personalization at scale', 'Time to market / production velocity', 'Measurement / attribution'] },
+        { questionId: 'current-campaign-approach', value: 'Multi-touch journeys in Journey Builder' },
+        { questionId: 'campaign-volume',           value: '30+ campaigns per month' },
+        { questionId: 'campaign-pain-points',      value: ['Personalization at scale', 'Time to market / production velocity', 'Measurement / attribution'] },
       ],
     },
     {
@@ -172,9 +172,9 @@ async function seed() {
       status: 'complete',
       notes: 'Hilton app (MAU ~8M) supports push + in-app; SMS consent database strong for check-in reminders and upgrade offers',
       answers: [
-        { questionId: 'personalization-level',  answer: 'Some dynamic content / AMPscript' },
-        { questionId: 'mobile-channels-active', answer: ['SMS / MMS', 'Push notifications (mobile app)', 'In-app messaging'] },
-        { questionId: 'sms-readiness',          answer: 'Have short code / sender ID' },
+        { questionId: 'personalization-level',  value: 'Some dynamic content / AMPscript' },
+        { questionId: 'mobile-channels-active', value: ['SMS / MMS', 'Push notifications (mobile app)', 'In-app messaging'] },
+        { questionId: 'sms-readiness',          value: 'Have short code / sender ID' },
       ],
     },
 
@@ -185,9 +185,9 @@ async function seed() {
       status: 'complete',
       notes: 'MCI (Datorama) is primary campaign reporting tool; Snowflake data warehouse feeds Tableau for exec dashboards',
       answers: [
-        { questionId: 'current-reporting', answer: ['Marketing Cloud Intelligence / Datorama', 'Tableau dashboards', 'Custom data warehouse reporting'] },
-        { questionId: 'reporting-gaps',    answer: ['Cross-channel attribution', 'Real-time performance visibility', 'Customer-level analytics'] },
-        { questionId: 'analytics-owner',   answer: 'Dedicated analytics team' },
+        { questionId: 'current-reporting', value: ['Marketing Cloud Intelligence / Datorama', 'Tableau dashboards', 'Custom data warehouse reporting'] },
+        { questionId: 'reporting-gaps',    value: ['Cross-channel attribution', 'Real-time performance visibility', 'Customer-level analytics'] },
+        { questionId: 'analytics-owner',   value: 'Dedicated analytics team' },
       ],
     },
     {
@@ -197,8 +197,8 @@ async function seed() {
       status: 'in-progress',
       notes: 'Custom MTA model built in-house; Einstein enabled but teams lack training to action insights — identified as quick win',
       answers: [
-        { questionId: 'attribution-approach', answer: 'Multi-touch attribution' },
-        { questionId: 'bi-tool-preference',   answer: 'Tableau (preferred)' },
+        { questionId: 'attribution-approach', value: 'Multi-touch attribution' },
+        { questionId: 'bi-tool-preference',   value: 'Tableau (preferred)' },
         // einstein-insights-use ← intentionally omitted — user will complete this
       ],
     },

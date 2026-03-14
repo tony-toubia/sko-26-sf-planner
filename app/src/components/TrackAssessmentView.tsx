@@ -770,6 +770,12 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
             getTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level)?.status ||
             'not-started'
           }
+          initialNotes={
+            getTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level)?.notes || ''
+          }
+          onAutoSave={(status, answers, notes) => {
+            saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers, notes);
+          }}
           onComplete={handleAssessmentComplete}
           onCancel={handleAssessmentCancel}
           totalLevels={completionStats.total}

@@ -59,6 +59,20 @@ function AppContent() {
     setCurrentPath(window.location.pathname);
   }, [showPlanModal]);
 
+  // Sync URL to /assessment/:id whenever an assessment is active
+  // (handles new assessments created from landing page / pipeline)
+  useEffect(() => {
+    if (!isAssessmentMode || !assessment?.id) return;
+    const path = window.location.pathname;
+    // Don't override plan or admin URLs
+    if (path.startsWith('/plan/') || path.startsWith('/admin')) return;
+    const desired = `/assessment/${assessment.id}`;
+    if (path !== desired) {
+      window.history.replaceState({}, '', desired);
+      setCurrentPath(desired);
+    }
+  }, [isAssessmentMode, assessment?.id]);
+
   // Handle direct /plan/:id URL load (page refresh or shared link)
   const planId = getPlanIdFromPath(currentPath);
   useEffect(() => {

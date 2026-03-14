@@ -60,11 +60,16 @@ function dbToAssessment(
 
   for (const ta of trackAssessments) {
     const key = `${ta.track_id}-${ta.level}`;
+    // Normalize answers: some legacy seed data used {questionId, answer} instead of {questionId, value}
+    const normalizedAnswers = (ta.answers || []).map((a: any) => ({
+      questionId: a.questionId,
+      value: a.value !== undefined ? a.value : a.answer,
+    }));
     trackAssessmentsMap[key] = {
       trackId: ta.track_id as TrackLevelAssessment['trackId'],
       level: ta.level as TrackLevelAssessment['level'],
       status: ta.status as TrackLevelAssessment['status'],
-      answers: ta.answers || [],
+      answers: normalizedAnswers,
       notes: ta.notes || undefined,
       assessedAt: new Date(ta.assessed_at),
     };
