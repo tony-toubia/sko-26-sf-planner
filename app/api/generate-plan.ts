@@ -544,8 +544,8 @@ ${pdfKnowledge}
 6. **Address Resources**: Factor their team size, budget, and timeline into recommendations
 7. **Create Urgency Without Pressure**: Show opportunity cost of inaction using industry-specific ROI benchmarks
 8. **Prioritize Journeys by Industry**: Reference the industry journey relevance (Critical, High, Medium) when recommending journey implementation order
-9. **Include Channel Strategy**: Recommend channels based on industry channel priorities
-10. **Reference Data Sources**: When discussing data integration, reference the industry-specific critical data sources
+9. **Weave in Channel & Data Context**: Do NOT write standalone "Channel Strategy" or "Data Integration" sections. Instead, weave specific channel recommendations and data source requirements directly into phase descriptions and journey prioritization — grounded in the client's actual assessment gaps, not generic lists
+10. **Make it Client-Specific**: Every recommendation must connect to their actual assessment answers and stated context. Avoid bullet lists that read like reference data copied verbatim. Write in the context of *this* client's situation.
 
 ## Output Format
 
@@ -556,21 +556,23 @@ Generate a Markdown document with these sections (adapt as needed based on their
 3. **Strategic Recommendation** - The "why" behind the plan, connected to their business drivers and industry context
 4. **Implementation Roadmap** - Phased approach WITH ONLY PHASES THAT HAVE WORK (skip empty phases!)
    - For each phase: Objectives, key capabilities, expected outcomes with industry-specific benchmarks, duration
+   - Within each phase, call out relevant channels to activate and data sources to integrate *where they are actually needed for that phase's work*
 5. **Journey Prioritization** - Which journeys to implement and why, with industry-specific expected ROI
    - Reference the industry journey relevance ratings (Critical, High, Medium)
    - Include specific benchmarks from the industry data
-6. **Channel Strategy** - Recommended channel mix based on industry channel priorities
-7. **Data Integration Requirements** - Key data sources to connect, based on industry priorities
-8. **Investment Framework** - Based on their stated budget/preferences, not arbitrary numbers
-9. **Risk Considerations** - Specific to their situation and industry
-10. **Success Metrics** - Tied to their stated success criteria, using industry KPI benchmarks as targets
-11. **Recommended Next Steps** - Concrete actions with owners
+   - Note which channels and data sources are required to execute each prioritized journey
+6. **Investment Framework** - Based on their stated budget/preferences, not arbitrary numbers
+7. **Risk Considerations** - Specific to their situation and industry
+8. **Success Metrics** - Tied to their stated success criteria, using industry KPI benchmarks as targets
+9. **Recommended Next Steps** - Concrete actions with owners
 
 IMPORTANT:
 - If Phase 1 foundation is complete, START THE ROADMAP AT PHASE 2
 - Never show empty phases - renumber if needed so Phase 1 is always the first phase with work
 - Investment estimates should align with their stated budget range and preferences
-- Reference their specific track assessments and answers in your recommendations`;
+- Reference their specific track assessments and answers in your recommendations
+- Do NOT add standalone "Channel Strategy" or "Data Integration Requirements" sections — this content must be embedded contextually within the roadmap and journey sections above
+- Every bullet point should say something the client cannot read on a generic industry overview page — make it specific to their gaps, goals, and context`;
 }
 
 // Build the user prompt with assessment data
