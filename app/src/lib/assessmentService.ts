@@ -365,6 +365,58 @@ export const assessmentService = {
     return true;
   },
 
+  // Admin: list all assessments with rich metadata
+  async adminListAssessments(): Promise<{
+    id: string;
+    clientName: string;
+    opportunityName: string | null;
+    industry: string | null;
+    marketingFoundation: string | null;
+    userEmail: string | null;
+    isComplete: boolean;
+    hasPlan: boolean;
+    planGeneratedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    trackCount: number;
+  }[]> {
+    if (!supabase) return [];
+
+    const { data, error } = await supabase
+      .from('assessments')
+      .select(`
+        id, client_name, opportunity_name, industry, marketing_foundation,
+        user_email, is_complete, created_at, updated_at,
+        generated_plans(generated_at),
+        track_assessments(count)
+      `)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('Failed to admin list assessments:', error);
+      return [];
+    }
+
+    return (data || []).map((d: any) => ({
+      id: d.id,
+      clientName: d.client_name,
+      opportunityName: d.opportunity_name || null,
+      industry: d.industry || null,
+      marketingFoundation: d.marketing_foundation || null,
+      userEmail: d.user_email || null,
+      isComplete: d.is_complete,
+      hasPlan: Array.isArray(d.generated_plans) ? d.generated_plans.length > 0 : !!d.generated_plans,
+      planGeneratedAt: Array.isArray(d.generated_plans) && d.generated_plans[0]?.generated_at
+        ? new Date(d.generated_plans[0].generated_at)
+        : null,
+      createdAt: new Date(d.created_at),
+      updatedAt: new Date(d.updated_at),
+      trackCount: Array.isArray(d.track_assessments)
+        ? (d.track_assessments[0]?.count ?? d.track_assessments.length)
+        : 0,
+    }));
+  },
+
   // Delete an assessment
   async deleteAssessment(assessmentId: string): Promise<boolean> {
     if (!supabase) return false;

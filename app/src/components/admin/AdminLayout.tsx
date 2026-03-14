@@ -10,6 +10,7 @@ import {
   LogOut,
   Trash2,
   Home,
+  ClipboardList,
 } from 'lucide-react';
 import { AdminAuth } from './AdminAuth';
 import { TacticsManager } from './TacticsManager';
@@ -19,11 +20,13 @@ import { JourneyManager } from './JourneyManager';
 import { ChannelPriorityManager } from './ChannelPriorityManager';
 import { OfferingManager } from './OfferingManager';
 import { BulkImport } from './BulkImport';
+import { AssessmentsManager } from './AssessmentsManager';
 import { clearPlanCache } from '../../lib/referenceDataService';
 
-type AdminSection = 'tactics' | 'kpis' | 'benchmarks' | 'journeys' | 'channels' | 'offerings' | 'import';
+type AdminSection = 'assessments' | 'tactics' | 'kpis' | 'benchmarks' | 'journeys' | 'channels' | 'offerings' | 'import';
 
 const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType }[] = [
+  { id: 'assessments', label: 'Assessments', icon: ClipboardList },
   { id: 'tactics', label: 'Tactics / Plays', icon: Target },
   { id: 'kpis', label: 'KPIs', icon: BarChart3 },
   { id: 'benchmarks', label: 'ROI Benchmarks', icon: TrendingUp },
@@ -35,7 +38,7 @@ const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType }[] 
 
 export function AdminLayout() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<AdminSection>('tactics');
+  const [activeSection, setActiveSection] = useState<AdminSection>('assessments');
   const [clearingCache, setClearingCache] = useState(false);
 
   useEffect(() => {
@@ -112,6 +115,7 @@ export function AdminLayout() {
 
       {/* Content */}
       <div className="flex-1 p-8 overflow-auto">
+        {activeSection === 'assessments' && <AssessmentsManager />}
         {activeSection === 'tactics' && <TacticsManager />}
         {activeSection === 'kpis' && <KPIManager />}
         {activeSection === 'benchmarks' && <BenchmarkManager />}
