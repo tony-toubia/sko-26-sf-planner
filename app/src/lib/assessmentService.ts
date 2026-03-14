@@ -18,6 +18,7 @@ interface DbAssessment {
   marketing_foundation: string | null;
   user_email: string | null;
   is_complete: boolean;
+  disciplines: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -89,6 +90,7 @@ function dbToAssessment(
     marketingFoundation: db.marketing_foundation as MarketingFoundationType | undefined,
     userEmail: db.user_email || undefined,
     isComplete: db.is_complete,
+    disciplines: (db.disciplines && db.disciplines.length > 0 ? db.disciplines : ['messaging-personalization']) as any,
     createdAt: new Date(db.created_at),
     updatedAt: new Date(db.updated_at),
     assessments: {}, // Legacy - not used in track-based model
