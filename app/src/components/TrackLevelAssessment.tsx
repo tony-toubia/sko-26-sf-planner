@@ -19,8 +19,12 @@ import {
   AlertCircle,
   ClipboardList,
   BookOpen,
+  Building2,
+  Users,
+  Gift,
+  BarChart3,
 } from 'lucide-react';
-import { getTrackById, getTrackLevel, getCapabilitiesForTrackLevel, getRequiredDependencies } from '../data/tracks';
+import { getTrackById, getTrackLevel, getCapabilitiesForTrackLevel, getRequiredDependencies } from '../data/allTracks';
 import { getCapabilityById } from '../data/capabilities';
 import { getBenchmarksForCapability } from '../data/reference';
 import { JourneyMaturityIceberg } from './JourneyMaturityIceberg';
@@ -71,14 +75,29 @@ interface TrackLevelAssessmentProps {
   currentLevelIndex?: number;
 }
 
-const TRACK_ICONS: Record<TrackId, React.ElementType> = {
+const TRACK_ICONS: Record<string, React.ElementType> = {
+  // M&P tracks
   'data-identity': Database,
   journeys: Route,
   'content-channels': Share2,
   intelligence: Brain,
+  // Loyalty tracks
+  'program-foundation': Building2,
+  'member-engagement': Users,
+  'rewards-offers': Gift,
+  'loyalty-intelligence': BarChart3,
 };
 
-const TRACK_COLORS: Record<TrackId, { gradient: string; text: string; border: string; bg: string; lightBg: string }> = {
+const DEFAULT_COLORS = {
+  gradient: 'from-slate-600 to-slate-700',
+  text: 'text-slate-600',
+  border: 'border-slate-200',
+  bg: 'bg-slate-600',
+  lightBg: 'bg-slate-50',
+};
+
+const TRACK_COLORS: Record<string, { gradient: string; text: string; border: string; bg: string; lightBg: string }> = {
+  // M&P tracks
   'data-identity': {
     gradient: 'from-blue-600 to-blue-700',
     text: 'text-blue-600',
@@ -101,6 +120,35 @@ const TRACK_COLORS: Record<TrackId, { gradient: string; text: string; border: st
     lightBg: 'bg-emerald-50',
   },
   intelligence: {
+    gradient: 'from-amber-600 to-amber-700',
+    text: 'text-amber-600',
+    border: 'border-amber-200',
+    bg: 'bg-amber-600',
+    lightBg: 'bg-amber-50',
+  },
+  // Loyalty tracks
+  'program-foundation': {
+    gradient: 'from-blue-600 to-blue-700',
+    text: 'text-blue-600',
+    border: 'border-blue-200',
+    bg: 'bg-blue-600',
+    lightBg: 'bg-blue-50',
+  },
+  'member-engagement': {
+    gradient: 'from-violet-600 to-violet-700',
+    text: 'text-violet-600',
+    border: 'border-violet-200',
+    bg: 'bg-violet-600',
+    lightBg: 'bg-violet-50',
+  },
+  'rewards-offers': {
+    gradient: 'from-emerald-600 to-emerald-700',
+    text: 'text-emerald-600',
+    border: 'border-emerald-200',
+    bg: 'bg-emerald-600',
+    lightBg: 'bg-emerald-50',
+  },
+  'loyalty-intelligence': {
     gradient: 'from-amber-600 to-amber-700',
     text: 'text-amber-600',
     border: 'border-amber-200',
@@ -230,8 +278,8 @@ export function TrackLevelAssessment({
   );
   const capabilityInfo = useMemo(() => getCapabilityInfo(capabilities), [capabilities]);
   const requiredDeps = useMemo(() => getRequiredDependencies(trackId, level), [trackId, level]);
-  const colors = TRACK_COLORS[trackId];
-  const Icon = TRACK_ICONS[trackId];
+  const colors = TRACK_COLORS[trackId] || DEFAULT_COLORS;
+  const Icon = TRACK_ICONS[trackId] || Target;
 
   // Apply industry-specific question variants
   const questions = useMemo(
@@ -369,7 +417,7 @@ export function TrackLevelAssessment({
                     <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                     <div className="text-sm">
                       <span className="font-medium text-amber-800">Prerequisite: </span>
-                      <span className="text-amber-700">{requiredDeps[0].description}</span>
+                      <span className="text-amber-700">{(requiredDeps[0] as any).description}</span>
                     </div>
                   </div>
                 </div>
@@ -518,7 +566,7 @@ export function TrackLevelAssessment({
                     {requiredDeps.map((dep, idx) => (
                       <li key={idx} className="text-sm text-amber-700 flex items-start gap-2">
                         <ArrowRight className="w-3 h-3 mt-1 flex-shrink-0" />
-                        <span>{dep.description}</span>
+                        <span>{(dep as any).description}</span>
                       </li>
                     ))}
                   </ul>
