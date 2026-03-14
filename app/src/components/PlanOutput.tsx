@@ -18,10 +18,14 @@ import {
   Copy,
   Check,
   Cloud,
+  Package,
+  Brain,
+  CheckCircle2,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment } from '../types';
 import { SalesforceExport } from './SalesforceExport';
+import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
 
 interface PlanOutputProps {
   plan: GeneratedPlan;
@@ -32,12 +36,28 @@ interface PlanOutputProps {
 export function PlanOutput({ plan, assessment, onClose }: PlanOutputProps) {
   const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
   // If AI content exists, default to showing it
-  const [activeTab, setActiveTab] = useState<'ai-plan' | 'overview' | 'phases' | 'commercial' | 'risks' | 'salesforce'>(
+  const [activeTab, setActiveTab] = useState<'ai-plan' | 'overview' | 'phases' | 'commercial' | 'risks' | 'services' | 'analysis' | 'salesforce'>(
     plan.aiGenerated ? 'ai-plan' : 'overview'
   );
   const [copied, setCopied] = useState(false);
 
   const hasAIContent = !!plan.aiGenerated?.markdown;
+
+  // Compute service recommendations from assessment data
+  const serviceRecommendations = useMemo(() => {
+    if (!assessment) return [];
+    const assessedLevels = new Set(
+      Object.keys(assessment.trackAssessments || {})
+    );
+    if (assessedLevels.size < 1) return [];
+    const context = buildRecommendationContext(
+      assessedLevels,
+      assessment.disciplines || ['messaging-personalization'],
+      (assessment.industry as any) || undefined,
+      assessment.marketingFoundation || undefined
+    );
+    return generateServiceRecommendations(context);
+  }, [assessment]);
 
   const togglePhase = (phaseNum: number) => {
     setExpandedPhases((prev) =>
@@ -108,6 +128,8 @@ export function PlanOutput({ plan, assessment, onClose }: PlanOutputProps) {
               { id: 'phases', label: 'Phases', labelFull: 'Implementation Plan', icon: <Calendar className="w-4 h-4" /> },
               { id: 'commercial', label: 'Commercial', labelFull: 'Commercial', icon: <DollarSign className="w-4 h-4" /> },
               { id: 'risks', label: 'Risks', labelFull: 'Risks & Success', icon: <AlertTriangle className="w-4 h-4" /> },
+              ...(serviceRecommendations.length > 0 ? [{ id: 'services', label: 'Services', labelFull: 'Recommended Services', icon: <Package className="w-4 h-4" /> }] : []),
+              { id: 'analysis', label: 'Analysis', labelFull: 'How We Built This', icon: <Brain className="w-4 h-4" /> },
               { id: 'salesforce', label: 'Salesforce', labelFull: 'Export to Salesforce', icon: <Cloud className="w-4 h-4" /> },
             ].map((tab) => (
               <button
@@ -452,6 +474,164 @@ export function PlanOutput({ plan, assessment, onClose }: PlanOutputProps) {
                   </table>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'services' && (
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Recommended Services</h3>
+                  <p className="text-sm text-gray-500 mt-0.5">Based on your assessment, these Merkle services deliver your maturity roadmap.</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-gray-500">Total Investment Range</div>
+                  <div className="text-xl font-bold text-merkle-blue">
+                    ${(serviceRecommendations.reduce((s, r) => s + r.estimatedCost.min, 0) / 1000).toFixed(0)}K –
+                    ${(serviceRecommendations.reduce((s, r) => s + r.estimatedCost.max, 0) / 1000).toFixed(0)}K
+                  </div>
+                </div>
+              </div>
+
+              {serviceRecommendations.map((rec) => {
+                const priorityStyles: Record<string, string> = {
+                  critical: 'bg-red-50 border-red-200 text-red-700',
+                  high: 'bg-orange-50 border-orange-200 text-orange-700',
+                  medium: 'bg-yellow-50 border-yellow-200 text-yellow-700',
+                  low: 'bg-blue-50 border-blue-200 text-blue-700',
+                };
+                return (
+                  <div key={rec.service.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <h4 className="font-semibold text-gray-900">{rec.service.name}</h4>
+                          <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${priorityStyles[rec.priority] || priorityStyles.low}`}>
+                            {rec.priority.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">{rec.rationale}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span className="capitalize">{rec.recommendedSize} engagement</span>
+                          {rec.dependencies?.length > 0 && (
+                            <span className="text-gray-400">Depends on: {rec.dependencies.join(', ')}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xs text-gray-400 mb-0.5">Estimated</div>
+                        <div className="font-bold text-merkle-blue">
+                          ${(rec.estimatedCost.min / 1000).toFixed(0)}K – ${(rec.estimatedCost.max / 1000).toFixed(0)}K
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === 'analysis' && (
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">How We Built This Plan</h3>
+                <p className="text-sm text-gray-500">The signals and data we used to generate your personalized roadmap.</p>
+              </div>
+
+              {/* Track coverage */}
+              {assessment?.trackAssessments && Object.keys(assessment.trackAssessments).length > 0 && (
+                <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+                  <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    Assessment Coverage
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(assessment.trackAssessments).map(([key, ta]) => (
+                      <div key={key} className="flex items-center gap-2 text-sm">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ta.status === 'complete' ? 'bg-emerald-500' : 'bg-yellow-400'}`} />
+                        <span className="text-gray-700 capitalize">{ta.trackId} L{ta.level}</span>
+                        <span className={`text-xs ${ta.status === 'complete' ? 'text-emerald-600' : 'text-yellow-600'}`}>
+                          {ta.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Context used */}
+              <div className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-violet-500" />
+                  Context Applied
+                </h4>
+                <div className="space-y-2 text-sm">
+                  {assessment?.industry && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Industry</span>
+                      <span className="font-medium text-gray-900 capitalize">{assessment.industry.replace(/-/g, ' ')}</span>
+                    </div>
+                  )}
+                  {assessment?.marketingFoundation && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Platform foundation</span>
+                      <span className="font-medium text-gray-900">{assessment.marketingFoundation === 'mc-advanced' ? 'MC Advanced' : 'MC Engagement'}</span>
+                    </div>
+                  )}
+                  {assessment?.disciplines?.length && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Disciplines</span>
+                      <span className="font-medium text-gray-900 capitalize">{assessment.disciplines.map(d => d.replace(/-/g, ' ')).join(', ')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Track levels assessed</span>
+                    <span className="font-medium text-gray-900">{Object.keys(assessment?.trackAssessments || {}).length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Complete levels</span>
+                    <span className="font-medium text-gray-900">
+                      {Object.values(assessment?.trackAssessments || {}).filter(t => t.status === 'complete').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* AI generation metadata */}
+              {plan.aiGenerated && (
+                <div className="bg-violet-50 rounded-xl border border-violet-200 p-5">
+                  <h4 className="font-semibold text-violet-900 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-violet-500" />
+                    AI Generation
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-violet-700">Model</span>
+                      <span className="font-medium text-violet-900">{plan.aiGenerated.generatedWith === 'claude-sonnet' ? 'Claude Sonnet' : 'Claude Opus'}</span>
+                    </div>
+                    {plan.aiGenerated.tokenUsage && (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-violet-700">Context sent</span>
+                          <span className="font-medium text-violet-900">{plan.aiGenerated.tokenUsage.input.toLocaleString()} tokens</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-violet-700">Plan generated</span>
+                          <span className="font-medium text-violet-900">{plan.aiGenerated.tokenUsage.output.toLocaleString()} tokens</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-violet-700">Reference data</span>
+                      <span className="font-medium text-violet-900">ROI benchmarks, journey templates, offering toolkits</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-gray-400">
+                This plan was generated by combining your assessment answers with Merkle's industry benchmarks, offering data, and strategic frameworks. The AI synthesizes these inputs to produce a tailored roadmap — not a generic template.
+              </p>
             </div>
           )}
 

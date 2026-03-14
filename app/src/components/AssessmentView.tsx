@@ -1,5 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutGrid, Route, Sparkles, Loader2, AlertCircle, X } from 'lucide-react';
+
+const THINKING_STEPS = [
+  'Reviewing your track assessment answers...',
+  'Analyzing maturity across all dimensions...',
+  'Mapping industry-specific benchmarks...',
+  'Identifying high-impact capabilities...',
+  'Sequencing implementation phases...',
+  'Calculating investment ranges...',
+  'Drafting your personalized roadmap...',
+];
 import { TrackAssessmentView } from './TrackAssessmentView';
 import { MaturityMatrix } from './MaturityMatrix';
 import { PlanOutput } from './PlanOutput';
@@ -12,6 +22,13 @@ type ViewMode = 'tracks' | 'matrix';
 export function AssessmentView() {
   const [viewMode, setViewMode] = useState<ViewMode>('tracks');
   const [showGlobalInputsModal, setShowGlobalInputsModal] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState(0);
+
+  useEffect(() => {
+    if (!isGeneratingPlan) { setThinkingStep(0); return; }
+    const interval = setInterval(() => setThinkingStep(s => (s + 1) % THINKING_STEPS.length), 3500);
+    return () => clearInterval(interval);
+  }, [isGeneratingPlan]);
 
   const {
     assessment,
@@ -78,14 +95,15 @@ export function AssessmentView() {
                 <Loader2 className="w-16 h-16 text-merkle-blue animate-spin" />
                 <Sparkles className="w-6 h-6 text-violet-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Generating AI Plan</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Building Your Plan</h3>
               <p className="text-gray-600 mb-4">
-                Claude is analyzing your assessment and creating a personalized implementation plan...
+                We are analyzing your assessment and creating a personalized implementation plan...
               </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                <Sparkles className="w-4 h-4" />
-                <span>This may take 15-30 seconds</span>
+              <div className="flex items-center justify-center gap-2 text-sm text-violet-600 font-medium min-h-[1.5rem] transition-all">
+                <Sparkles className="w-4 h-4 flex-shrink-0" />
+                <span>{THINKING_STEPS[thinkingStep]}</span>
               </div>
+              <p className="text-xs text-gray-400 mt-3">This may take about a minute</p>
             </div>
           </div>
         )}

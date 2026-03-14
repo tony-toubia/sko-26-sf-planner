@@ -314,15 +314,15 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
   }, [assessment, selectedIndustry, marketingFoundation]);
 
   // Handle service confirmation
-  const handleServiceConfirm = useCallback((selectedServices: SelectedService[]) => {
-    // Save service recommendations to assessment
-    if (assessment) {
-      // Update assessment context with service recommendations
-      // (This would need to be added to AssessmentContext)
-      console.log('[TrackAssessmentView] Services confirmed:', selectedServices);
-    }
+  const handleServiceConfirm = useCallback((_selectedServices: SelectedService[]) => {
     setShowServiceSelector(false);
-  }, [assessment]);
+    // If a plan exists, open it to the Services tab; otherwise kick off plan generation
+    if (generatedPlan) {
+      openPlanModal();
+    } else if (onGeneratePlan) {
+      onGeneratePlan();
+    }
+  }, [generatedPlan, openPlanModal, onGeneratePlan]);
 
   const handleServiceCancel = useCallback(() => {
     setShowServiceSelector(false);
