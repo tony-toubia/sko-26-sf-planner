@@ -504,11 +504,16 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
                   {completionStats.isComplete ? 'Assessment Complete' : 'Plan Available'}
                 </span>
               </div>
-              <p className="text-lg font-semibold mb-4">
+              <p className="text-lg font-semibold mb-2">
                 {completionStats.isComplete
                   ? 'All tracks assessed! Ready to generate your plan.'
                   : 'View your plan or regenerate with latest answers.'}
               </p>
+              {selectedDisciplines.length > 1 && (
+                <p className="text-sm text-white/75 mb-3">
+                  One combined plan covering all {selectedDisciplines.length} selected clouds.
+                </p>
+              )}
               <div className="flex flex-col gap-2">
                 {generatedPlan && (
                   <button

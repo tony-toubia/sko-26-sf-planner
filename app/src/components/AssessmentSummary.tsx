@@ -302,7 +302,7 @@ export function AssessmentSummary({ onGenerateQuickPlan, onGenerateDetailedPlan,
               {capabilitiesNeedingQuestions.length} {capabilitiesNeedingQuestions.length === 1 ? 'capability needs' : 'capabilities need'} more details ({totalQuestionsNeeded} questions total)
             </p>
             <p className="text-xs text-violet-600 mt-1">
-              These questions help customize your implementation plan
+              These questions help customize your plan
             </p>
           </div>
         </div>

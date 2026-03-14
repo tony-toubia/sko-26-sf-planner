@@ -109,7 +109,7 @@ export function AssessmentView() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Building Your Plan</h3>
               <p className="text-gray-600 mb-4">
-                We are analyzing your assessment and creating a personalized implementation plan...
+                We are analyzing your assessment and creating a personalized roadmap...
               </p>
               <div className="flex items-center justify-center gap-2 text-sm text-violet-600 font-medium min-h-[1.5rem] transition-all">
                 <Sparkles className="w-4 h-4 flex-shrink-0" />
@@ -214,7 +214,7 @@ export function AssessmentView() {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Generating AI Plan</h3>
             <p className="text-gray-600 mb-4">
-              Claude is analyzing your assessment and creating a personalized implementation plan...
+              Claude is analyzing your assessment and creating a personalized roadmap...
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <Sparkles className="w-4 h-4" />
