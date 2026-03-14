@@ -19,6 +19,7 @@ interface GlobalInputsModalProps {
   selectedIndustry?: IndustryType | null;
   onSubmit: (inputs: GlobalAssessmentInputs) => void;
   onClose: () => void;
+  existingInputs?: GlobalAssessmentInputs;
 }
 
 type Step = 'client-context' | 'commercial' | 'strategic';
@@ -71,19 +72,17 @@ const BUSINESS_DRIVERS = [
   'Competitive differentiation',
 ];
 
-export function GlobalInputsModal({ clientName, selectedIndustry, onSubmit, onClose }: GlobalInputsModalProps) {
+export function GlobalInputsModal({ clientName, selectedIndustry, onSubmit, onClose, existingInputs }: GlobalInputsModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('client-context');
 
   // Pre-populate industry from the assessment context if available
   const initialIndustryName = selectedIndustry ? INDUSTRY_DATA[selectedIndustry]?.name : undefined;
 
-  const [inputs, setInputs] = useState<GlobalAssessmentInputs>({
-    clientContext: {
-      industry: initialIndustryName,
-    },
-    commercialPreferences: {},
-    strategicContext: {},
-  });
+  const [inputs, setInputs] = useState<GlobalAssessmentInputs>(
+    existingInputs
+      ? { ...existingInputs, clientContext: { industry: initialIndustryName, ...existingInputs.clientContext } }
+      : { clientContext: { industry: initialIndustryName }, commercialPreferences: {}, strategicContext: {} }
+  );
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
   const isFirstStep = currentStepIndex === 0;

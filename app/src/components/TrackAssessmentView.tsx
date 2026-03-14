@@ -27,16 +27,16 @@ import {
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
 import { SaveAssessmentModal } from './SaveAssessmentModal';
-import { ServiceSelector, type SelectedService } from './ServiceSelector';
 import { getTracksForDisciplines, getAssessmentOrder, getTrackById } from '../data/allTracks';
 import { MARKETING_FOUNDATIONS } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
-import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
 import type { TrackId, TrackLevel, TrackLevelStatus, AssessmentAnswer, MarketingFoundationType } from '../types';
 
 interface TrackAssessmentViewProps {
   onSwitchToMatrix?: () => void;
   onGeneratePlan?: () => void;
+  onEditPlanContext?: () => void;
+  hasGlobalInputs?: boolean;
 }
 
 const TRACK_ICONS: Record<string, React.ElementType> = {
@@ -65,8 +65,8 @@ const TRACK_GRADIENTS: Record<string, string> = {
   'loyalty-intelligence': 'from-rose-500 to-rose-600',
 };
 
-export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal, selectedIndustry } = useAssessment();
+export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPlanContext, hasGlobalInputs }: TrackAssessmentViewProps) {
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
 
   // Active discipline tab - defaults to first selected discipline
   const [activeDiscipline, setActiveDiscipline] = useState<string>(() => {
@@ -113,10 +113,6 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
 
   // Save modal state
   const [showSaveModal, setShowSaveModal] = useState(false);
-
-  // Service recommendation state
-  const [showServiceSelector, setShowServiceSelector] = useState(false);
-  const [serviceRecommendations, setServiceRecommendations] = useState<any[]>([]);
 
   // Build track statuses and assessed levels from assessment context
   // Use assessment.updatedAt as additional dependency to ensure re-render on any change
@@ -268,9 +264,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
           if (nextLevel) {
             setAssessingLevel(nextLevel);
           } else {
-            // All levels assessed - check if we should show service recommendations
             setAssessingLevel(null);
-            checkAndShowServiceRecommendations();
           }
         } else {
           // Exit back to the overview
@@ -284,61 +278,6 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
   const handleAssessmentCancel = useCallback(() => {
     setAssessingLevel(null);
   }, []);
-
-  // Check if assessment is complete and show service recommendations
-  const checkAndShowServiceRecommendations = useCallback(() => {
-    if (!assessment || !selectedIndustry) return;
-
-    // Build recommendation context from assessment
-    const trackAssessments = assessment.trackAssessments || {};
-    const assessedLevels = new Map(Object.entries(trackAssessments));
-
-    // Only show if we have enough assessed levels
-    if (assessedLevels.size < 3) return;
-
-    const disciplines = assessment.disciplines || ['messaging-personalization'];
-
-    const context = buildRecommendationContext(
-      assessedLevels,
-      disciplines,
-      selectedIndustry,
-      marketingFoundation || undefined
-    );
-
-    const recommendations = generateServiceRecommendations(context);
-
-    if (recommendations.length > 0) {
-      setServiceRecommendations(recommendations);
-      setShowServiceSelector(true);
-    }
-  }, [assessment, selectedIndustry, marketingFoundation]);
-
-  // Handle service confirmation
-  const handleServiceConfirm = useCallback((_selectedServices: SelectedService[]) => {
-    setShowServiceSelector(false);
-    // If a plan exists, open it to the Services tab; otherwise kick off plan generation
-    if (generatedPlan) {
-      openPlanModal();
-    } else if (onGeneratePlan) {
-      onGeneratePlan();
-    }
-  }, [generatedPlan, openPlanModal, onGeneratePlan]);
-
-  const handleServiceCancel = useCallback(() => {
-    setShowServiceSelector(false);
-  }, []);
-
-  // Show service selector instead of normal view when active
-  if (showServiceSelector) {
-    return (
-      <ServiceSelector
-        recommendations={serviceRecommendations}
-        industry={selectedIndustry!}
-        onConfirm={handleServiceConfirm}
-        onCancel={handleServiceCancel}
-      />
-    );
-  }
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -581,6 +520,15 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan }: TrackA
                   >
                     <Sparkles className="w-4 h-4" />
                     {generatedPlan ? 'Regenerate Plan' : 'Generate Plan'}
+                  </button>
+                )}
+                {onEditPlanContext && (
+                  <button
+                    onClick={onEditPlanContext}
+                    className="w-full py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-white/10 text-white/80 hover:bg-white/20 text-sm"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    {hasGlobalInputs ? 'Edit Plan Context' : 'Add Plan Context'}
                   </button>
                 )}
               </div>

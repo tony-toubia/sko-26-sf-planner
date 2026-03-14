@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LayoutGrid, Route, Sparkles, Loader2, AlertCircle, X } from 'lucide-react';
+import { LayoutGrid, Route, Sparkles, Loader2, AlertCircle, X, Pencil } from 'lucide-react';
 
 const THINKING_STEPS = [
   'Reviewing your track assessment answers...',
@@ -48,10 +48,23 @@ export function AssessmentView() {
     setViewMode('tracks');
   };
 
+  const hasGlobalInputs = !!(
+    assessment?.globalInputs?.commercialPreferences &&
+    Object.keys(assessment.globalInputs.commercialPreferences).length > 0
+  );
+
   const handleGeneratePlan = () => {
-    if (assessment) {
+    if (!assessment) return;
+    // Skip modal if inputs were already provided (e.g., from landing page)
+    if (hasGlobalInputs) {
+      generateRecommendationPlan(assessment.globalInputs!, true);
+    } else {
       setShowGlobalInputsModal(true);
     }
+  };
+
+  const handleEditPlanContext = () => {
+    setShowGlobalInputsModal(true);
   };
 
   const handleGenerateQuickPlan = () => {
@@ -71,6 +84,8 @@ export function AssessmentView() {
         <TrackAssessmentView
           onSwitchToMatrix={handleSwitchToMatrix}
           onGeneratePlan={handleGeneratePlan}
+          onEditPlanContext={handleEditPlanContext}
+          hasGlobalInputs={hasGlobalInputs}
         />
 
         {/* Global Inputs Modal */}
@@ -78,6 +93,7 @@ export function AssessmentView() {
           <GlobalInputsModal
             clientName={assessment.clientName}
             selectedIndustry={selectedIndustry}
+            existingInputs={assessment.globalInputs}
             onSubmit={handleGlobalInputsSubmit}
             onClose={() => setShowGlobalInputsModal(false)}
           />
@@ -153,6 +169,16 @@ export function AssessmentView() {
               <Sparkles className="w-4 h-4" />
               <span className="text-sm font-medium">Quick Plan</span>
             </button>
+            {hasGlobalInputs && (
+              <button
+                onClick={handleEditPlanContext}
+                title="Edit plan context"
+                className="flex items-center gap-1.5 px-3 py-2 text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">Edit Context</span>
+              </button>
+            )}
             <button
               onClick={handleGeneratePlan}
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-violet-600 text-white rounded-lg hover:opacity-90 transition-opacity"
@@ -172,6 +198,7 @@ export function AssessmentView() {
         <GlobalInputsModal
           clientName={assessment.clientName}
           selectedIndustry={selectedIndustry}
+          existingInputs={assessment.globalInputs}
           onSubmit={handleGlobalInputsSubmit}
           onClose={() => setShowGlobalInputsModal(false)}
         />

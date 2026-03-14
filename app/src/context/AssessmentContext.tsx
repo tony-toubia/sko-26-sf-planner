@@ -54,7 +54,7 @@ interface AssessmentContextValue {
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
   setMarketingFoundation: (foundation: MarketingFoundationType) => void;
-  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[]) => Promise<void>;
+  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs) => Promise<void>;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
   saveCapabilityAssessment: (
@@ -160,7 +160,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     });
   }, [isSupabaseAvailable]);
 
-  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[]) => {
+  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs) => {
     console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, disciplines, isSupabaseAvailable });
 
     // Set the marketing foundation state immediately (can be null - will be set later in assessment)
@@ -197,6 +197,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           userEmail: userEmail || undefined,
           marketingFoundation: foundation ?? undefined,
           disciplines: selectedDisciplines,
+          globalInputs: globalInputs ?? undefined,
         };
         console.log('[AssessmentContext] Using Supabase assessment ID:', newAssessment.id);
         setAssessment(newAssessment);
@@ -222,6 +223,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       isComplete: false,
       marketingFoundation: foundation ?? undefined,
       disciplines: selectedDisciplines,
+      globalInputs: globalInputs ?? undefined,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);

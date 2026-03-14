@@ -13,12 +13,50 @@ import {
   ShoppingCart,
   Headphones,
   Mail,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import type { IndustryType, DisciplineType } from '../types';
+import type { IndustryType, DisciplineType, MerkleOfferingType, GlobalAssessmentInputs } from '../types';
 import { INDUSTRIES } from '../data/industries';
 import { DISCIPLINES } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import { AssessmentListModal } from './AssessmentListModal';
+
+const COMPANY_SIZES = [
+  { value: 'smb', label: 'SMB', description: '<$50M revenue' },
+  { value: 'mid-market', label: 'Mid-Market', description: '$50M–$500M' },
+  { value: 'enterprise', label: 'Enterprise', description: '$500M–$5B' },
+  { value: 'global-enterprise', label: 'Global Enterprise', description: '$5B+' },
+];
+
+const BUDGET_RANGES = [
+  { value: 'under-100k', label: 'Under $100K' },
+  { value: '100k-250k', label: '$100K – $250K' },
+  { value: '250k-500k', label: '$250K – $500K' },
+  { value: '500k-1m', label: '$500K – $1M' },
+  { value: 'over-1m', label: 'Over $1M' },
+];
+
+const ENGAGEMENT_MODELS: { value: MerkleOfferingType; label: string }[] = [
+  { value: 'fixed-bid', label: 'Fixed Bid' },
+  { value: 'retainer', label: 'Retainer / Managed Services' },
+  { value: 'staff-aug', label: 'Staff Augmentation' },
+  { value: 'strategic-advisory', label: 'Strategic Advisory' },
+  { value: 'osp', label: 'OSP (CapEx-eligible)' },
+];
+
+const BUSINESS_DRIVERS = [
+  'Increase customer retention',
+  'Drive revenue growth',
+  'Improve operational efficiency',
+  'Enable personalization at scale',
+  'Accelerate time-to-market',
+  'Reduce technology complexity',
+  'Prepare for AI/Agentforce',
+  'Unify customer data',
+  'Improve marketing attribution',
+  'Competitive differentiation',
+];
 
 interface LandingPageProps {
   onStartAssessment: () => void;
@@ -39,6 +77,13 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineType[]>(['messaging-personalization']);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
+  // Optional plan context
+  const [showPlanContext, setShowPlanContext] = useState(false);
+  const [companySize, setCompanySize] = useState<string>('');
+  const [budgetRange, setBudgetRange] = useState<string>('');
+  const [selectedEngagementModels, setSelectedEngagementModels] = useState<MerkleOfferingType[]>([]);
+  const [selectedDrivers, setSelectedDrivers] = useState<string[]>([]);
+
   const { startAssessment, setUserEmail, isSupabaseAvailable } = useAssessment();
 
   const isValidEmail = (email: string) => {
@@ -50,11 +95,37 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
       // Set user email first so it's available for assessment creation
       const trimmedEmail = email.trim().toLowerCase();
       await setUserEmail(trimmedEmail);
-      // Wait for the assessment to be created (especially in Supabase)
-      // Marketing foundation will be selected as first step in assessment
-      await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines);
+
+      // Build optional plan context if any fields were filled
+      let globalInputs: GlobalAssessmentInputs | undefined;
+      if (companySize || budgetRange || selectedEngagementModels.length > 0 || selectedDrivers.length > 0) {
+        globalInputs = {
+          clientContext: { companySize: companySize as GlobalAssessmentInputs['clientContext']['companySize'] || undefined },
+          commercialPreferences: {
+            budgetRange: budgetRange as GlobalAssessmentInputs['commercialPreferences']['budgetRange'] || undefined,
+            preferredEngagementModel: selectedEngagementModels.length > 0 ? selectedEngagementModels : undefined,
+          },
+          strategicContext: {
+            keyBusinessDrivers: selectedDrivers.length > 0 ? selectedDrivers : undefined,
+          },
+        };
+      }
+
+      await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines, globalInputs);
       onStartAssessment();
     }
+  };
+
+  const toggleEngagementModel = (model: MerkleOfferingType) => {
+    setSelectedEngagementModels(prev =>
+      prev.includes(model) ? prev.filter(m => m !== model) : [...prev, model]
+    );
+  };
+
+  const toggleDriver = (driver: string) => {
+    setSelectedDrivers(prev =>
+      prev.includes(driver) ? prev.filter(d => d !== driver) : [...prev, driver]
+    );
   };
 
   const toggleDiscipline = (disciplineId: DisciplineType, available: boolean) => {
@@ -346,6 +417,115 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Plan Context (Optional) */}
+            <div className="border border-gray-200 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowPlanContext(!showPlanContext)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-merkle-blue" />
+                  <span className="font-medium text-gray-700 text-sm">Plan Context</span>
+                  <span className="text-xs text-gray-400 hidden sm:inline">(optional — helps personalize your plan)</span>
+                </div>
+                {showPlanContext ? (
+                  <ChevronUp className="w-4 h-4 text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                )}
+              </button>
+
+              {showPlanContext && (
+                <div className="p-4 space-y-5 border-t border-gray-200">
+                  {/* Company Size */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Company Size</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {COMPANY_SIZES.map((size) => (
+                        <button
+                          key={size.value}
+                          type="button"
+                          onClick={() => setCompanySize(companySize === size.value ? '' : size.value)}
+                          className={`p-2.5 rounded-lg border-2 text-left text-sm transition-colors ${
+                            companySize === size.value
+                              ? 'border-merkle-blue bg-merkle-blue/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <div className="font-medium text-gray-900">{size.label}</div>
+                          <div className="text-xs text-gray-500">{size.description}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Budget Range */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Budget Range (Annual)</label>
+                    <div className="flex flex-wrap gap-2">
+                      {BUDGET_RANGES.map((range) => (
+                        <button
+                          key={range.value}
+                          type="button"
+                          onClick={() => setBudgetRange(budgetRange === range.value ? '' : range.value)}
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-colors ${
+                            budgetRange === range.value
+                              ? 'border-merkle-blue bg-merkle-blue text-white'
+                              : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {range.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Engagement Models */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Engagement Models</label>
+                    <div className="flex flex-wrap gap-2">
+                      {ENGAGEMENT_MODELS.map((model) => (
+                        <button
+                          key={model.value}
+                          type="button"
+                          onClick={() => toggleEngagementModel(model.value)}
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-colors ${
+                            selectedEngagementModels.includes(model.value)
+                              ? 'border-merkle-blue bg-merkle-blue text-white'
+                              : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          {model.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Business Drivers */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Key Business Drivers</label>
+                    <div className="flex flex-wrap gap-2">
+                      {BUSINESS_DRIVERS.map((driver) => (
+                        <button
+                          key={driver}
+                          type="button"
+                          onClick={() => toggleDriver(driver)}
+                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            selectedDrivers.includes(driver)
+                              ? 'bg-merkle-blue text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {driver}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
