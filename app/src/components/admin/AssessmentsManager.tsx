@@ -18,15 +18,19 @@ type AssessmentRow = {
   createdAt: Date;
   updatedAt: Date;
   trackedTracks: string[];
+  disciplines: string[];
 };
 
 type StatusFilter = 'all' | 'plan-generated' | 'complete' | 'in-progress';
 
-const TRACK_LABELS: Record<string, string> = {
-  'data-identity': 'Data & Identity',
-  'journeys': 'Journeys',
-  'content-channels': 'Content & Channels',
-  'intelligence': 'Intelligence',
+const DISCIPLINE_LABELS: Record<string, string> = {
+  'messaging-personalization': 'Messaging & Personalization',
+  'loyalty': 'Loyalty',
+  'commerce': 'Commerce',
+  'service': 'Service Cloud',
+  'abm': 'Account-Based Marketing',
+  'abs': 'Account-Based Selling',
+  'absa': 'Account-Based Service',
 };
 
 const INDUSTRY_LABELS: Record<string, string> = {
@@ -258,11 +262,11 @@ export function AssessmentsManager() {
                       <div className="font-medium text-gray-900">{row.clientName}</div>
                     </td>
                     <td className="px-4 py-3">
-                      {row.trackedTracks.length > 0 ? (
+                      {row.disciplines.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {row.trackedTracks.map(t => (
-                            <span key={t} className="px-1.5 py-0.5 text-xs rounded bg-slate-100 text-slate-600 font-medium">
-                              {TRACK_LABELS[t] || t}
+                          {row.disciplines.map(d => (
+                            <span key={d} className="px-1.5 py-0.5 text-xs rounded bg-slate-100 text-slate-600 font-medium">
+                              {DISCIPLINE_LABELS[d] || d}
                             </span>
                           ))}
                         </div>

@@ -194,7 +194,8 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
         industry,
         foundation,
         opportunityName,
-        userEmail || undefined
+        userEmail || undefined,
+        selectedDisciplines
       );
       setIsSaving(false);
 

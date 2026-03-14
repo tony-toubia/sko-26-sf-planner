@@ -25,25 +25,44 @@ import { clearPlanCache } from '../../lib/referenceDataService';
 
 type AdminSection = 'assessments' | 'tactics' | 'kpis' | 'benchmarks' | 'journeys' | 'channels' | 'offerings' | 'import';
 
-const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType }[] = [
-  { id: 'assessments', label: 'Assessments', icon: ClipboardList },
-  { id: 'tactics', label: 'Tactics / Plays', icon: Target },
-  { id: 'kpis', label: 'KPIs', icon: BarChart3 },
-  { id: 'benchmarks', label: 'ROI Benchmarks', icon: TrendingUp },
-  { id: 'journeys', label: 'Journey Templates', icon: Map },
-  { id: 'channels', label: 'Channel Priorities', icon: Radio },
-  { id: 'offerings', label: 'Offerings', icon: Package },
-  { id: 'import', label: 'Bulk Import', icon: Upload },
+const NAV_ITEMS: { id: AdminSection; label: string; icon: React.ElementType; path: string }[] = [
+  { id: 'assessments', label: 'Assessments',       icon: ClipboardList, path: '/admin/assessments' },
+  { id: 'tactics',     label: 'Tactics / Plays',   icon: Target,        path: '/admin/tactics' },
+  { id: 'kpis',        label: 'KPIs',              icon: BarChart3,     path: '/admin/kpis' },
+  { id: 'benchmarks',  label: 'ROI Benchmarks',    icon: TrendingUp,    path: '/admin/benchmarks' },
+  { id: 'journeys',    label: 'Journey Templates', icon: Map,           path: '/admin/journeys' },
+  { id: 'channels',    label: 'Channel Priorities',icon: Radio,         path: '/admin/channels' },
+  { id: 'offerings',   label: 'Offerings',         icon: Package,       path: '/admin/offerings' },
+  { id: 'import',      label: 'Bulk Import',       icon: Upload,        path: '/admin/import' },
 ];
+
+function sectionFromPath(): AdminSection {
+  const seg = window.location.pathname.replace(/^\/admin\/?/, '') as AdminSection;
+  return NAV_ITEMS.some(n => n.id === seg) ? seg : 'assessments';
+}
 
 export function AdminLayout() {
   const [adminEmail, setAdminEmail] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<AdminSection>('assessments');
+  const [activeSection, setActiveSection] = useState<AdminSection>(sectionFromPath);
   const [clearingCache, setClearingCache] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem('admin_email');
     if (stored) setAdminEmail(stored);
+  }, []);
+
+  // Keep URL in sync when section changes
+  const navigate = (section: AdminSection) => {
+    const item = NAV_ITEMS.find(n => n.id === section)!;
+    window.history.pushState({}, '', item.path);
+    setActiveSection(section);
+  };
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const onPop = () => setActiveSection(sectionFromPath());
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
   }, []);
 
   const handleLogout = () => {
@@ -70,11 +89,11 @@ export function AdminLayout() {
           <p className="text-sm text-slate-400 mt-1 truncate">{adminEmail}</p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="p-4 space-y-1">
           {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveSection(id)}
+              onClick={() => navigate(id)}
               className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 activeSection === id
                   ? 'bg-white/10 text-white'
@@ -85,44 +104,45 @@ export function AdminLayout() {
               {label}
             </button>
           ))}
-        </nav>
 
-        <div className="p-4 space-y-2 border-t border-slate-700">
-          <button
-            onClick={handleClearCache}
-            disabled={clearingCache}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-            {clearingCache ? 'Clearing...' : 'Clear Plan Cache'}
-          </button>
-          <a
-            href="/"
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            <Home className="w-4 h-4" />
-            Back to App
-          </a>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sign Out
-          </button>
-        </div>
+          {/* Utility actions — inline after nav, not anchored to bottom */}
+          <div className="pt-3 mt-3 border-t border-slate-700 space-y-1">
+            <button
+              onClick={handleClearCache}
+              disabled={clearingCache}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              {clearingCache ? 'Clearing…' : 'Clear Plan Cache'}
+            </button>
+            <a
+              href="/"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              Back to App
+            </a>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </div>
+        </nav>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-8 overflow-auto">
         {activeSection === 'assessments' && <AssessmentsManager />}
-        {activeSection === 'tactics' && <TacticsManager />}
-        {activeSection === 'kpis' && <KPIManager />}
-        {activeSection === 'benchmarks' && <BenchmarkManager />}
-        {activeSection === 'journeys' && <JourneyManager />}
-        {activeSection === 'channels' && <ChannelPriorityManager />}
-        {activeSection === 'offerings' && <OfferingManager />}
-        {activeSection === 'import' && <BulkImport />}
+        {activeSection === 'tactics'     && <TacticsManager />}
+        {activeSection === 'kpis'        && <KPIManager />}
+        {activeSection === 'benchmarks'  && <BenchmarkManager />}
+        {activeSection === 'journeys'    && <JourneyManager />}
+        {activeSection === 'channels'    && <ChannelPriorityManager />}
+        {activeSection === 'offerings'   && <OfferingManager />}
+        {activeSection === 'import'      && <BulkImport />}
       </div>
     </div>
   );

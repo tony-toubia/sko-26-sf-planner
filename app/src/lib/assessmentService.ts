@@ -115,14 +115,15 @@ export const assessmentService = {
     industry: IndustryType,
     marketingFoundation: MarketingFoundationType | null,
     opportunityName?: string,
-    userEmail?: string
+    userEmail?: string,
+    disciplines?: string[]
   ): Promise<OpportunityAssessment | null> {
     if (!supabase) {
       console.warn('Supabase not configured - assessment will not be persisted');
       return null;
     }
 
-    console.log('[assessmentService] Creating assessment:', { clientName, industry, marketingFoundation, userEmail });
+    console.log('[assessmentService] Creating assessment:', { clientName, industry, marketingFoundation, userEmail, disciplines });
 
     const { data, error } = await supabase
       .from('assessments')
@@ -133,6 +134,7 @@ export const assessmentService = {
         marketing_foundation: marketingFoundation,
         user_email: userEmail ? userEmail.toLowerCase().trim() : null,
         is_complete: false,
+        disciplines: disciplines || [],
       })
       .select()
       .single();
@@ -379,6 +381,7 @@ export const assessmentService = {
     createdAt: Date;
     updatedAt: Date;
     trackedTracks: string[];
+    disciplines: string[];
   }[]> {
     if (!supabase) return [];
 
@@ -386,7 +389,7 @@ export const assessmentService = {
       .from('assessments')
       .select(`
         id, client_name, opportunity_name, industry, marketing_foundation,
-        user_email, is_complete, created_at, updated_at,
+        user_email, is_complete, created_at, updated_at, disciplines,
         generated_plans(generated_at),
         track_assessments(track_id)
       `)
@@ -415,6 +418,7 @@ export const assessmentService = {
         createdAt: new Date(d.created_at),
         updatedAt: new Date(d.updated_at),
         trackedTracks: uniqueTracks,
+        disciplines: (d.disciplines as string[]) || [],
       };
     });
   },
