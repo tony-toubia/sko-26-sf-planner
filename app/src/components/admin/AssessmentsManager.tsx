@@ -236,9 +236,7 @@ export function AssessmentsManager() {
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Client</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Industry</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Created</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Updated</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">By</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Last Updated</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -252,11 +250,14 @@ export function AssessmentsManager() {
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{row.clientName}</div>
                       {row.opportunityName && (
-                        <div className="text-xs text-gray-500 truncate max-w-[200px]">{row.opportunityName}</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{row.opportunityName}</div>
+                      )}
+                      {row.userEmail && (
+                        <div className="text-xs text-gray-400 truncate max-w-[180px]">{row.userEmail}</div>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-gray-700">{INDUSTRY_LABELS[row.industry || ''] || row.industry || '—'}</div>
+                      <div className="text-gray-700 text-sm">{INDUSTRY_LABELS[row.industry || ''] || row.industry || '—'}</div>
                       {row.marketingFoundation && (
                         <div className="text-xs text-gray-400">{FOUNDATION_LABELS[row.marketingFoundation] || row.marketingFoundation}</div>
                       )}
@@ -264,29 +265,31 @@ export function AssessmentsManager() {
                     <td className="px-4 py-3">
                       <StatusBadge row={row} />
                     </td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(row.createdAt)}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(row.updatedAt)}</td>
-                    <td className="px-4 py-3 text-gray-500 text-xs max-w-[150px] truncate">{row.userEmail || '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                      <div>{formatDate(row.updatedAt)}</div>
+                      <div className="text-gray-400">created {formatDate(row.createdAt)}</div>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5 justify-end">
                         <button
                           onClick={() => handleExpand(row.id)}
-                          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 hover:border-gray-300 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 transition-colors"
+                          title={expandedId === row.id ? 'Collapse' : 'View details'}
                         >
-                          {expandedId === row.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                          {expandedId === row.id ? 'Hide' : 'Details'}
+                          {expandedId === row.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => handleEditOpen(row)}
-                          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 hover:border-gray-300 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 transition-colors"
+                          title="Edit"
                         >
-                          <Pencil className="w-3.5 h-3.5" />
-                          Edit
+                          <Pencil className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(row.id, row.clientName)}
                           disabled={deletingId === row.id}
                           className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
+                          title="Delete"
                         >
                           {deletingId === row.id
                             ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
