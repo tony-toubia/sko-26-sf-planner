@@ -393,6 +393,66 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         })}
       </div>
 
+      {/* Top-level Plan CTA — sits above all discipline content, appears when ready */}
+      {(marketingFoundation || selectedDisciplines.some(d => d.id === 'loyalty')) && (completionStats.isComplete || generatedPlan) && (
+        <div className={`rounded-xl p-5 text-white ${completionStats.isComplete ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-slate-600 to-slate-700'}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-sm font-medium opacity-80">
+                  {completionStats.isComplete ? 'Assessment Complete' : 'Plan Available'}
+                </span>
+              </div>
+              <p className="text-lg font-semibold">
+                {completionStats.isComplete
+                  ? 'All tracks assessed — ready to generate your plan.'
+                  : 'View your plan or regenerate with updated answers.'}
+              </p>
+              {selectedDisciplines.length > 1 && (
+                <p className="text-sm opacity-75 mt-1">
+                  Generates one combined plan covering{' '}
+                  {selectedDisciplines.map(d => d.shortName).join(' + ')}.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 sm:flex-shrink-0">
+              {onEditPlanContext && (
+                <button
+                  onClick={onEditPlanContext}
+                  className="px-4 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-white/15 text-white hover:bg-white/25 text-sm whitespace-nowrap"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                  {hasGlobalInputs ? 'Edit Context' : 'Add Context'}
+                </button>
+              )}
+              {generatedPlan && (
+                <button
+                  onClick={openPlanModal}
+                  className="px-4 py-2.5 bg-white text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  <FileText className="w-4 h-4" />
+                  View Plan
+                </button>
+              )}
+              {onGeneratePlan && (
+                <button
+                  onClick={onGeneratePlan}
+                  className={`px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap ${
+                    generatedPlan
+                      ? 'bg-white/20 text-white hover:bg-white/30'
+                      : 'bg-white text-emerald-600 hover:bg-emerald-50'
+                  }`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {generatedPlan ? 'Regenerate' : 'Generate Plan'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Track Progress (2 cols on large screens) - Show only active discipline tracks */}
@@ -492,61 +552,6 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
                 {nextRecommendation.isFirstAssessment ? 'Begin' : 'Assess This Level'}
                 <ArrowRight className="w-4 h-4" />
               </button>
-            </div>
-          )}
-
-          {/* Plan actions — show when assessment is complete OR when a plan already exists */}
-          {(marketingFoundation || activeDiscipline === 'loyalty') && (completionStats.isComplete || generatedPlan) && (
-            <div className={`rounded-xl p-5 text-white ${completionStats.isComplete ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-gradient-to-br from-slate-600 to-slate-700'}`}>
-              <div className="flex items-center gap-2 mb-3">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm font-medium">
-                  {completionStats.isComplete ? 'Assessment Complete' : 'Plan Available'}
-                </span>
-              </div>
-              <p className="text-lg font-semibold mb-2">
-                {completionStats.isComplete
-                  ? 'All tracks assessed! Ready to generate your plan.'
-                  : 'View your plan or regenerate with latest answers.'}
-              </p>
-              {selectedDisciplines.length > 1 && (
-                <p className="text-sm text-white/75 mb-3">
-                  One combined plan covering all {selectedDisciplines.length} selected clouds.
-                </p>
-              )}
-              <div className="flex flex-col gap-2">
-                {generatedPlan && (
-                  <button
-                    onClick={openPlanModal}
-                    className="w-full py-2.5 bg-white text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    View Plan
-                  </button>
-                )}
-                {onGeneratePlan && (
-                  <button
-                    onClick={onGeneratePlan}
-                    className={`w-full py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                      generatedPlan
-                        ? 'bg-white/20 text-white hover:bg-white/30'
-                        : 'bg-white text-emerald-600 hover:bg-emerald-50'
-                    }`}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {generatedPlan ? 'Regenerate Plan' : 'Generate Plan'}
-                  </button>
-                )}
-                {onEditPlanContext && (
-                  <button
-                    onClick={onEditPlanContext}
-                    className="w-full py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 bg-white/10 text-white/80 hover:bg-white/20 text-sm"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    {hasGlobalInputs ? 'Edit Plan Context' : 'Add Plan Context'}
-                  </button>
-                )}
-              </div>
             </div>
           )}
 
