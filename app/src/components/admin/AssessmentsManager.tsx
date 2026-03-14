@@ -17,10 +17,17 @@ type AssessmentRow = {
   planGeneratedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-  trackCount: number;
+  trackedTracks: string[];
 };
 
 type StatusFilter = 'all' | 'plan-generated' | 'complete' | 'in-progress';
+
+const TRACK_LABELS: Record<string, string> = {
+  'data-identity': 'Data & Identity',
+  'journeys': 'Journeys',
+  'content-channels': 'Content & Channels',
+  'intelligence': 'Intelligence',
+};
 
 const INDUSTRY_LABELS: Record<string, string> = {
   'retail-cpg-qsr': 'Retail / CPG / QSR',
@@ -234,7 +241,7 @@ export function AssessmentsManager() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Client</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Industry</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-600">Assessments</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Last Updated</th>
                 <th className="px-4 py-3" />
@@ -249,17 +256,18 @@ export function AssessmentsManager() {
                   >
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{row.clientName}</div>
-                      {row.opportunityName && (
-                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{row.opportunityName}</div>
-                      )}
-                      {row.userEmail && (
-                        <div className="text-xs text-gray-400 truncate max-w-[180px]">{row.userEmail}</div>
-                      )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-gray-700 text-sm">{INDUSTRY_LABELS[row.industry || ''] || row.industry || '—'}</div>
-                      {row.marketingFoundation && (
-                        <div className="text-xs text-gray-400">{FOUNDATION_LABELS[row.marketingFoundation] || row.marketingFoundation}</div>
+                      {row.trackedTracks.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {row.trackedTracks.map(t => (
+                            <span key={t} className="px-1.5 py-0.5 text-xs rounded bg-slate-100 text-slate-600 font-medium">
+                              {TRACK_LABELS[t] || t}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -270,7 +278,7 @@ export function AssessmentsManager() {
                       <div className="text-gray-400">created {formatDate(row.createdAt)}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 justify-end">
+                      <div className="flex items-center gap-1 justify-end">
                         <button
                           onClick={() => handleExpand(row.id)}
                           className="p-1.5 text-gray-400 hover:text-gray-700 rounded hover:bg-gray-100 transition-colors"
@@ -288,13 +296,10 @@ export function AssessmentsManager() {
                         <button
                           onClick={() => handleDelete(row.id, row.clientName)}
                           disabled={deletingId === row.id}
-                          className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
+                          className="p-1.5 text-red-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors disabled:opacity-50"
                           title="Delete"
                         >
-                          {deletingId === row.id
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : <Trash2 className="w-3.5 h-3.5" />}
-                          Delete
+                          {deletingId === row.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                         </button>
                       </div>
                     </td>
@@ -313,7 +318,7 @@ export function AssessmentsManager() {
                             <Detail label="Industry" value={INDUSTRY_LABELS[row.industry || ''] || row.industry || '—'} />
                             <Detail label="Foundation" value={FOUNDATION_LABELS[row.marketingFoundation || ''] || row.marketingFoundation || '—'} />
                             <Detail label="Created By" value={row.userEmail || '—'} />
-                            <Detail label="Track Entries" value={String(row.trackCount)} />
+                            <Detail label="Tracks Assessed" value={row.trackedTracks.join(', ') || '—'} />
                           </div>
                           <div className="space-y-2">
                             <h4 className="font-semibold text-gray-700 text-sm">Timeline</h4>

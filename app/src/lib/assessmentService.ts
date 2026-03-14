@@ -378,7 +378,7 @@ export const assessmentService = {
     planGeneratedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
-    trackCount: number;
+    trackedTracks: string[];
   }[]> {
     if (!supabase) return [];
 
@@ -388,7 +388,7 @@ export const assessmentService = {
         id, client_name, opportunity_name, industry, marketing_foundation,
         user_email, is_complete, created_at, updated_at,
         generated_plans(generated_at),
-        track_assessments(count)
+        track_assessments(track_id)
       `)
       .order('updated_at', { ascending: false });
 
@@ -397,24 +397,26 @@ export const assessmentService = {
       return [];
     }
 
-    return (data || []).map((d: any) => ({
-      id: d.id,
-      clientName: d.client_name,
-      opportunityName: d.opportunity_name || null,
-      industry: d.industry || null,
-      marketingFoundation: d.marketing_foundation || null,
-      userEmail: d.user_email || null,
-      isComplete: d.is_complete,
-      hasPlan: Array.isArray(d.generated_plans) ? d.generated_plans.length > 0 : !!d.generated_plans,
-      planGeneratedAt: Array.isArray(d.generated_plans) && d.generated_plans[0]?.generated_at
-        ? new Date(d.generated_plans[0].generated_at)
-        : null,
-      createdAt: new Date(d.created_at),
-      updatedAt: new Date(d.updated_at),
-      trackCount: Array.isArray(d.track_assessments)
-        ? (d.track_assessments[0]?.count ?? d.track_assessments.length)
-        : 0,
-    }));
+    return (data || []).map((d: any) => {
+      const trackRows: { track_id: string }[] = Array.isArray(d.track_assessments) ? d.track_assessments : [];
+      const uniqueTracks = [...new Set(trackRows.map((t) => t.track_id))];
+      return {
+        id: d.id,
+        clientName: d.client_name,
+        opportunityName: d.opportunity_name || null,
+        industry: d.industry || null,
+        marketingFoundation: d.marketing_foundation || null,
+        userEmail: d.user_email || null,
+        isComplete: d.is_complete,
+        hasPlan: Array.isArray(d.generated_plans) ? d.generated_plans.length > 0 : !!d.generated_plans,
+        planGeneratedAt: Array.isArray(d.generated_plans) && d.generated_plans[0]?.generated_at
+          ? new Date(d.generated_plans[0].generated_at)
+          : null,
+        createdAt: new Date(d.created_at),
+        updatedAt: new Date(d.updated_at),
+        trackedTracks: uniqueTracks,
+      };
+    });
   },
 
   // Delete an assessment
