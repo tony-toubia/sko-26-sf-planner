@@ -30,7 +30,7 @@ interface PlanPageProps {
   onClose: () => void;
 }
 
-type Tab = 'plan' | 'services' | 'export';
+type Tab = 'plan' | 'services';
 
 export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
   const [activeTab, setActiveTab] = useState<Tab>('plan');
@@ -116,14 +116,9 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
     },
     {
       id: 'services',
-      label: 'Services & Investment',
+      label: 'Services & Export',
       icon: <Package className="w-4 h-4" />,
       badge: serviceRecommendations.length > 0 ? `${selectedServices.length}/${serviceRecommendations.length}` : undefined,
-    },
-    {
-      id: 'export',
-      label: 'Export',
-      icon: <Cloud className="w-4 h-4" />,
     },
   ];
 
@@ -230,13 +225,13 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
             </div>
           )}
 
-          {/* ── SERVICES TAB ── */}
+          {/* ── SERVICES & EXPORT TAB ── */}
           {activeTab === 'services' && (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-6">
               {serviceRecommendations.length > 0 ? (
                 <>
                   {/* Investment summary */}
-                  <div className="bg-gradient-to-br from-merkle-blue/5 to-salesforce-blue/5 rounded-xl border border-merkle-blue/20 p-6 mb-6 flex items-center justify-between">
+                  <div className="bg-gradient-to-br from-merkle-blue/5 to-salesforce-blue/5 rounded-xl border border-merkle-blue/20 p-6 flex items-center justify-between">
                     <div>
                       <h2 className="font-bold text-gray-900 text-lg">Total Investment Range</h2>
                       <p className="text-sm text-gray-500 mt-0.5">
@@ -316,7 +311,7 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                     })}
                   </div>
 
-                  <p className="text-xs text-gray-400 mt-6 text-center">
+                  <p className="text-xs text-gray-400 text-center">
                     Investment ranges are indicative. Final scoping depends on client environment and requirements.
                     Excluded services won't appear in exports.
                   </p>
@@ -327,66 +322,9 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                   <p>Complete more of the assessment to see tailored service recommendations.</p>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* ── EXPORT TAB ── */}
-          {activeTab === 'export' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              {/* Services included in export */}
-              {selectedServices.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                  <h2 className="font-bold text-gray-900 text-lg mb-1 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-merkle-blue" />
-                    Services & Investment Included
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {selectedServices.length} service{selectedServices.length !== 1 ? 's' : ''} included in this export ·{' '}
-                    <span className="font-semibold text-merkle-blue">
-                      ${(totalMin / 1000).toFixed(0)}K – ${(totalMax / 1000).toFixed(0)}K
-                    </span>
-                    {deselectedServiceIds.size > 0 && (
-                      <span className="text-gray-400"> · {deselectedServiceIds.size} excluded</span>
-                    )}
-                  </p>
-                  <div className="space-y-3">
-                    {selectedServices.map((rec) => {
-                      const priorityConfig: Record<string, { bar: string; badge: string; label: string }> = {
-                        critical: { bar: 'bg-red-500', badge: 'bg-red-50 border-red-200 text-red-700', label: 'Critical' },
-                        high: { bar: 'bg-orange-500', badge: 'bg-orange-50 border-orange-200 text-orange-700', label: 'High' },
-                        medium: { bar: 'bg-yellow-400', badge: 'bg-yellow-50 border-yellow-200 text-yellow-700', label: 'Medium' },
-                        low: { bar: 'bg-blue-400', badge: 'bg-blue-50 border-blue-200 text-blue-700', label: 'Low' },
-                      };
-                      const p = priorityConfig[rec.priority] || priorityConfig.low;
-                      return (
-                        <div key={rec.service.id} className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
-                          <div className={`h-0.5 w-full ${p.bar}`} />
-                          <div className="p-4 flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-medium text-gray-900 text-sm">{rec.service.name}</span>
-                                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${p.badge}`}>
-                                  {p.label}
-                                </span>
-                              </div>
-                              <p className="text-xs text-gray-500 leading-relaxed">{rec.rationale}</p>
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <div className="font-bold text-merkle-blue">
-                                ${(rec.estimatedCost.min / 1000).toFixed(0)}K – ${(rec.estimatedCost.max / 1000).toFixed(0)}K
-                              </div>
-                              <div className="text-xs text-gray-400 capitalize">{rec.recommendedSize}</div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-gray-400 mt-3">
-                    To adjust which services are included, go to the Services & Investment tab.
-                  </p>
-                </div>
-              )}
+              {/* ── Export section ── */}
+              <hr className="border-gray-200" />
 
               {/* Download */}
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -395,7 +333,7 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                   Download Plan
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                  Export this plan as a Markdown document for sharing or editing.
+                  Export this plan as a Markdown document{selectedServices.length > 0 ? ' including selected services' : ''}.
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -423,10 +361,10 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                     Export to Salesforce
                   </h2>
                   <p className="text-sm text-gray-500 mb-4">
-                    Push this plan to a Salesforce opportunity as a formatted note or attachment.
+                    Push this plan to Salesforce as opportunities based on{selectedServices.length > 0 ? ` ${selectedServices.length} selected services` : ' plan phases'}.
                   </p>
                 </div>
-                <SalesforceExport plan={plan} assessment={assessment} />
+                <SalesforceExport plan={plan} assessment={assessment} selectedServices={selectedServices} />
               </div>
 
               {/* How we built this — collapsed */}

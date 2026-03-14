@@ -8,6 +8,7 @@ import type {
   GeneratedPlan,
   IndustryType,
   MarketingFoundationType,
+  BusinessModelType,
   TrackId,
   TrackLevel,
   TrackLevelStatus,
@@ -37,6 +38,7 @@ interface AssessmentContextValue {
   showPlanModal: boolean;
   selectedIndustry: IndustryType | null;
   marketingFoundation: MarketingFoundationType | null;
+  businessModel: BusinessModelType | null;
 
   // Persistence state
   isSaving: boolean;
@@ -54,7 +56,8 @@ interface AssessmentContextValue {
   // Actions
   setSelectedIndustry: (industry: IndustryType) => void;
   setMarketingFoundation: (foundation: MarketingFoundationType) => void;
-  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs) => Promise<void>;
+  setBusinessModel: (model: BusinessModelType) => void;
+  startAssessment: (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs, businessModel?: BusinessModelType) => Promise<void>;
   endAssessment: () => void;
   setCapabilityRelevance: (capabilityId: string, relevance: CapabilityRelevance) => void;
   saveCapabilityAssessment: (
@@ -117,6 +120,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [selectedIndustry, setSelectedIndustryState] = useState<IndustryType | null>(null);
   const [marketingFoundation, setMarketingFoundationState] = useState<MarketingFoundationType | null>(null);
+  const [businessModel, setBusinessModelState] = useState<BusinessModelType | null>(null);
 
   // Persistence state
   const [isSaving, setIsSaving] = useState(false);
@@ -160,11 +164,24 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     });
   }, [isSupabaseAvailable]);
 
-  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs) => {
-    console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, disciplines, isSupabaseAvailable });
+  const setBusinessModel = useCallback((model: BusinessModelType) => {
+    setBusinessModelState(model);
+    setAssessment((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        businessModel: model,
+        updatedAt: new Date(),
+      };
+    });
+  }, []);
+
+  const startAssessment = useCallback(async (clientName: string, industry: IndustryType, foundation: MarketingFoundationType | null, opportunityName?: string, disciplines?: DisciplineType[], globalInputs?: GlobalAssessmentInputs, businessModel?: BusinessModelType) => {
+    console.log('[AssessmentContext] startAssessment called:', { clientName, industry, foundation, disciplines, businessModel, isSupabaseAvailable });
 
     // Set the marketing foundation state immediately (can be null - will be set later in assessment)
     setMarketingFoundationState(foundation);
+    if (businessModel) setBusinessModelState(businessModel);
 
     // Default to M&P if no disciplines specified
     const selectedDisciplines = disciplines && disciplines.length > 0 ? disciplines : ['messaging-personalization' as DisciplineType];
@@ -197,6 +214,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
           userEmail: userEmail || undefined,
           marketingFoundation: foundation ?? undefined,
           disciplines: selectedDisciplines,
+          businessModel: businessModel ?? undefined,
           globalInputs: globalInputs ?? undefined,
         };
         console.log('[AssessmentContext] Using Supabase assessment ID:', newAssessment.id);
@@ -223,13 +241,14 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       isComplete: false,
       marketingFoundation: foundation ?? undefined,
       disciplines: selectedDisciplines,
+      businessModel: businessModel ?? undefined,
       globalInputs: globalInputs ?? undefined,
     };
     setAssessment(newAssessment);
     setSelectedIndustryState(industry);
     setIsAssessmentMode(true);
     setGeneratedPlan(null);
-  }, [isSupabaseAvailable]);
+  }, [isSupabaseAvailable, userEmail]);
 
   const endAssessment = useCallback(() => {
     setIsAssessmentMode(false);
@@ -496,6 +515,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     setIsAssessmentMode(false);
     setGeneratedPlan(null);
     setMarketingFoundationState(null);
+    setBusinessModelState(null);
   }, []);
 
   // Set user email and update current assessment
@@ -537,6 +557,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       setAssessment(loaded);
       setSelectedIndustryState(loaded.industry || null);
       setMarketingFoundationState(loaded.marketingFoundation || null);
+      setBusinessModelState(loaded.businessModel || null);
       setGeneratedPlan(loaded.generatedPlan || null);
       setIsAssessmentMode(true);
 
@@ -697,6 +718,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     showPlanModal,
     selectedIndustry,
     marketingFoundation,
+    businessModel,
     isSaving,
     lastSaved,
     isSupabaseAvailable,
@@ -706,6 +728,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
     userEmail,
     setSelectedIndustry,
     setMarketingFoundation,
+    setBusinessModel,
     startAssessment,
     endAssessment,
     setCapabilityRelevance,

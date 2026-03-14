@@ -1,6 +1,7 @@
 import type {
   MaturityStage,
   Discipline,
+  BusinessModel,
   PhaseInfo,
   JourneyCategory,
   MaturityLevel,
@@ -103,6 +104,79 @@ export const DISCIPLINES: Discipline[] = [
   },
 ];
 
+// B2B ABX Disciplines
+export const ABX_DISCIPLINES: Discipline[] = [
+  {
+    id: 'abm',
+    name: 'Account-Based Marketing',
+    shortName: 'ABM',
+    description: 'Lead-to-revenue process, marketing automation, campaign orchestration, lead scoring, and ABM tier strategies.',
+    icon: 'Target',
+    salesforceCloud: 'Marketing Cloud Account Engagement',
+    color: '#E85D04',
+    available: false, // Data model pending
+  },
+  {
+    id: 'abs',
+    name: 'Account-Based Selling',
+    shortName: 'ABS',
+    description: 'Opportunity management, pipeline management, CPQ, sales enablement, forecasting, and territory management.',
+    icon: 'Briefcase',
+    salesforceCloud: 'Sales Cloud',
+    color: '#00A1E0',
+    available: false, // Data model pending
+  },
+  {
+    id: 'absa',
+    name: 'Account-Based Service & Advocacy',
+    shortName: 'ABS&A',
+    description: 'Case management, knowledge base, self-service portals, customer health scoring, renewal management, and advocacy.',
+    icon: 'HeartHandshake',
+    salesforceCloud: 'Service Cloud',
+    color: '#2D9F4F',
+    available: false, // Data model pending
+  },
+];
+
+// All disciplines combined (B2C + B2B)
+export const ALL_DISCIPLINES: Discipline[] = [...DISCIPLINES, ...ABX_DISCIPLINES];
+
+// Business Model Definitions
+export const BUSINESS_MODELS: BusinessModel[] = [
+  {
+    id: 'b2c',
+    name: 'Business-to-Consumer',
+    shortName: 'B2C',
+    description: 'Consumer-facing brand selling directly to individuals. Focus on Marketing Cloud, Loyalty, and Commerce.',
+    icon: 'Users',
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service'],
+  },
+  {
+    id: 'b2b',
+    name: 'Business-to-Business',
+    shortName: 'B2B',
+    description: 'Selling to other businesses via accounts. Focus on Account-Based Marketing, Sales Cloud, and Service.',
+    icon: 'Building2',
+    availableDisciplines: ['abm', 'abs', 'absa'],
+  },
+  {
+    id: 'b2b2c',
+    name: 'B2B2C',
+    shortName: 'B2B2C',
+    description: 'Selling through business partners to reach consumers. Combines B2B account management with B2C engagement.',
+    icon: 'Network',
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'abm', 'abs', 'absa'],
+  },
+  {
+    id: 'hybrid',
+    name: 'Hybrid (B2B + B2C)',
+    shortName: 'Hybrid',
+    description: 'Managing both business accounts and consumer relationships in Salesforce. Full cross-cloud opportunity.',
+    icon: 'Layers',
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'abm', 'abs', 'absa'],
+  },
+];
+
 // Marketing Foundation Options - the key decision point
 export const MARKETING_FOUNDATIONS: MarketingFoundation[] = [
   {
@@ -149,21 +223,12 @@ export const MARKETING_FOUNDATIONS: MarketingFoundation[] = [
 // Future disciplines - not yet implemented but defined for adjacency hints
 export const FUTURE_DISCIPLINES = [
   {
-    id: 'commerce',
-    name: 'Commerce',
-    shortName: 'Commerce',
-    description: 'E-commerce, order management, fulfillment, and unified commerce experiences.',
-    icon: 'ShoppingCart',
-    salesforceCloud: 'Commerce Cloud',
-    comingSoon: true,
-  },
-  {
-    id: 'service',
-    name: 'Service',
-    shortName: 'Service',
-    description: 'Customer service, case management, knowledge base, and service automation.',
-    icon: 'Headphones',
-    salesforceCloud: 'Service Cloud',
+    id: 'data-cloud',
+    name: 'Data Cloud',
+    shortName: 'Data Cloud',
+    description: 'Unified customer profiles, identity resolution, data federation, and calculated insights.',
+    icon: 'Database',
+    salesforceCloud: 'Data Cloud',
     comingSoon: true,
   },
 ];
@@ -338,5 +403,15 @@ export function getPhaseInfo(phase: number): PhaseInfo | undefined {
 }
 
 export function getDiscipline(id: string): Discipline | undefined {
-  return DISCIPLINES.find((d) => d.id === id);
+  return ALL_DISCIPLINES.find((d) => d.id === id);
+}
+
+export function getBusinessModel(id: string): BusinessModel | undefined {
+  return BUSINESS_MODELS.find((m) => m.id === id);
+}
+
+export function getDisciplinesForBusinessModel(businessModelId: string): Discipline[] {
+  const model = getBusinessModel(businessModelId);
+  if (!model) return DISCIPLINES; // Default to B2C disciplines
+  return ALL_DISCIPLINES.filter((d) => model.availableDisciplines.includes(d.id));
 }

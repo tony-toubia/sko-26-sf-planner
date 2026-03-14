@@ -16,6 +16,9 @@ const DISCIPLINE_TRACKS_MAP: Record<string, any[]> = {
   'loyalty': LOYALTY_TRACKS as any[], // Cast to match Track[] type
   'commerce': [], // Coming soon
   'service': [], // Coming soon
+  'abm': [],     // ABX: Account-Based Marketing - tracks pending
+  'abs': [],     // ABX: Account-Based Selling - tracks pending
+  'absa': [],    // ABX: Account-Based Service & Advocacy - tracks pending
 };
 
 /**
