@@ -330,15 +330,22 @@ export function AssessmentsManager() {
                             <Detail label="Last Updated" value={formatDateTime(row.updatedAt)} />
                             <Detail label="Plan Generated" value={row.planGeneratedAt ? formatDateTime(row.planGeneratedAt) : 'Not yet generated'} />
                             <div className="mt-3 flex items-center gap-2">
-                              <a
-                                href={`/plan/${row.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs hover:bg-slate-700"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                Open Plan Page
-                              </a>
+                              {row.hasPlan ? (
+                                <a
+                                  href={`/plan/${row.id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs hover:bg-slate-700"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  Open Plan Page
+                                </a>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg text-xs cursor-not-allowed">
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  No Plan Generated
+                                </span>
+                              )}
                               <button
                                 onClick={() => handleDelete(row.id, row.clientName)}
                                 disabled={deletingId === row.id}
