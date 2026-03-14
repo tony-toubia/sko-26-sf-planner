@@ -24,11 +24,13 @@ import {
   Database,
   HardDrive,
   Info,
+  Presentation,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment, GenerationTrace } from '../types';
 import { SalesforceExport } from './SalesforceExport';
 import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
+import { generatePlanPptx } from '../utils/exportPptx';
 
 interface PlanPageProps {
   plan: GeneratedPlan;
@@ -41,6 +43,7 @@ type Tab = 'plan' | 'timeline' | 'services';
 export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
   const [activeTab, setActiveTab] = useState<Tab>('plan');
   const [copied, setCopied] = useState(false);
+  const [exportingPptx, setExportingPptx] = useState(false);
   const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
   const [deselectedServiceIds, setDeselectedServiceIds] = useState<Set<string>>(new Set());
   const [showTrace, setShowTrace] = useState(false);
@@ -111,6 +114,15 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportPptx = async () => {
+    setExportingPptx(true);
+    try {
+      await generatePlanPptx(plan, assessment);
+    } finally {
+      setExportingPptx(false);
+    }
+  };
+
   const togglePhase = (n: number) =>
     setExpandedPhases((prev) => (prev.includes(n) ? prev.filter((p) => p !== n) : [...prev, n]));
 
@@ -161,7 +173,16 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                 className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-sm"
               >
                 <Download className="w-4 h-4" />
-                Download
+                .md
+              </button>
+              <button
+                onClick={handleExportPptx}
+                disabled={exportingPptx}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-sm disabled:opacity-60"
+                title="Export as PowerPoint"
+              >
+                <Presentation className="w-4 h-4" />
+                {exportingPptx ? 'Exporting...' : '.pptx'}
               </button>
               {plan.generationTrace && (
                 <button
@@ -356,15 +377,23 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
               <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 className="font-bold text-gray-900 text-lg mb-1 flex items-center gap-2">
                   <Download className="w-5 h-5 text-gray-500" />
-                  Download Plan
+                  Export Plan
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
-                  Export this plan as a Markdown document{selectedServices.length > 0 ? ' including selected services' : ''}.
+                  Download as a branded PowerPoint deck or Markdown document.
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handleExportPptx}
+                    disabled={exportingPptx}
+                    className="flex items-center gap-2 px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors font-medium text-sm disabled:opacity-60"
+                  >
+                    <Presentation className="w-4 h-4" />
+                    {exportingPptx ? 'Generating...' : 'Export as PowerPoint'}
+                  </button>
                   <button
                     onClick={handleDownload}
-                    className="flex items-center gap-2 px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors font-medium text-sm"
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:border-gray-300 transition-colors text-sm"
                   >
                     <Download className="w-4 h-4" />
                     Download as Markdown
