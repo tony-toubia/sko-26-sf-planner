@@ -1,4 +1,4 @@
-import { LayoutGrid, MessageSquare, DollarSign, Presentation, Mail, ChevronRight } from 'lucide-react';
+import { LayoutGrid, MessageSquare, DollarSign, Presentation, ChevronRight } from 'lucide-react';
 import { useAssessment } from '../context/AssessmentContext';
 
 export type ViewType = 'capabilities' | 'assistant' | 'value';
@@ -29,12 +29,12 @@ export function Header({ currentView, onViewChange, onShowSlides, showLanding, o
             onClick={onGoToLanding}
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
           >
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
-              <Mail className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-lg font-semibold text-slate-900 hidden sm:block">
-              SF Value Realization Navigator
-            </span>
+            <img
+              src="https://content.partnerpage.io/eyJidWNrZXQiOiJwYXJ0bmVycGFnZS5wcm9kIiwia2V5IjoibWVkaWEvZGlyZWN0b3JpZXMvaW1hZ2VzL2NkZmVmZGY3LTQ3ZWMtNGJiNC1hMzI0LTJjYWNmYTI2Yjg0Ni8yZjRiMjFlZC0zZDZlLTQ3N2UtYTA3NS1hZTA4NjAwZmRjYjEucG5nIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJ3ZWJwIiwicmVzaXplIjp7IndpZHRoIjoxMjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiY29udGFpbiIsImJhY2tncm91bmQiOnsiciI6MjU1LCJnIjoyNTUsImIiOjI1NSwiYWxwaGEiOjB9LCJwb3NpdGlvbiI6ImNlbnRyZSJ9fX0="
+              alt="Merkle"
+              className="h-7 w-auto"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
           </button>
 
           {/* Breadcrumb showing client name when in assessment */}

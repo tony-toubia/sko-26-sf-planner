@@ -87,19 +87,17 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           {/* Branding lockup */}
-          <div className="flex items-center justify-center gap-4 mb-8">
+          <div className="flex items-center justify-center gap-5 mb-8">
             <img
-              src="https://www.merkle.com/themes/custom/merkle/images/logo.svg"
+              src="https://content.partnerpage.io/eyJidWNrZXQiOiJwYXJ0bmVycGFnZS5wcm9kIiwia2V5IjoibWVkaWEvZGlyZWN0b3JpZXMvaW1hZ2VzL2NkZmVmZGY3LTQ3ZWMtNGJiNC1hMzI0LTJjYWNmYTI2Yjg0Ni8yZjRiMjFlZC0zZDZlLTQ3N2UtYTA3NS1hZTA4NjAwZmRjYjEucG5nIiwiZWRpdHMiOnsidG9Gb3JtYXQiOiJ3ZWJwIiwicmVzaXplIjp7IndpZHRoIjoxMjAwLCJoZWlnaHQiOjYwMCwiZml0IjoiY29udGFpbiIsImJhY2tncm91bmQiOnsiciI6MjU1LCJnIjoyNTUsImIiOjI1NSwiYWxwaGEiOjB9LCJwb3NpdGlvbiI6ImNlbnRyZSJ9fX0="
               alt="Merkle"
-              className="h-7"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              className="h-8 w-auto"
             />
-            <span className="text-gray-300 text-2xl font-light">×</span>
+            <span className="text-gray-300 text-2xl font-light select-none">×</span>
             <img
               src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png"
               alt="Salesforce"
-              className="h-7"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              className="h-8 w-auto"
             />
           </div>
 
