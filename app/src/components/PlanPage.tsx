@@ -26,7 +26,7 @@ import {
   Info,
   Presentation,
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment, GenerationTrace } from '../types';
 import { SalesforceExport } from './SalesforceExport';
 import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
@@ -41,6 +41,8 @@ interface PlanPageProps {
 type Tab = 'plan' | 'timeline' | 'services';
 
 export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, []);
+
   const [activeTab, setActiveTab] = useState<Tab>('plan');
   const [copied, setCopied] = useState(false);
   const [exportingPptx, setExportingPptx] = useState(false);
