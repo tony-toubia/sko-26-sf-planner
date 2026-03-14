@@ -268,39 +268,30 @@ export function AssessmentsManager() {
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(row.updatedAt)}</td>
                     <td className="px-4 py-3 text-gray-500 text-xs max-w-[150px] truncate">{row.userEmail || '—'}</td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 justify-end">
-                        <a
-                          href={`/plan/${row.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Open plan"
-                          className="p-1.5 text-gray-400 hover:text-blue-600 rounded"
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <button
+                          onClick={() => handleExpand(row.id)}
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 hover:border-gray-300 rounded transition-colors"
                         >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
+                          {expandedId === row.id ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          {expandedId === row.id ? 'Hide' : 'Details'}
+                        </button>
                         <button
                           onClick={() => handleEditOpen(row)}
-                          title="Edit metadata"
-                          className="p-1.5 text-gray-400 hover:text-gray-700 rounded"
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 hover:border-gray-300 rounded transition-colors"
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-3.5 h-3.5" />
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(row.id, row.clientName)}
                           disabled={deletingId === row.id}
-                          title="Delete assessment"
-                          className="p-1.5 text-gray-400 hover:text-red-600 rounded"
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100 rounded transition-colors disabled:opacity-50"
                         >
                           {deletingId === row.id
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <Trash2 className="w-4 h-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleExpand(row.id)}
-                          title={expandedId === row.id ? 'Collapse' : 'Expand details'}
-                          className="p-1.5 text-gray-400 hover:text-gray-700 rounded"
-                        >
-                          {expandedId === row.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : <Trash2 className="w-3.5 h-3.5" />}
+                          Delete
                         </button>
                       </div>
                     </td>
