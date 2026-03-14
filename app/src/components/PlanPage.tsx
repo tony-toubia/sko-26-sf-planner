@@ -445,6 +445,14 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
 
         </div>
       </div>
+
+      {/* Generation Trace Drawer */}
+      {showTrace && plan.generationTrace && (
+        <GenerationTraceDrawer
+          trace={plan.generationTrace}
+          onClose={() => setShowTrace(false)}
+        />
+      )}
     </div>
   );
 }
@@ -902,14 +910,6 @@ function TemplatePlan({
             ))}
           </div>
         </div>
-      )}
-
-      {/* Generation Trace Drawer */}
-      {showTrace && plan.generationTrace && (
-        <GenerationTraceDrawer
-          trace={plan.generationTrace}
-          onClose={() => setShowTrace(false)}
-        />
       )}
     </div>
   );
