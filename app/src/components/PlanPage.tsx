@@ -18,6 +18,7 @@ import {
   ChevronUp,
   Briefcase,
   Target,
+  GanttChartSquare,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment } from '../types';
@@ -30,7 +31,7 @@ interface PlanPageProps {
   onClose: () => void;
 }
 
-type Tab = 'plan' | 'services';
+type Tab = 'plan' | 'timeline' | 'services';
 
 export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
   const [activeTab, setActiveTab] = useState<Tab>('plan');
@@ -113,6 +114,11 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
       label: 'Roadmap',
       icon: <FileText className="w-4 h-4" />,
       badge: hasAIContent ? 'AI' : undefined,
+    },
+    {
+      id: 'timeline',
+      label: 'Timeline',
+      icon: <GanttChartSquare className="w-4 h-4" />,
     },
     {
       id: 'services',
@@ -223,6 +229,11 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                 />
               )}
             </div>
+          )}
+
+          {/* ── TIMELINE TAB ── */}
+          {activeTab === 'timeline' && (
+            <TimelineTab plan={plan} />
           )}
 
           {/* ── SERVICES & EXPORT TAB ── */}
@@ -419,6 +430,198 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
 
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Timeline / Gantt view
+// ─────────────────────────────────────────────────────────────────────────────
+
+function parseDurationMonths(duration: string): number {
+  const range = duration.match(/(\d+)\s*[-–]\s*(\d+)\s*months?/i);
+  if (range) return Math.round((parseInt(range[1]) + parseInt(range[2])) / 2);
+  const months = duration.match(/(\d+)\s*months?/i);
+  if (months) return parseInt(months[1]);
+  const weeks = duration.match(/(\d+)\s*weeks?/i);
+  if (weeks) return Math.max(1, Math.round(parseInt(weeks[1]) / 4));
+  return 3;
+}
+
+const PHASE_COLORS = [
+  { bar: 'bg-blue-500',    light: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-700',    dot: 'bg-blue-500'    },
+  { bar: 'bg-orange-500',  light: 'bg-orange-50',  border: 'border-orange-200',  text: 'text-orange-700',  dot: 'bg-orange-500'  },
+  { bar: 'bg-emerald-500', light: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+  { bar: 'bg-purple-500',  light: 'bg-purple-50',  border: 'border-purple-200',  text: 'text-purple-700',  dot: 'bg-purple-500'  },
+];
+
+function TimelineTab({ plan }: { plan: GeneratedPlan }) {
+  const phases = plan.phases;
+
+  if (phases.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-20 text-gray-400">
+        <GanttChartSquare className="w-12 h-12 mx-auto mb-3 opacity-30" />
+        <p className="font-medium text-gray-500 mb-1">No structured timeline available</p>
+        <p className="text-sm">This plan was generated as a narrative document. View the Roadmap tab for the full plan.</p>
+      </div>
+    );
+  }
+
+  const durations = phases.map((p) => parseDurationMonths(p.duration));
+  const totalMonths = durations.reduce((s, d) => s + d, 0);
+
+  // Build cumulative start positions
+  let cursor = 0;
+  const phaseLayout = phases.map((phase, i) => {
+    const start = cursor;
+    const dur = durations[i];
+    cursor += dur;
+    return { phase, start, dur, pct: (dur / totalMonths) * 100 };
+  });
+
+  // Month ruler ticks — show every month up to ~18, then every 2
+  const tickStep = totalMonths > 18 ? 2 : 1;
+  const ticks = Array.from({ length: Math.ceil(totalMonths / tickStep) }, (_, i) => (i + 1) * tickStep).filter(t => t <= totalMonths);
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 overflow-x-auto">
+      {/* Legend */}
+      <div className="flex items-center gap-6 flex-wrap">
+        {phaseLayout.map(({ phase }, i) => {
+          const c = PHASE_COLORS[i % PHASE_COLORS.length];
+          return (
+            <div key={phase.phaseNumber} className="flex items-center gap-2 text-sm">
+              <div className={`w-3 h-3 rounded-sm ${c.bar}`} />
+              <span className="text-gray-600 font-medium">Phase {phase.phaseNumber}: {phase.name}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Gantt bar */}
+      <div className="min-w-[600px]">
+        {/* Month ruler */}
+        <div className="flex mb-2 ml-0">
+          <div className="relative w-full h-6">
+            {ticks.map((tick) => (
+              <div
+                key={tick}
+                className="absolute top-0 flex flex-col items-center"
+                style={{ left: `${(tick / totalMonths) * 100}%`, transform: 'translateX(-50%)' }}
+              >
+                <span className="text-xs text-gray-400 whitespace-nowrap">M{tick}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Gridlines + bars */}
+        <div className="relative">
+          {/* Grid */}
+          <div className="absolute inset-0 flex pointer-events-none">
+            {ticks.map((tick) => (
+              <div
+                key={tick}
+                className="absolute top-0 bottom-0 border-l border-gray-100"
+                style={{ left: `${(tick / totalMonths) * 100}%` }}
+              />
+            ))}
+          </div>
+
+          {/* Phase bars */}
+          <div className="relative flex h-14 rounded-xl overflow-hidden shadow-sm">
+            {phaseLayout.map(({ phase, pct }, i) => {
+              const c = PHASE_COLORS[i % PHASE_COLORS.length];
+              return (
+                <div
+                  key={phase.phaseNumber}
+                  style={{ width: `${pct}%` }}
+                  className={`${c.bar} flex items-center px-3 gap-2 overflow-hidden ${i > 0 ? 'border-l-2 border-white/30' : ''}`}
+                >
+                  <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {phase.phaseNumber}
+                  </div>
+                  <div className="text-white min-w-0 hidden sm:block">
+                    <div className="font-semibold text-sm leading-tight truncate">{phase.name}</div>
+                    <div className="text-white/70 text-xs">{phase.duration}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Phase detail cards — proportional widths */}
+      <div className="flex gap-3 min-w-[600px] items-start">
+        {phaseLayout.map(({ phase, pct }, i) => {
+          const c = PHASE_COLORS[i % PHASE_COLORS.length];
+          return (
+            <div
+              key={phase.phaseNumber}
+              style={{ width: `${pct}%`, flexShrink: 0 }}
+              className={`${c.light} border ${c.border} rounded-xl p-4`}
+            >
+              {/* Phase header */}
+              <div className={`text-xs font-bold ${c.text} uppercase tracking-wide mb-1`}>
+                Phase {phase.phaseNumber}
+              </div>
+              <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{phase.name}</div>
+              <div className="text-xs text-gray-500 mb-3">{phase.duration}{phase.totalEstimate ? ` · ${phase.totalEstimate}` : ''}</div>
+
+              {/* Capabilities */}
+              {phase.capabilities.length > 0 && (
+                <div className="space-y-1 mb-3">
+                  {phase.capabilities.slice(0, 7).map((cap) => (
+                    <div key={cap.capabilityId} className="flex items-start gap-1.5 text-xs text-gray-700">
+                      <div className={`w-1.5 h-1.5 rounded-full ${c.dot} mt-1 flex-shrink-0`} />
+                      <span className="leading-snug">{cap.capabilityName}</span>
+                    </div>
+                  ))}
+                  {phase.capabilities.length > 7 && (
+                    <div className="text-xs text-gray-400 pl-3">+{phase.capabilities.length - 7} more</div>
+                  )}
+                </div>
+              )}
+
+              {/* Milestones */}
+              {phase.keyMilestones.length > 0 && (
+                <div className={`border-t ${c.border} pt-2 space-y-1`}>
+                  {phase.keyMilestones.map((m, j) => (
+                    <div key={j} className={`flex items-start gap-1.5 text-xs ${c.text}`}>
+                      <span className="flex-shrink-0 text-[10px] mt-0.5">◆</span>
+                      <span className="leading-snug">{m}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick wins row */}
+      {plan.quickWins.length > 0 && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-emerald-600" />
+            <span className="font-semibold text-emerald-800 text-sm">Quick Wins — Start Immediately</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {plan.quickWins.map((win, i) => (
+              <div key={i} className="bg-white border border-emerald-200 rounded-lg px-3 py-2 text-sm">
+                <div className="font-medium text-gray-900">{win.capabilityName}</div>
+                {win.impact && <div className="text-xs text-emerald-600 mt-0.5">{win.impact}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-400 text-center pb-2">
+        Timeline durations are estimates. Actual sequencing depends on client readiness and resource availability.
+      </p>
     </div>
   );
 }
