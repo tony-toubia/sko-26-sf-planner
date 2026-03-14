@@ -448,6 +448,50 @@ function parseDurationMonths(duration: string): number {
   return 3;
 }
 
+interface ParsedPhase {
+  phaseNumber: number;
+  name: string;
+  duration: string;
+  capabilities: string[];
+  milestones: string[];
+}
+
+/** Extract phases from AI-generated markdown so Timeline always matches the Roadmap. */
+function parsePhasesFromMarkdown(markdown: string): ParsedPhase[] | null {
+  // Match headers like: ## Phase 1: Name (Duration) or ### Phase 2 – Name
+  const phaseRegex = /^#{2,4}\s+Phase\s+(\d+)[:\s–\-]+([^\n(]+?)(?:\s*\(([^)]+)\))?[ \t]*$/gm;
+  const matches = [...markdown.matchAll(phaseRegex)];
+  if (matches.length === 0) return null;
+
+  return matches.map((match, i) => {
+    const start = match.index!;
+    const end = matches[i + 1]?.index ?? markdown.length;
+    const section = markdown.slice(start, end);
+
+    const phaseNumber = parseInt(match[1]);
+    const name = match[2].trim().replace(/\s*[-–:]+\s*$/, '');
+    const inlineDuration = match[3]?.trim();
+
+    // Try to find duration elsewhere in the section
+    const durationLine = section.match(/\*{0,2}Duration[:\s*]+\*{0,2}([^\n]+)/i)
+                      || section.match(/(\d+[-–]\d+\s*months?|\d+\s*months?)/i);
+    const duration = inlineDuration
+      || durationLine?.[1]?.replace(/\*+/g, '').trim()
+      || '3 months';
+
+    // Bullet points → capabilities
+    const bullets = [...section.matchAll(/^[ \t]*[-•*]\s+(.+)$/gm)].map(m => m[1].trim());
+
+    // Named milestones subsection
+    const msSection = section.match(/(?:Key\s+)?Milestones?[\s:]+\n((?:[ \t]*[-•*]\s+.+\n?)+)/i);
+    const milestones = msSection
+      ? [...msSection[1].matchAll(/^[ \t]*[-•*]\s+(.+)$/gm)].map(m => m[1].trim()).slice(0, 4)
+      : [];
+
+    return { phaseNumber, name, duration, capabilities: bullets.slice(0, 10), milestones };
+  });
+}
+
 const PHASE_COLORS = [
   { bar: 'bg-blue-500',    light: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-700',    dot: 'bg-blue-500'    },
   { bar: 'bg-orange-500',  light: 'bg-orange-50',  border: 'border-orange-200',  text: 'text-orange-700',  dot: 'bg-orange-500'  },
@@ -456,7 +500,21 @@ const PHASE_COLORS = [
 ];
 
 function TimelineTab({ plan }: { plan: GeneratedPlan }) {
-  const phases = plan.phases;
+  // Prefer phases parsed from AI markdown — they match the Roadmap tab exactly.
+  // Fall back to the structured phases array for template-based plans.
+  const phases: ParsedPhase[] = useMemo(() => {
+    if (plan.aiGenerated?.markdown) {
+      const parsed = parsePhasesFromMarkdown(plan.aiGenerated.markdown);
+      if (parsed && parsed.length > 0) return parsed;
+    }
+    return plan.phases.map((p) => ({
+      phaseNumber: p.phaseNumber,
+      name: p.name,
+      duration: p.duration,
+      capabilities: p.capabilities.map((c) => c.capabilityName),
+      milestones: p.keyMilestones,
+    }));
+  }, [plan]);
 
   if (phases.length === 0) {
     return (
@@ -568,15 +626,15 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
                 Phase {phase.phaseNumber}
               </div>
               <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{phase.name}</div>
-              <div className="text-xs text-gray-500 mb-3">{phase.duration}{phase.totalEstimate ? ` · ${phase.totalEstimate}` : ''}</div>
+              <div className="text-xs text-gray-500 mb-3">{phase.duration}</div>
 
               {/* Capabilities */}
               {phase.capabilities.length > 0 && (
                 <div className="space-y-1 mb-3">
-                  {phase.capabilities.slice(0, 7).map((cap) => (
-                    <div key={cap.capabilityId} className="flex items-start gap-1.5 text-xs text-gray-700">
+                  {phase.capabilities.slice(0, 7).map((cap, ci) => (
+                    <div key={ci} className="flex items-start gap-1.5 text-xs text-gray-700">
                       <div className={`w-1.5 h-1.5 rounded-full ${c.dot} mt-1 flex-shrink-0`} />
-                      <span className="leading-snug">{cap.capabilityName}</span>
+                      <span className="leading-snug">{cap}</span>
                     </div>
                   ))}
                   {phase.capabilities.length > 7 && (
@@ -586,9 +644,9 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
               )}
 
               {/* Milestones */}
-              {phase.keyMilestones.length > 0 && (
+              {phase.milestones.length > 0 && (
                 <div className={`border-t ${c.border} pt-2 space-y-1`}>
-                  {phase.keyMilestones.map((m, j) => (
+                  {phase.milestones.map((m, j) => (
                     <div key={j} className={`flex items-start gap-1.5 text-xs ${c.text}`}>
                       <span className="flex-shrink-0 text-[10px] mt-0.5">◆</span>
                       <span className="leading-snug">{m}</span>
