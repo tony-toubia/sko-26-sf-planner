@@ -229,7 +229,7 @@ export function AssessmentsManager() {
           {search || statusFilter !== 'all' ? 'No assessments match your filters.' : 'No assessments found.'}
         </div>
       ) : (
-        <div className="border border-gray-200 rounded-xl overflow-hidden">
+        <div className="border border-gray-200 rounded-xl overflow-hidden overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
@@ -326,7 +326,7 @@ export function AssessmentsManager() {
                             <Detail label="Created At" value={formatDateTime(row.createdAt)} />
                             <Detail label="Last Updated" value={formatDateTime(row.updatedAt)} />
                             <Detail label="Plan Generated" value={row.planGeneratedAt ? formatDateTime(row.planGeneratedAt) : 'Not yet generated'} />
-                            <div className="mt-3">
+                            <div className="mt-3 flex items-center gap-2">
                               <a
                                 href={`/plan/${row.id}`}
                                 target="_blank"
@@ -336,6 +336,16 @@ export function AssessmentsManager() {
                                 <ExternalLink className="w-3.5 h-3.5" />
                                 Open Plan Page
                               </a>
+                              <button
+                                onClick={() => handleDelete(row.id, row.clientName)}
+                                disabled={deletingId === row.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 disabled:opacity-50"
+                              >
+                                {deletingId === row.id
+                                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  : <Trash2 className="w-3.5 h-3.5" />}
+                                Delete Assessment
+                              </button>
                             </div>
                           </div>
                         </div>
