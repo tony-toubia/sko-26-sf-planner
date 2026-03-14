@@ -499,9 +499,23 @@ const PHASE_COLORS = [
   { bar: 'bg-purple-500',  light: 'bg-purple-50',  border: 'border-purple-200',  text: 'text-purple-700',  dot: 'bg-purple-500'  },
 ];
 
+/** Render inline markdown bold (**text**) as <strong> elements. */
+function InlineText({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <strong key={i} className="font-semibold text-gray-900">{part}</strong>
+          : <span key={i}>{part}</span>
+      )}
+    </>
+  );
+}
+
 function TimelineTab({ plan }: { plan: GeneratedPlan }) {
-  // Prefer phases parsed from AI markdown — they match the Roadmap tab exactly.
-  // Fall back to the structured phases array for template-based plans.
+  const [expandedPhases, setExpandedPhases] = useState<Set<number>>(new Set());
+
   const phases: ParsedPhase[] = useMemo(() => {
     if (plan.aiGenerated?.markdown) {
       const parsed = parsePhasesFromMarkdown(plan.aiGenerated.markdown);
@@ -516,6 +530,13 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
     }));
   }, [plan]);
 
+  const toggleExpanded = (n: number) =>
+    setExpandedPhases((prev) => {
+      const next = new Set(prev);
+      next.has(n) ? next.delete(n) : next.add(n);
+      return next;
+    });
+
   if (phases.length === 0) {
     return (
       <div className="max-w-4xl mx-auto text-center py-20 text-gray-400">
@@ -529,7 +550,6 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
   const durations = phases.map((p) => parseDurationMonths(p.duration));
   const totalMonths = durations.reduce((s, d) => s + d, 0);
 
-  // Build cumulative start positions
   let cursor = 0;
   const phaseLayout = phases.map((phase, i) => {
     const start = cursor;
@@ -538,12 +558,13 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
     return { phase, start, dur, pct: (dur / totalMonths) * 100 };
   });
 
-  // Month ruler ticks — show every month up to ~18, then every 2
   const tickStep = totalMonths > 18 ? 2 : 1;
   const ticks = Array.from({ length: Math.ceil(totalMonths / tickStep) }, (_, i) => (i + 1) * tickStep).filter(t => t <= totalMonths);
 
+  const CAP_LIMIT = 7;
+
   return (
-    <div className="max-w-6xl mx-auto space-y-6 overflow-x-auto">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Legend */}
       <div className="flex items-center gap-6 flex-wrap">
         {phaseLayout.map(({ phase }, i) => {
@@ -557,11 +578,11 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
         })}
       </div>
 
-      {/* Gantt bar */}
-      <div className="min-w-[600px]">
-        {/* Month ruler */}
-        <div className="flex mb-2 ml-0">
-          <div className="relative w-full h-6">
+      {/* Scrollable Gantt area */}
+      <div className="overflow-x-auto pb-2">
+        <div className="min-w-[560px]">
+          {/* Month ruler */}
+          <div className="relative w-full h-6 mb-2">
             {ticks.map((tick) => (
               <div
                 key={tick}
@@ -572,38 +593,91 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Gridlines + bars */}
-        <div className="relative">
-          {/* Grid */}
-          <div className="absolute inset-0 flex pointer-events-none">
-            {ticks.map((tick) => (
-              <div
-                key={tick}
-                className="absolute top-0 bottom-0 border-l border-gray-100"
-                style={{ left: `${(tick / totalMonths) * 100}%` }}
-              />
-            ))}
+          {/* Gridlines + phase bars */}
+          <div className="relative">
+            <div className="absolute inset-0 pointer-events-none">
+              {ticks.map((tick) => (
+                <div
+                  key={tick}
+                  className="absolute top-0 bottom-0 border-l border-gray-100"
+                  style={{ left: `${(tick / totalMonths) * 100}%` }}
+                />
+              ))}
+            </div>
+            <div className="relative flex h-14 rounded-xl overflow-hidden shadow-sm">
+              {phaseLayout.map(({ phase, pct }, i) => {
+                const c = PHASE_COLORS[i % PHASE_COLORS.length];
+                return (
+                  <div
+                    key={phase.phaseNumber}
+                    style={{ width: `${pct}%` }}
+                    className={`${c.bar} flex items-center px-3 gap-2 overflow-hidden ${i > 0 ? 'border-l-2 border-white/30' : ''}`}
+                  >
+                    <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                      {phase.phaseNumber}
+                    </div>
+                    <div className="text-white min-w-0">
+                      <div className="font-semibold text-sm leading-tight truncate">{phase.name}</div>
+                      <div className="text-white/70 text-xs">{phase.duration}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Phase bars */}
-          <div className="relative flex h-14 rounded-xl overflow-hidden shadow-sm">
+          {/* Phase detail cards — proportional widths, same scroll container as bars */}
+          <div className="flex gap-3 mt-4 items-start">
             {phaseLayout.map(({ phase, pct }, i) => {
               const c = PHASE_COLORS[i % PHASE_COLORS.length];
+              const isExpanded = expandedPhases.has(phase.phaseNumber);
+              const visible = isExpanded ? phase.capabilities : phase.capabilities.slice(0, CAP_LIMIT);
+              const overflow = phase.capabilities.length - CAP_LIMIT;
+
               return (
                 <div
                   key={phase.phaseNumber}
-                  style={{ width: `${pct}%` }}
-                  className={`${c.bar} flex items-center px-3 gap-2 overflow-hidden ${i > 0 ? 'border-l-2 border-white/30' : ''}`}
+                  style={{ width: `${pct}%`, flexShrink: 0 }}
+                  className={`${c.light} border ${c.border} rounded-xl p-4`}
                 >
-                  <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                    {phase.phaseNumber}
+                  <div className={`text-xs font-bold ${c.text} uppercase tracking-wide mb-1`}>
+                    Phase {phase.phaseNumber}
                   </div>
-                  <div className="text-white min-w-0 hidden sm:block">
-                    <div className="font-semibold text-sm leading-tight truncate">{phase.name}</div>
-                    <div className="text-white/70 text-xs">{phase.duration}</div>
-                  </div>
+                  <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{phase.name}</div>
+                  <div className="text-xs text-gray-500 mb-3">{phase.duration}</div>
+
+                  {/* Capabilities */}
+                  {phase.capabilities.length > 0 && (
+                    <div className="space-y-1.5 mb-3">
+                      {visible.map((cap, ci) => (
+                        <div key={ci} className="flex items-start gap-1.5 text-xs text-gray-700">
+                          <div className={`w-1.5 h-1.5 rounded-full ${c.dot} mt-1 flex-shrink-0`} />
+                          <span className="leading-snug"><InlineText text={cap} /></span>
+                        </div>
+                      ))}
+                      {overflow > 0 && (
+                        <button
+                          onClick={() => toggleExpanded(phase.phaseNumber)}
+                          className={`text-xs ${c.text} font-medium pl-3 hover:underline`}
+                        >
+                          {isExpanded ? '↑ Show less' : `+${overflow} more`}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Milestones */}
+                  {phase.milestones.length > 0 && (
+                    <div className={`border-t ${c.border} pt-2 space-y-1`}>
+                      {phase.milestones.map((m, j) => (
+                        <div key={j} className={`flex items-start gap-1.5 text-xs ${c.text}`}>
+                          <span className="flex-shrink-0 text-[10px] mt-0.5">◆</span>
+                          <span className="leading-snug"><InlineText text={m} /></span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -611,55 +685,7 @@ function TimelineTab({ plan }: { plan: GeneratedPlan }) {
         </div>
       </div>
 
-      {/* Phase detail cards — proportional widths */}
-      <div className="flex gap-3 min-w-[600px] items-start">
-        {phaseLayout.map(({ phase, pct }, i) => {
-          const c = PHASE_COLORS[i % PHASE_COLORS.length];
-          return (
-            <div
-              key={phase.phaseNumber}
-              style={{ width: `${pct}%`, flexShrink: 0 }}
-              className={`${c.light} border ${c.border} rounded-xl p-4`}
-            >
-              {/* Phase header */}
-              <div className={`text-xs font-bold ${c.text} uppercase tracking-wide mb-1`}>
-                Phase {phase.phaseNumber}
-              </div>
-              <div className="font-semibold text-gray-900 text-sm mb-1 leading-tight">{phase.name}</div>
-              <div className="text-xs text-gray-500 mb-3">{phase.duration}</div>
-
-              {/* Capabilities */}
-              {phase.capabilities.length > 0 && (
-                <div className="space-y-1 mb-3">
-                  {phase.capabilities.slice(0, 7).map((cap, ci) => (
-                    <div key={ci} className="flex items-start gap-1.5 text-xs text-gray-700">
-                      <div className={`w-1.5 h-1.5 rounded-full ${c.dot} mt-1 flex-shrink-0`} />
-                      <span className="leading-snug">{cap}</span>
-                    </div>
-                  ))}
-                  {phase.capabilities.length > 7 && (
-                    <div className="text-xs text-gray-400 pl-3">+{phase.capabilities.length - 7} more</div>
-                  )}
-                </div>
-              )}
-
-              {/* Milestones */}
-              {phase.milestones.length > 0 && (
-                <div className={`border-t ${c.border} pt-2 space-y-1`}>
-                  {phase.milestones.map((m, j) => (
-                    <div key={j} className={`flex items-start gap-1.5 text-xs ${c.text}`}>
-                      <span className="flex-shrink-0 text-[10px] mt-0.5">◆</span>
-                      <span className="leading-snug">{m}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Quick wins row */}
+      {/* Quick wins */}
       {plan.quickWins.length > 0 && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-3">
