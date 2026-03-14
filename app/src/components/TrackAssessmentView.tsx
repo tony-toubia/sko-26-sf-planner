@@ -303,24 +303,34 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         </div>
       </div>
 
-      {/* Discipline Tabs */}
+      {/* Discipline Tabs — shown when multiple clouds are in scope */}
       {selectedDisciplines.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <div className="bg-white border border-slate-200 rounded-xl p-1 flex gap-1">
           {selectedDisciplines.map((disc) => {
             const Icon = disc.icon === 'Mail' ? Mail : disc.icon === 'Award' ? Gift : Mail;
             const isActive = disc.id === activeDiscipline;
+            const discTracks = ALL_TRACKS.filter(t => t.discipline === disc.id);
+            const discAssessed = discTracks.reduce((sum, t) =>
+              sum + t.levels.filter((l: any) => assessedLevels.has(`${t.id}-${l.level}`)).length, 0
+            );
+            const discTotal = discTracks.reduce((sum, t) => sum + t.levels.length, 0);
             return (
               <button
                 key={disc.id}
                 onClick={() => setActiveDiscipline(disc.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`flex-1 flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg font-medium transition-all ${
                   isActive
-                    ? 'bg-merkle-blue text-white shadow-md'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-merkle-blue hover:text-merkle-blue'
+                    ? 'bg-merkle-blue text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{disc.shortName}</span>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm">{disc.name}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-normal ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  {discAssessed}/{discTotal}
+                </span>
               </button>
             );
           })}

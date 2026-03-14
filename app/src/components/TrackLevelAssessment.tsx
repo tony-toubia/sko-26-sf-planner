@@ -312,13 +312,24 @@ export function TrackLevelAssessment({
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  // Options that negate all others when selected (e.g. "None of these", "No significant blockers")
+  const isExclusiveOption = (option: string) =>
+    /^None/i.test(option) || /^No significant/i.test(option) || /^Not sure/i.test(option);
+
   const handleMultiSelectToggle = (questionId: string, option: string) => {
     setAnswers((prev) => {
       const current = (prev[questionId] as string[]) || [];
+      // Deselecting — just remove it
       if (current.includes(option)) {
         return { ...prev, [questionId]: current.filter((o) => o !== option) };
       }
-      return { ...prev, [questionId]: [...current, option] };
+      // Selecting an exclusive option → clear everything else
+      if (isExclusiveOption(option)) {
+        return { ...prev, [questionId]: [option] };
+      }
+      // Selecting a normal option → remove any exclusive options that were checked
+      const withoutExclusive = current.filter((o) => !isExclusiveOption(o));
+      return { ...prev, [questionId]: [...withoutExclusive, option] };
     });
   };
 
