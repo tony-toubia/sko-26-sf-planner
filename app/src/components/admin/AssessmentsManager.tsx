@@ -330,6 +330,15 @@ export function AssessmentsManager() {
                             <Detail label="Last Updated" value={formatDateTime(row.updatedAt)} />
                             <Detail label="Plan Generated" value={row.planGeneratedAt ? formatDateTime(row.planGeneratedAt) : 'Not yet generated'} />
                             <div className="mt-3 flex items-center gap-2">
+                              <a
+                                href={`/assessment/${row.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-merkle-blue text-white rounded-lg text-xs hover:bg-blue-700"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                Open &amp; Edit Assessment
+                              </a>
                               {row.hasPlan ? (
                                 <a
                                   href={`/plan/${row.id}`}
@@ -338,12 +347,12 @@ export function AssessmentsManager() {
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-white rounded-lg text-xs hover:bg-slate-700"
                                 >
                                   <ExternalLink className="w-3.5 h-3.5" />
-                                  Open Plan Page
+                                  Open Plan
                                 </a>
                               ) : (
                                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 rounded-lg text-xs cursor-not-allowed">
                                   <ExternalLink className="w-3.5 h-3.5" />
-                                  No Plan Generated
+                                  No Plan Yet
                                 </span>
                               )}
                               <button

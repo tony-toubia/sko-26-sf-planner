@@ -15,6 +15,12 @@ function getPlanIdFromPath(path: string): string | null {
   return m ? m[1] : null;
 }
 
+// Parse assessment ID from pathname like /assessment/abc-123
+function getAssessmentIdFromPath(path: string): string | null {
+  const m = path.match(/^\/assessment\/([^/]+)/);
+  return m ? m[1] : null;
+}
+
 function AppContent() {
   const [currentView, setCurrentView] = useState<ViewType>('capabilities');
   const [showSlides, setShowSlides] = useState(false);
@@ -32,6 +38,7 @@ function AppContent() {
     showPlanModal,
     assessment,
     closePlanModal,
+    loadAssessment,
   } = useAssessment();
 
   // Sync URL changes reactively (browser back/forward)
@@ -69,11 +76,34 @@ function AppContent() {
     }).catch(() => setIsLoadingPlan(false));
   }, [planId]);
 
+  // Handle direct /assessment/:id URL — load into context and show assessment view
+  const assessmentRouteId = getAssessmentIdFromPath(currentPath);
+  const [isLoadingAssessmentRoute, setIsLoadingAssessmentRoute] = useState(false);
+  const [assessmentRouteNotFound, setAssessmentRouteNotFound] = useState(false);
+
+  useEffect(() => {
+    if (!assessmentRouteId) return;
+    // Already loaded into context
+    if (isAssessmentMode && assessment?.id === assessmentRouteId) return;
+
+    setIsLoadingAssessmentRoute(true);
+    setAssessmentRouteNotFound(false);
+    loadAssessment(assessmentRouteId).then((ok) => {
+      if (!ok) setAssessmentRouteNotFound(true);
+      else {
+        setHasStartedAssessment(true);
+        setCurrentView('capabilities');
+      }
+      setIsLoadingAssessmentRoute(false);
+    });
+  }, [assessmentRouteId]);
+
   const isPipelineRoute = currentPath === '/pipeline';
   const isAdminRoute = currentPath.startsWith('/admin');
   const isPlanRoute = !!planId;
+  const isAssessmentRoute = !!assessmentRouteId;
 
-  const showLanding = !hasStartedAssessment && !isAssessmentMode && !isPipelineRoute && !isAdminRoute && !isPlanRoute;
+  const showLanding = !hasStartedAssessment && !isAssessmentMode && !isPipelineRoute && !isAdminRoute && !isPlanRoute && !isAssessmentRoute;
 
   const handleStartAssessment = () => {
     setHasStartedAssessment(true);
@@ -143,6 +173,34 @@ function AppContent() {
         </div>
       </div>
     );
+  }
+
+  // ── Assessment route (/assessment/:id) ──
+  if (isAssessmentRoute) {
+    if (isLoadingAssessmentRoute) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-merkle-blue/20 border-t-merkle-blue rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-gray-500 text-sm">Loading assessment...</p>
+          </div>
+        </div>
+      );
+    }
+    if (assessmentRouteNotFound) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center max-w-sm">
+            <p className="text-gray-900 font-semibold mb-2">Assessment not found</p>
+            <p className="text-gray-500 text-sm mb-6">This assessment may have been deleted or the link is incorrect.</p>
+            <a href="/admin/assessments" className="px-4 py-2 bg-merkle-blue text-white rounded-lg text-sm">
+              Back to Admin
+            </a>
+          </div>
+        </div>
+      );
+    }
+    // Assessment loaded — fall through to normal app render below (isAssessmentMode will be true)
   }
 
   return (
