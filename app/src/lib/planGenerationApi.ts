@@ -6,6 +6,7 @@ import type {
   OpportunityAssessment,
   GlobalAssessmentInputs,
   TrackLevelAssessment,
+  GenerationTrace,
 } from '../types';
 
 interface PlanGenerationRequest {
@@ -22,18 +23,24 @@ interface PlanGenerationResponse {
     input_tokens: number;
     output_tokens: number;
   };
+  trace?: GenerationTrace;
+}
+
+export interface AIPlanResult {
+  markdown: string;
+  trace?: GenerationTrace;
 }
 
 /**
  * Generates an AI-powered implementation plan
  * @param assessment The current assessment state
  * @param globalInputs Additional context from the global inputs modal
- * @returns The generated plan as markdown
+ * @returns The generated plan markdown and generation trace
  */
 export async function generateAIPlan(
   assessment: OpportunityAssessment,
   globalInputs: GlobalAssessmentInputs
-): Promise<string> {
+): Promise<AIPlanResult> {
   // Convert track assessments to array format
   const trackAssessments: TrackLevelAssessment[] = assessment.trackAssessments
     ? Object.values(assessment.trackAssessments)
@@ -66,7 +73,7 @@ export async function generateAIPlan(
   }
 
   const result: PlanGenerationResponse = await response.json();
-  return result.plan;
+  return { markdown: result.plan, trace: result.trace };
 }
 
 /**

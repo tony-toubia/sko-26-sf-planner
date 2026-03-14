@@ -19,9 +19,14 @@ import {
   Briefcase,
   Target,
   GanttChartSquare,
+  FlaskConical,
+  X,
+  Database,
+  HardDrive,
+  Info,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment } from '../types';
+import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment, GenerationTrace } from '../types';
 import { SalesforceExport } from './SalesforceExport';
 import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
 
@@ -38,6 +43,7 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
   const [copied, setCopied] = useState(false);
   const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
   const [deselectedServiceIds, setDeselectedServiceIds] = useState<Set<string>>(new Set());
+  const [showTrace, setShowTrace] = useState(false);
 
   const hasAIContent = !!plan.aiGenerated?.markdown;
 
@@ -157,6 +163,15 @@ export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
                 <Download className="w-4 h-4" />
                 Download
               </button>
+              {plan.generationTrace && (
+                <button
+                  onClick={() => setShowTrace(true)}
+                  title="View generation trace"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-lg transition-colors text-sm"
+                >
+                  <FlaskConical className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -886,6 +901,213 @@ function TemplatePlan({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Generation Trace Drawer */}
+      {showTrace && plan.generationTrace && (
+        <GenerationTraceDrawer
+          trace={plan.generationTrace}
+          onClose={() => setShowTrace(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Generation Trace Drawer
+// ─────────────────────────────────────────────────────────────────────────────
+
+function GenerationTraceDrawer({ trace, onClose }: { trace: GenerationTrace; onClose: () => void }) {
+  const [expandedChunks, setExpandedChunks] = useState<Set<string>>(new Set());
+
+  const toggleChunk = (id: string) => setExpandedChunks(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const totalChars = trace.referenceChunks.reduce((s, c) => s + c.charCount, 0);
+  const dbChunks = trace.referenceChunks.filter(c => c.source === 'database');
+  const hardcodedChunks = trace.referenceChunks.filter(c => c.source === 'hardcoded');
+
+  const TRACK_LABELS: Record<string, string> = {
+    'data-identity': 'Data & Identity',
+    'journeys': 'Customer Journeys',
+    'content-channels': 'Content & Channels',
+    'intelligence': 'Intelligence',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-slate-900 text-slate-100 flex flex-col h-full shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700 flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <FlaskConical className="w-5 h-5 text-violet-400" />
+            <div>
+              <h2 className="text-base font-semibold text-white">Generation Trace</h2>
+              <p className="text-xs text-slate-400 mt-0.5">What went into creating this plan</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-200 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+
+          {/* Model & Generation */}
+          <section>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Model & Generation</h3>
+            <div className="bg-slate-800 rounded-lg p-4 space-y-2.5">
+              <TraceRow label="Model" value={trace.model} mono />
+              <TraceRow label="Mode" value={trace.quality === 'enhanced' ? 'Enhanced (2-pass)' : 'Standard (single-pass)'} />
+              <TraceRow label="Cache Hit" value={
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${trace.cacheHit ? 'bg-amber-900/50 text-amber-300' : 'bg-green-900/50 text-green-300'}`}>
+                  {trace.cacheHit ? 'Yes — served from cache' : 'No — freshly generated'}
+                </span>
+              } />
+              <TraceRow label="Ref Data" value={
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${
+                  trace.referenceDataSource === 'database' ? 'bg-violet-900/50 text-violet-300' : 'bg-slate-700 text-slate-300'
+                }`}>
+                  {trace.referenceDataSource === 'database'
+                    ? <><Database className="w-3 h-3" /> Database (live)</>
+                    : <><HardDrive className="w-3 h-3" /> Hardcoded fallback</>}
+                </span>
+              } />
+              <TraceRow label="System prompt" value={`${(trace.promptStats.systemPromptChars / 1000).toFixed(1)}K chars`} mono />
+              <TraceRow label="User prompt" value={`${(trace.promptStats.userPromptChars / 1000).toFixed(1)}K chars`} mono />
+              <TraceRow label="Input tokens" value={trace.promptStats.inputTokens.toLocaleString()} mono />
+              <TraceRow label="Output tokens" value={trace.promptStats.outputTokens.toLocaleString()} mono />
+            </div>
+          </section>
+
+          {/* Inputs Analyzed */}
+          <section>
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Inputs Analyzed</h3>
+            <div className="bg-slate-800 rounded-lg p-4 space-y-2.5">
+              <TraceRow label="Industry" value={trace.inputSummary.industry || '—'} />
+              <TraceRow label="Foundation" value={trace.inputSummary.marketingFoundation || '—'} />
+              <TraceRow label="Company Size" value={trace.inputSummary.companySize || '—'} />
+              <TraceRow label="Budget" value={trace.inputSummary.budgetRange || '—'} />
+              {trace.inputSummary.engagementModels.length > 0 && (
+                <TraceRow label="Eng. Models" value={trace.inputSummary.engagementModels.join(', ')} />
+              )}
+              {trace.inputSummary.businessDrivers.length > 0 && (
+                <TraceRow label="Business Drivers" value={
+                  <ul className="space-y-0.5">
+                    {trace.inputSummary.businessDrivers.map((d, i) => <li key={i} className="text-xs text-slate-300">{d}</li>)}
+                  </ul>
+                } />
+              )}
+            </div>
+            {trace.inputSummary.tracksAssessed.length > 0 && (
+              <div className="mt-2 bg-slate-800 rounded-lg overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left px-4 py-2 text-slate-400 font-medium">Track</th>
+                      <th className="text-left px-4 py-2 text-slate-400 font-medium">Level</th>
+                      <th className="text-left px-4 py-2 text-slate-400 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/50">
+                    {trace.inputSummary.tracksAssessed.map((ta, i) => (
+                      <tr key={i}>
+                        <td className="px-4 py-2 text-slate-300">{TRACK_LABELS[ta.trackId] || ta.trackId}</td>
+                        <td className="px-4 py-2 text-slate-300">{ta.level}</td>
+                        <td className="px-4 py-2">
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                            ta.status === 'complete' ? 'bg-green-900/50 text-green-300' :
+                            ta.status === 'in-progress' ? 'bg-amber-900/50 text-amber-300' :
+                            'bg-slate-700 text-slate-400'
+                          }`}>{ta.status}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+
+          {/* Reference Data Chunks */}
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reference Data Injected</h3>
+              <span className="text-xs text-slate-500">{trace.referenceChunks.length} chunks · {(totalChars / 1000).toFixed(1)}K chars</span>
+            </div>
+            <div className="space-y-1.5">
+              {dbChunks.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-violet-400 font-medium py-1">
+                    <Database className="w-3 h-3" /> Database chunks ({dbChunks.length})
+                  </div>
+                  {dbChunks.map(chunk => (
+                    <ChunkCard key={chunk.id} chunk={chunk} expanded={expandedChunks.has(chunk.id)} onToggle={() => toggleChunk(chunk.id)} />
+                  ))}
+                </>
+              )}
+              {hardcodedChunks.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 text-xs text-slate-400 font-medium py-1 mt-2">
+                    <HardDrive className="w-3 h-3" /> Hardcoded chunks ({hardcodedChunks.length})
+                  </div>
+                  {hardcodedChunks.map(chunk => (
+                    <ChunkCard key={chunk.id} chunk={chunk} expanded={expandedChunks.has(chunk.id)} onToggle={() => toggleChunk(chunk.id)} />
+                  ))}
+                </>
+              )}
+            </div>
+          </section>
+
+          <div className="flex items-start gap-2 p-3 bg-slate-800/50 rounded-lg text-xs text-slate-500">
+            <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>Previews show the first 500 chars of each chunk as injected into Claude's context window. Old plans generated before this feature was added will not have a trace.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TraceRow({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-slate-500 w-28 flex-shrink-0 text-xs pt-0.5">{label}</span>
+      <span className={`text-slate-200 flex-1 ${mono ? 'font-mono text-xs' : 'text-sm'}`}>{value}</span>
+    </div>
+  );
+}
+
+function ChunkCard({ chunk, expanded, onToggle }: {
+  chunk: GenerationTrace['referenceChunks'][0];
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="bg-slate-800 rounded-lg overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-slate-700/50 transition-colors"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${chunk.source === 'database' ? 'bg-violet-400' : 'bg-slate-500'}`} />
+          <span className="text-sm text-slate-200 truncate">{chunk.label}</span>
+          <span className="text-xs text-slate-500 flex-shrink-0">{(chunk.charCount / 1000).toFixed(1)}K chars</span>
+        </div>
+        {expanded ? <ChevronUp className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />}
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3">
+          <pre className="text-xs text-slate-400 whitespace-pre-wrap font-mono leading-relaxed bg-slate-900/50 rounded p-3 max-h-64 overflow-y-auto">
+            {chunk.preview}{chunk.preview.length >= 500 ? '\n…[truncated]' : ''}
+          </pre>
         </div>
       )}
     </div>

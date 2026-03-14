@@ -594,6 +594,41 @@ export interface GeneratedPlan {
       output: number;
     };
   };
+
+  // Generation trace - provenance of what went into creating this plan
+  generationTrace?: GenerationTrace;
+}
+
+// Trace of what reference data, inputs, and model config produced a plan
+export interface GenerationTrace {
+  model: string;
+  quality: 'standard' | 'enhanced';
+  cacheHit: boolean;
+  referenceDataSource: 'database' | 'hardcoded-fallback';
+  inputSummary: {
+    industry: string | null;
+    marketingFoundation: string | null;
+    companySize: string | null;
+    budgetRange: string | null;
+    businessDrivers: string[];
+    engagementModels: string[];
+    tracksAssessed: { trackId: string; level: number; status: string }[];
+    globalInputsProvided: boolean;
+  };
+  referenceChunks: {
+    id: string;
+    label: string;
+    source: 'database' | 'hardcoded';
+    charCount: number;
+    itemCount?: number;
+    preview: string;
+  }[];
+  promptStats: {
+    systemPromptChars: number;
+    userPromptChars: number;
+    inputTokens: number;
+    outputTokens: number;
+  };
 }
 
 // ============================================================

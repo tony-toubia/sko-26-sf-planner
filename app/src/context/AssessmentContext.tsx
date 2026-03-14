@@ -353,7 +353,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       if (useAI && isAIPlanAvailable) {
         setIsGeneratingPlan(true);
         try {
-          const aiMarkdown = await generateAIPlan(updatedAssessment, inputs);
+          const { markdown: aiMarkdown, trace } = await generateAIPlan(updatedAssessment, inputs);
 
           // Create a plan object that includes both structured data and AI content
           const plan: GeneratedPlan = {
@@ -362,6 +362,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
               markdown: aiMarkdown,
               generatedWith: 'claude-sonnet',
             },
+            generationTrace: trace,
           };
 
           // Save plan to assessment state

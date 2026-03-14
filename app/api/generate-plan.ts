@@ -649,6 +649,78 @@ Please generate a comprehensive, narrative-driven implementation plan that:
 6. Creates a compelling case for action with data-backed urgency`;
 }
 
+// Build a list of reference chunks (what was actually injected into the prompt)
+function buildReferenceChunks(
+  dbRefData: Awaited<ReturnType<typeof fetchFormattedReferenceData>>,
+  hardcodedIndustryContext: string,
+  pdfKnowledge: string
+): Array<{ id: string; label: string; source: 'database' | 'hardcoded'; charCount: number; preview: string }> {
+  const chunks: Array<{ id: string; label: string; source: 'database' | 'hardcoded'; charCount: number; preview: string }> = [];
+
+  if (dbRefData) {
+    if (dbRefData.kpis) chunks.push({ id: 'kpis', label: 'Industry KPIs', source: 'database', charCount: dbRefData.kpis.length, preview: dbRefData.kpis.slice(0, 500) });
+    if (dbRefData.journeys) chunks.push({ id: 'journeys', label: 'Journey Templates', source: 'database', charCount: dbRefData.journeys.length, preview: dbRefData.journeys.slice(0, 500) });
+    if (dbRefData.roiBenchmarks) chunks.push({ id: 'roi-benchmarks-db', label: 'ROI Benchmarks', source: 'database', charCount: dbRefData.roiBenchmarks.length, preview: dbRefData.roiBenchmarks.slice(0, 500) });
+    if (dbRefData.channelPriorities) chunks.push({ id: 'channel-priorities', label: 'Channel Priorities', source: 'database', charCount: dbRefData.channelPriorities.length, preview: dbRefData.channelPriorities.slice(0, 500) });
+    if (dbRefData.tactics) chunks.push({ id: 'tactics', label: 'Strategic Tactics / Plays', source: 'database', charCount: dbRefData.tactics.length, preview: dbRefData.tactics.slice(0, 500) });
+    if (dbRefData.offerings) chunks.push({ id: 'offerings', label: 'Service Offerings', source: 'database', charCount: dbRefData.offerings.length, preview: dbRefData.offerings.slice(0, 500) });
+  } else if (hardcodedIndustryContext) {
+    chunks.push({ id: 'industry-context', label: 'Industry Context (Fallback)', source: 'hardcoded', charCount: hardcodedIndustryContext.length, preview: hardcodedIndustryContext.slice(0, 500) });
+  }
+
+  chunks.push({ id: 'roi-benchmarks-hardcoded', label: 'ROI Benchmarks (Hardcoded)', source: 'hardcoded', charCount: ROI_BENCHMARKS.length, preview: ROI_BENCHMARKS.slice(0, 500) });
+  chunks.push({ id: 'journey-guidance', label: 'Journey Guidance', source: 'hardcoded', charCount: JOURNEY_GUIDANCE.length, preview: JOURNEY_GUIDANCE.slice(0, 500) });
+  chunks.push({ id: 'track-descriptions', label: 'Track Descriptions', source: 'hardcoded', charCount: TRACK_DESCRIPTIONS.length, preview: TRACK_DESCRIPTIONS.slice(0, 500) });
+  if (pdfKnowledge) chunks.push({ id: 'pdf-knowledge', label: 'PDF Knowledge Base', source: 'hardcoded', charCount: pdfKnowledge.length, preview: pdfKnowledge.slice(0, 500) });
+
+  return chunks;
+}
+
+// Build a generation trace object capturing full provenance of the plan
+function buildGenerationTrace(
+  request: PlanGenerationRequest,
+  systemPrompt: string,
+  userPrompt: string,
+  referenceChunks: ReturnType<typeof buildReferenceChunks>,
+  dbRefData: Awaited<ReturnType<typeof fetchFormattedReferenceData>>,
+  quality: 'standard' | 'enhanced',
+  usage: { input_tokens: number; output_tokens: number },
+  cacheHit: boolean
+): object {
+  const ctx = request.globalInputs?.clientContext || {};
+  const comm = request.globalInputs?.commercialPreferences || {};
+  const strat = request.globalInputs?.strategicContext || {};
+
+  return {
+    model: 'claude-sonnet-4-20250514',
+    quality,
+    cacheHit,
+    referenceDataSource: dbRefData ? 'database' : 'hardcoded-fallback',
+    inputSummary: {
+      industry: request.industry || null,
+      marketingFoundation: request.marketingFoundation || null,
+      companySize: (ctx as any).companySize || null,
+      budgetRange: (comm as any).budgetRange || null,
+      businessDrivers: (strat as any).keyBusinessDrivers || [],
+      engagementModels: (comm as any).preferredEngagementModel || [],
+      tracksAssessed: (request.trackAssessments || []).map(ta => ({
+        trackId: ta.trackId,
+        level: ta.level,
+        status: ta.status,
+      })),
+      globalInputsProvided: !!(request.globalInputs &&
+        Object.keys(request.globalInputs.commercialPreferences || {}).length > 0),
+    },
+    referenceChunks,
+    promptStats: {
+      systemPromptChars: systemPrompt.length,
+      userPromptChars: userPrompt.length,
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+    },
+  };
+}
+
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -701,6 +773,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           plan: cached.plan,
           usage: cached.usage,
           cached: true,
+          trace: (cached.usage as any)?.trace || null,
         });
       }
     } catch (err) {
@@ -728,6 +801,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const systemPrompt = buildSystemPrompt(request, dbRefData);
     const userPrompt = buildUserPrompt(request);
+
+    // Build reference chunks for trace (mirrors what buildSystemPrompt injected)
+    const pdfKnowledgeForTrace = getPlanKnowledge(['messaging-personalization']);
+    const hardcodedIndustryContext = dbRefData ? '' : buildIndustryContext(request.industry);
+    const referenceChunks = buildReferenceChunks(dbRefData, hardcodedIndustryContext, pdfKnowledgeForTrace);
 
     let planText: string;
     let totalUsage = { input_tokens: 0, output_tokens: 0 };
@@ -784,8 +862,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       totalUsage = message.usage;
     }
 
-    // ===== CACHE the result =====
-    await cachePlan(cacheKey, planText, totalUsage).catch(err =>
+    // Build trace
+    const trace = buildGenerationTrace(
+      request, systemPrompt, userPrompt,
+      referenceChunks, dbRefData, quality, totalUsage, false
+    );
+
+    // ===== CACHE the result (embed trace in usage so it's retrievable from cache) =====
+    await cachePlan(cacheKey, planText, { ...totalUsage, trace }).catch(err =>
       console.error('Failed to cache plan:', err)
     );
 
@@ -794,6 +878,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       usage: totalUsage,
       cached: false,
       quality,
+      trace,
     });
 
   } catch (error) {
