@@ -24,12 +24,6 @@ export function AssessmentView() {
   const [showGlobalInputsModal, setShowGlobalInputsModal] = useState(false);
   const [thinkingStep, setThinkingStep] = useState(0);
 
-  useEffect(() => {
-    if (!isGeneratingPlan) { setThinkingStep(0); return; }
-    const interval = setInterval(() => setThinkingStep(s => (s + 1) % THINKING_STEPS.length), 3500);
-    return () => clearInterval(interval);
-  }, [isGeneratingPlan]);
-
   const {
     assessment,
     generatedPlan,
@@ -43,6 +37,12 @@ export function AssessmentView() {
     planGenerationError,
     clearPlanError,
   } = useAssessment();
+
+  useEffect(() => {
+    if (!isGeneratingPlan) { setThinkingStep(0); return; }
+    const interval = setInterval(() => setThinkingStep(s => (s + 1) % THINKING_STEPS.length), 3500);
+    return () => clearInterval(interval);
+  }, [isGeneratingPlan]);
 
   const handleSwitchToMatrix = () => {
     setViewMode('matrix');

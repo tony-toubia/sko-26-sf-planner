@@ -46,8 +46,8 @@ export function PlanOutput({ plan, assessment, onClose }: PlanOutputProps) {
   // Compute service recommendations from assessment data
   const serviceRecommendations = useMemo(() => {
     if (!assessment) return [];
-    const assessedLevels = new Set(
-      Object.keys(assessment.trackAssessments || {})
+    const assessedLevels = new Map(
+      Object.entries(assessment.trackAssessments || {})
     );
     if (assessedLevels.size < 1) return [];
     const context = buildRecommendationContext(
