@@ -360,6 +360,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
 
           setGeneratedPlan(plan);
           setShowPlanModal(true);
+          window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
           setIsGeneratingPlan(false);
           return plan;
         } catch (error) {
@@ -390,6 +391,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
 
       setGeneratedPlan(plan);
       setShowPlanModal(true);
+      window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
       return plan;
     },
     [assessment, isAIPlanAvailable, isSupabaseAvailable]
@@ -449,6 +451,7 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
 
     setGeneratedPlan(plan);
     setShowPlanModal(true);
+    window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
     return plan;
   }, [assessment, selectedIndustry, isSupabaseAvailable]);
 
@@ -459,13 +462,21 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
 
   const closePlanModal = useCallback(() => {
     setShowPlanModal(false);
+    // Navigate back if we're on a plan URL
+    if (window.location.pathname.startsWith('/plan/')) {
+      window.history.pushState({}, '', '/');
+    }
   }, []);
 
   const openPlanModal = useCallback(() => {
     if (generatedPlan) {
       setShowPlanModal(true);
+      // Push shareable plan URL
+      if (assessment?.id) {
+        window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
+      }
     }
-  }, [generatedPlan]);
+  }, [generatedPlan, assessment?.id]);
 
   const markComplete = useCallback(() => {
     setAssessment((prev) => {

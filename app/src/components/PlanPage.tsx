@@ -1,0 +1,732 @@
+import {
+  ArrowLeft,
+  FileText,
+  Download,
+  Copy,
+  Check,
+  Cloud,
+  Package,
+  Sparkles,
+  Zap,
+  CheckCircle,
+  AlertTriangle,
+  TrendingUp,
+  ArrowRight,
+  Clock,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  Target,
+} from 'lucide-react';
+import { useState, useMemo } from 'react';
+import type { GeneratedPlan, PlanPhase, PlannedCapability, OpportunityAssessment } from '../types';
+import { SalesforceExport } from './SalesforceExport';
+import { generateServiceRecommendations, buildRecommendationContext } from '../utils/serviceRecommendations';
+
+interface PlanPageProps {
+  plan: GeneratedPlan;
+  assessment?: OpportunityAssessment | null;
+  onClose: () => void;
+}
+
+type Tab = 'plan' | 'services' | 'export';
+
+export function PlanPage({ plan, assessment, onClose }: PlanPageProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('plan');
+  const [copied, setCopied] = useState(false);
+  const [expandedPhases, setExpandedPhases] = useState<number[]>([1]);
+
+  const hasAIContent = !!plan.aiGenerated?.markdown;
+
+  const serviceRecommendations = useMemo(() => {
+    if (!assessment) return [];
+    const assessedLevels = new Map(Object.entries(assessment.trackAssessments || {}));
+    if (assessedLevels.size < 1) return [];
+    const context = buildRecommendationContext(
+      assessedLevels,
+      assessment.disciplines || ['messaging-personalization'],
+      (assessment.industry as any) || undefined,
+      assessment.marketingFoundation || undefined
+    );
+    return generateServiceRecommendations(context);
+  }, [assessment]);
+
+  const totalMin = serviceRecommendations.reduce((s, r) => s + r.estimatedCost.min, 0);
+  const totalMax = serviceRecommendations.reduce((s, r) => s + r.estimatedCost.max, 0);
+
+  const handleCopy = async () => {
+    const content = plan.aiGenerated?.markdown || buildExportMarkdown(plan);
+    await navigator.clipboard.writeText(content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const content = plan.aiGenerated?.markdown || buildExportMarkdown(plan);
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${plan.executiveSummary.clientName.replace(/\s+/g, '-')}-plan.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const togglePhase = (n: number) =>
+    setExpandedPhases((prev) => (prev.includes(n) ? prev.filter((p) => p !== n) : [...prev, n]));
+
+  const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: string }[] = [
+    {
+      id: 'plan',
+      label: 'Roadmap',
+      icon: <FileText className="w-4 h-4" />,
+      badge: hasAIContent ? 'AI' : undefined,
+    },
+    {
+      id: 'services',
+      label: 'Services & Investment',
+      icon: <Package className="w-4 h-4" />,
+      badge: serviceRecommendations.length > 0 ? `${serviceRecommendations.length}` : undefined,
+    },
+    {
+      id: 'export',
+      label: 'Export',
+      icon: <Cloud className="w-4 h-4" />,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Page header */}
+      <div className="bg-gradient-to-r from-merkle-blue to-salesforce-blue flex-shrink-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top bar */}
+          <div className="flex items-center justify-between py-4">
+            <button
+              onClick={onClose}
+              className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm font-medium"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Assessment
+            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-sm"
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-2 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-lg transition-colors text-sm"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="pb-4">
+            <h1 className="text-2xl font-bold text-white">{plan.executiveSummary.clientName}</h1>
+            <p className="text-white/70 text-sm mt-0.5">
+              {plan.executiveSummary.opportunityName
+                ? `${plan.executiveSummary.opportunityName} · `
+                : ''}
+              Recommendation Plan · {plan.generatedAt.toLocaleDateString()}
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 -mb-px">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-white text-merkle-blue'
+                    : 'text-white/75 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+                {tab.badge && (
+                  <span
+                    className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                      activeTab === tab.id
+                        ? 'bg-merkle-blue text-white'
+                        : 'bg-white/20 text-white'
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="flex-1 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+          {/* ── PLAN TAB ── */}
+          {activeTab === 'plan' && (
+            <div className="max-w-4xl mx-auto">
+              {hasAIContent ? (
+                /* AI-generated plan — this IS the plan */
+                <div>
+                  <div className="flex items-center gap-2 mb-6 text-sm text-violet-600">
+                    <Sparkles className="w-4 h-4" />
+                    <span>AI-generated with Claude · {plan.aiGenerated!.tokenUsage?.output.toLocaleString()} tokens</span>
+                  </div>
+                  <div className="prose prose-slate max-w-none bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
+                    <MarkdownRenderer content={plan.aiGenerated!.markdown} />
+                  </div>
+                </div>
+              ) : (
+                /* Template plan — single-scroll layout */
+                <TemplatePlan
+                  plan={plan}
+                  expandedPhases={expandedPhases}
+                  onTogglePhase={togglePhase}
+                />
+              )}
+            </div>
+          )}
+
+          {/* ── SERVICES TAB ── */}
+          {activeTab === 'services' && (
+            <div className="max-w-4xl mx-auto">
+              {serviceRecommendations.length > 0 ? (
+                <>
+                  {/* Investment summary */}
+                  <div className="bg-gradient-to-br from-merkle-blue/5 to-salesforce-blue/5 rounded-xl border border-merkle-blue/20 p-6 mb-6 flex items-center justify-between">
+                    <div>
+                      <h2 className="font-bold text-gray-900 text-lg">Total Investment Range</h2>
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {serviceRecommendations.length} recommended services based on your assessment
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-merkle-blue">
+                        ${(totalMin / 1000).toFixed(0)}K – ${(totalMax / 1000).toFixed(0)}K
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">estimated engagement range</div>
+                    </div>
+                  </div>
+
+                  {/* Service cards */}
+                  <div className="space-y-4">
+                    {serviceRecommendations.map((rec) => {
+                      const priorityConfig: Record<string, { bar: string; badge: string; label: string }> = {
+                        critical: { bar: 'bg-red-500', badge: 'bg-red-50 border-red-200 text-red-700', label: 'Critical' },
+                        high: { bar: 'bg-orange-500', badge: 'bg-orange-50 border-orange-200 text-orange-700', label: 'High' },
+                        medium: { bar: 'bg-yellow-400', badge: 'bg-yellow-50 border-yellow-200 text-yellow-700', label: 'Medium' },
+                        low: { bar: 'bg-blue-400', badge: 'bg-blue-50 border-blue-200 text-blue-700', label: 'Low' },
+                      };
+                      const p = priorityConfig[rec.priority] || priorityConfig.low;
+                      return (
+                        <div key={rec.service.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                          <div className={`h-1 w-full ${p.bar}`} />
+                          <div className="p-5">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h3 className="font-semibold text-gray-900 text-base">{rec.service.name}</h3>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${p.badge}`}>
+                                    {p.label} Priority
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 leading-relaxed">{rec.rationale}</p>
+                                {rec.dependencies?.length > 0 && (
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    Depends on: {rec.dependencies.join(', ')}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right flex-shrink-0 pl-4 border-l border-gray-100">
+                                <div className="text-xs text-gray-400 mb-1">Estimated</div>
+                                <div className="font-bold text-merkle-blue text-lg">
+                                  ${(rec.estimatedCost.min / 1000).toFixed(0)}K – ${(rec.estimatedCost.max / 1000).toFixed(0)}K
+                                </div>
+                                <div className="text-xs text-gray-500 capitalize mt-0.5">{rec.recommendedSize} engagement</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-6 text-center">
+                    Investment ranges are indicative. Final scoping depends on client environment and requirements.
+                  </p>
+                </>
+              ) : (
+                <div className="text-center py-16 text-gray-400">
+                  <Package className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p>Complete more of the assessment to see tailored service recommendations.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── EXPORT TAB ── */}
+          {activeTab === 'export' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Download */}
+              <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <h2 className="font-bold text-gray-900 text-lg mb-1 flex items-center gap-2">
+                  <Download className="w-5 h-5 text-gray-500" />
+                  Download Plan
+                </h2>
+                <p className="text-sm text-gray-500 mb-4">
+                  Export this plan as a Markdown document for sharing or editing.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleDownload}
+                    className="flex items-center gap-2 px-4 py-2 bg-merkle-blue text-white rounded-lg hover:bg-merkle-blue/90 transition-colors font-medium text-sm"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download as Markdown
+                  </button>
+                  <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:border-gray-300 transition-colors text-sm"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                    {copied ? 'Copied!' : 'Copy to Clipboard'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Salesforce */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="px-6 pt-6 pb-2">
+                  <h2 className="font-bold text-gray-900 text-lg mb-1 flex items-center gap-2">
+                    <Cloud className="w-5 h-5 text-salesforce-blue" />
+                    Export to Salesforce
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Push this plan to a Salesforce opportunity as a formatted note or attachment.
+                  </p>
+                </div>
+                <SalesforceExport plan={plan} assessment={assessment} />
+              </div>
+
+              {/* How we built this — collapsed */}
+              {plan.aiGenerated && (
+                <details className="bg-gray-50 rounded-xl border border-gray-200 p-5">
+                  <summary className="text-sm font-medium text-gray-700 cursor-pointer select-none flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-violet-400" />
+                    How this plan was built
+                  </summary>
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Model</span>
+                      <span className="font-medium text-gray-900">
+                        {plan.aiGenerated.generatedWith === 'claude-sonnet' ? 'Claude Sonnet' : 'Claude Opus'}
+                      </span>
+                    </div>
+                    {plan.aiGenerated.tokenUsage && (
+                      <>
+                        <div className="flex justify-between text-gray-600">
+                          <span>Context sent</span>
+                          <span className="font-medium text-gray-900">{plan.aiGenerated.tokenUsage.input.toLocaleString()} tokens</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600">
+                          <span>Plan generated</span>
+                          <span className="font-medium text-gray-900">{plan.aiGenerated.tokenUsage.output.toLocaleString()} tokens</span>
+                        </div>
+                      </>
+                    )}
+                    <div className="flex justify-between text-gray-600">
+                      <span>Reference data</span>
+                      <span className="font-medium text-gray-900">ROI benchmarks, offering toolkits, journey frameworks</span>
+                    </div>
+                    {assessment?.disciplines && (
+                      <div className="flex justify-between text-gray-600">
+                        <span>Disciplines</span>
+                        <span className="font-medium text-gray-900 capitalize">
+                          {assessment.disciplines.map((d) => d.replace(/-/g, ' ')).join(', ')}
+                        </span>
+                      </div>
+                    )}
+                    {assessment?.industry && (
+                      <div className="flex justify-between text-gray-600">
+                        <span>Industry vertical</span>
+                        <span className="font-medium text-gray-900 capitalize">{assessment.industry.replace(/-/g, ' ')}</span>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Template plan (single-scroll, used when no AI content)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function TemplatePlan({
+  plan,
+  expandedPhases,
+  onTogglePhase,
+}: {
+  plan: GeneratedPlan;
+  expandedPhases: number[];
+  onTogglePhase: (n: number) => void;
+}) {
+  return (
+    <div className="space-y-8">
+      {/* Executive summary stats */}
+      <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+          <Target className="w-5 h-5 text-merkle-blue" />
+          Executive Summary
+        </h2>
+        <p className="text-gray-700 mb-4">{plan.executiveSummary.overallRecommendation}</p>
+        <p className="text-sm text-gray-500">{plan.executiveSummary.strategicRationale}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          {[
+            { value: plan.executiveSummary.totalCapabilities, label: 'Capabilities', color: 'text-merkle-blue' },
+            { value: plan.executiveSummary.immediateCapabilities, label: 'Immediate', color: 'text-emerald-600' },
+            { value: plan.executiveSummary.nearFutureCapabilities, label: 'Near-Future', color: 'text-amber-600' },
+            { value: plan.executiveSummary.recommendedTimeframe, label: 'Timeframe', color: 'text-gray-900' },
+          ].map((stat) => (
+            <div key={stat.label} className="bg-white rounded-lg p-4 border border-gray-100 text-center">
+              <div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div>
+              <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+        {plan.executiveSummary.estimatedTotalInvestment && (
+          <div className="mt-4 p-4 bg-merkle-blue/5 rounded-lg border border-merkle-blue/20 flex justify-between items-center">
+            <span className="font-medium text-gray-900">Estimated Investment</span>
+            <span className="text-xl font-bold text-merkle-blue">{plan.executiveSummary.estimatedTotalInvestment}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Quick wins */}
+      {plan.quickWins.length > 0 && (
+        <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-6">
+          <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-emerald-600" />
+            Quick Wins
+          </h2>
+          <div className="space-y-3">
+            {plan.quickWins.map((win, i) => (
+              <div key={i} className="flex items-start gap-3 bg-white rounded-lg p-3 border border-emerald-100">
+                <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-medium text-gray-900">{win.capabilityName}</div>
+                  <div className="text-sm text-gray-600">{win.description}</div>
+                  <div className="text-sm text-emerald-600 font-medium mt-1">Impact: {win.impact}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Phases */}
+      {plan.phases.length > 0 && (
+        <div>
+          <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-merkle-blue" />
+            Implementation Phases
+          </h2>
+          <div className="space-y-4">
+            {plan.phases.map((phase) => (
+              <PhaseCard
+                key={phase.phaseNumber}
+                phase={phase}
+                isExpanded={expandedPhases.includes(phase.phaseNumber)}
+                onToggle={() => onTogglePhase(phase.phaseNumber)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Commercial */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+          <Briefcase className="w-5 h-5 text-merkle-blue" />
+          Engagement Model
+        </h2>
+        <div className="text-xl font-bold text-merkle-blue mb-2">{plan.commercialSummary.recommendedModel}</div>
+        <p className="text-gray-600 mb-4">{plan.commercialSummary.modelRationale}</p>
+        {plan.commercialSummary.phasedInvestment.length > 0 && (
+          <div className="space-y-2">
+            {plan.commercialSummary.phasedInvestment.map((inv, i) => (
+              <div key={i} className="flex justify-between p-3 bg-gray-50 rounded-lg">
+                <span className="text-gray-700">Phase {inv.phase}: {inv.description}</span>
+                <span className="font-bold text-gray-900">{inv.estimateRange}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Risks + Success metrics side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {plan.risks.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              Key Risks
+            </h2>
+            <div className="space-y-3">
+              {plan.risks.slice(0, 4).map((risk, i) => (
+                <div key={i} className="text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900">{risk.risk}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${risk.likelihood === 'high' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                      {risk.likelihood}
+                    </span>
+                  </div>
+                  <p className="text-gray-500 mt-1">{risk.mitigation}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {plan.successMetrics.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+              Success Metrics
+            </h2>
+            <div className="space-y-3">
+              {plan.successMetrics.slice(0, 4).map((m, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span className="text-gray-700">{m.metric}</span>
+                  <span className="font-medium text-emerald-600">{m.target}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Next steps */}
+      {plan.nextSteps.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+            <ArrowRight className="w-5 h-5 text-merkle-blue" />
+            Next Steps
+          </h2>
+          <div className="space-y-3">
+            {plan.nextSteps.map((step, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-merkle-blue/10 text-merkle-blue flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">
+                  {i + 1}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{step.step}</div>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                    <span className={`px-2 py-0.5 rounded font-medium ${
+                      step.owner === 'merkle' ? 'bg-merkle-blue/10 text-merkle-blue' :
+                      step.owner === 'client' ? 'bg-gray-100 text-gray-600' :
+                      'bg-purple-100 text-purple-600'
+                    }`}>
+                      {step.owner === 'joint' ? 'Joint' : step.owner === 'merkle' ? 'Merkle' : 'Client'}
+                    </span>
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{step.timeline}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase accordion card
+// ─────────────────────────────────────────────────────────────────────────────
+
+function PhaseCard({
+  phase,
+  isExpanded,
+  onToggle,
+}: {
+  phase: PlanPhase;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const colors: Record<number, string> = {
+    1: 'from-blue-500 to-blue-600',
+    2: 'from-orange-500 to-orange-600',
+    3: 'from-emerald-500 to-emerald-600',
+    4: 'from-purple-500 to-purple-600',
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-4">
+          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors[phase.phaseNumber] || colors[1]} flex items-center justify-center text-white font-bold`}>
+            {phase.phaseNumber}
+          </div>
+          <div className="text-left">
+            <div className="font-bold text-gray-900">{phase.name}</div>
+            <div className="text-sm text-gray-500">{phase.capabilities.length} capabilities · {phase.duration}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {phase.totalEstimate && <span className="text-sm font-medium text-gray-600">{phase.totalEstimate}</span>}
+          {isExpanded ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+        </div>
+      </button>
+
+      {isExpanded && (
+        <div className="px-6 pb-6 space-y-4">
+          <p className="text-gray-600">{phase.description}</p>
+          <div className="space-y-2">
+            {phase.capabilities.map((cap) => (
+              <CapabilityRow key={cap.capabilityId} capability={cap} />
+            ))}
+          </div>
+          {phase.keyMilestones.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {phase.keyMilestones.map((m, i) => (
+                <span key={i} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">{m}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Capability row
+// ─────────────────────────────────────────────────────────────────────────────
+
+function CapabilityRow({ capability }: { capability: PlannedCapability }) {
+  const [open, setOpen] = useState(false);
+
+  const colors: Record<string, string> = {
+    critical: 'bg-red-100 text-red-700',
+    high: 'bg-orange-100 text-orange-700',
+    medium: 'bg-blue-100 text-blue-700',
+    'nice-to-have': 'bg-gray-100 text-gray-600',
+  };
+
+  return (
+    <div className="bg-gray-50 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full p-4 flex items-center justify-between hover:bg-gray-100 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <CheckCircle className={`w-5 h-5 flex-shrink-0 ${capability.relevance === 'immediately-relevant' ? 'text-emerald-500' : 'text-amber-400'}`} />
+          <span className="font-medium text-gray-900 text-sm">{capability.capabilityName}</span>
+          <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[capability.priority] || colors['nice-to-have']}`}>
+            {capability.priority}
+          </span>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 space-y-2 text-sm">
+          <p className="text-gray-600"><strong className="text-gray-700">Rationale:</strong> {capability.rationale}</p>
+          {capability.clientInputSummary && (
+            <p className="text-gray-600"><strong className="text-gray-700">Client context:</strong> {capability.clientInputSummary}</p>
+          )}
+          {capability.recommendedOfferings.length > 0 && (
+            <div>
+              <strong className="text-gray-700">Offerings:</strong>
+              <div className="mt-1 space-y-1">
+                {capability.recommendedOfferings.map((o, i) => (
+                  <div key={i} className="flex justify-between bg-white rounded p-2 border border-gray-200">
+                    <span className="text-gray-900">{o.offeringName} <span className="text-gray-400 text-xs">({o.offeringType})</span></span>
+                    {o.estimateRange && <span className="text-merkle-blue font-medium">{o.estimateRange}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Markdown renderer
+// ─────────────────────────────────────────────────────────────────────────────
+
+function MarkdownRenderer({ content }: { content: string }) {
+  const html = useMemo(() => {
+    let h = content
+      .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold text-gray-900 mt-8 mb-4 pb-2 border-b border-gray-200">$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1 class="text-2xl font-bold text-gray-900 mt-8 mb-5">$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^- (.+)$/gm, '<li class="ml-4 mb-1.5 text-gray-700">$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 mb-1.5 text-gray-700"><span class="font-medium">$1.</span> $2</li>')
+      .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 bg-gray-100 rounded text-sm font-mono text-gray-800">$1</code>')
+      .replace(/^---$/gm, '<hr class="my-6 border-gray-200" />')
+      .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">');
+
+    if (!h.startsWith('<h') && !h.startsWith('<p')) {
+      h = `<p class="mb-4 text-gray-700 leading-relaxed">${h}</p>`;
+    }
+    h = h.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, (m) => `<ul class="list-disc list-inside space-y-1 mb-4">${m}</ul>`);
+    return h;
+  }, [content]);
+
+  return <div className="markdown-content" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Export helper
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildExportMarkdown(plan: GeneratedPlan): string {
+  const lines: string[] = [
+    `# Recommendation Plan: ${plan.executiveSummary.clientName}`,
+    `Generated: ${plan.generatedAt.toLocaleDateString()}`,
+    '',
+    '## Executive Summary',
+    plan.executiveSummary.overallRecommendation,
+    '',
+    plan.executiveSummary.strategicRationale,
+    '',
+    '## Implementation Phases',
+  ];
+  plan.phases.forEach((p) => {
+    lines.push(`### Phase ${p.phaseNumber}: ${p.name} (${p.duration})`);
+    lines.push(p.description);
+    p.capabilities.forEach((c) => lines.push(`- ${c.capabilityName} (${c.priority})`));
+    lines.push('');
+  });
+  lines.push('## Engagement Model', `**${plan.commercialSummary.recommendedModel}**`, '', plan.commercialSummary.modelRationale, '');
+  lines.push('## Next Steps');
+  plan.nextSteps.forEach((s, i) => lines.push(`${i + 1}. ${s.step} (${s.owner}, ${s.timeline})`));
+  lines.push('', '---', '*Generated by Merkle Salesforce Capability Planner*');
+  return lines.join('\n');
+}

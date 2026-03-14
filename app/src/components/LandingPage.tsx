@@ -7,11 +7,12 @@ import {
   TrendingUp,
   Zap,
   FolderOpen,
-  Mail,
+  MessageSquare,
   Award,
   Lock,
   ShoppingCart,
   Headphones,
+  Mail,
 } from 'lucide-react';
 import type { IndustryType, DisciplineType } from '../types';
 import { INDUSTRIES } from '../data/industries';
@@ -24,7 +25,7 @@ interface LandingPageProps {
 }
 
 const disciplineIcons: Record<string, React.ElementType> = {
-  Mail,
+  MessageSquare,
   Award,
   ShoppingCart,
   Headphones,
@@ -85,9 +86,26 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
       <div className="min-h-[80vh] flex flex-col items-center justify-center px-4">
         {/* Hero Section */}
         <div className="text-center max-w-3xl mx-auto mb-12">
+          {/* Branding lockup */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <img
+              src="https://www.merkle.com/themes/custom/merkle/images/logo.svg"
+              alt="Merkle"
+              className="h-7"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <span className="text-gray-300 text-2xl font-light">×</span>
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Salesforce.com_logo.svg/1280px-Salesforce.com_logo.svg.png"
+              alt="Salesforce"
+              className="h-7"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          </div>
+
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-merkle-blue/10 rounded-full mb-6">
             <Sparkles className="w-4 h-4 text-merkle-blue" />
-            <span className="text-sm font-medium text-merkle-blue">SF Value Realization Navigator</span>
+            <span className="text-sm font-medium text-merkle-blue">Salesforce Capability Planner</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">

@@ -66,7 +66,7 @@ export const DISCIPLINES: Discipline[] = [
     shortName: 'M&P',
     description:
       'Email, SMS, push notifications, and personalized content delivery across channels.',
-    icon: 'Mail',
+    icon: 'MessageSquare',
     salesforceCloud: 'Marketing Cloud',
     color: '#00A5B5',
     available: true,

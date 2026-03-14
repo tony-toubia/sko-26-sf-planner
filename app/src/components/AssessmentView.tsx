@@ -12,7 +12,6 @@ const THINKING_STEPS = [
 ];
 import { TrackAssessmentView } from './TrackAssessmentView';
 import { MaturityMatrix } from './MaturityMatrix';
-import { PlanOutput } from './PlanOutput';
 import { GlobalInputsModal } from './GlobalInputsModal';
 import { useAssessment } from '../context/AssessmentContext';
 import type { GlobalAssessmentInputs } from '../types';
@@ -26,11 +25,8 @@ export function AssessmentView() {
 
   const {
     assessment,
-    generatedPlan,
-    showPlanModal,
     generateRecommendationPlan,
     generateQuickPlan,
-    closePlanModal,
     isAssessmentMode,
     selectedIndustry,
     isGeneratingPlan,
@@ -125,8 +121,6 @@ export function AssessmentView() {
           </div>
         )}
 
-        {/* Plan Output Modal */}
-        {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} assessment={assessment} onClose={closePlanModal} />}
       </>
     );
   }
@@ -220,8 +214,6 @@ export function AssessmentView() {
         </div>
       )}
 
-      {/* Plan Output Modal */}
-      {showPlanModal && generatedPlan && <PlanOutput plan={generatedPlan} assessment={assessment} onClose={closePlanModal} />}
     </div>
   );
 }

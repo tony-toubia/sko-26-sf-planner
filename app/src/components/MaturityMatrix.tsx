@@ -5,7 +5,6 @@ import { INDUSTRY_CAPABILITY_EMPHASIS } from '../data/industries';
 import { AssessmentModal } from './AssessmentModal';
 import { AssessmentSummary } from './AssessmentSummary';
 import { GlobalInputsModal } from './GlobalInputsModal';
-import { PlanOutput } from './PlanOutput';
 import { IndustrySelector } from './IndustrySelector';
 import { ConsolidatedQuestionnaire } from './ConsolidatedQuestionnaire';
 import { useAssessment } from '../context/AssessmentContext';
@@ -238,11 +237,8 @@ export function MaturityMatrix() {
     endAssessment,
     getCapabilityAssessment,
     assessment,
-    generatedPlan,
-    showPlanModal,
     generateRecommendationPlan,
     generateQuickPlan,
-    closePlanModal,
     selectedIndustry,
     setSelectedIndustry,
     marketingFoundation,
@@ -689,15 +685,6 @@ export function MaturityMatrix() {
           selectedIndustry={selectedIndustry}
           onSubmit={handleGlobalInputsSubmit}
           onClose={() => setShowGlobalInputsModal(false)}
-        />
-      )}
-
-      {/* Plan Output Modal - displays generated recommendation plan */}
-      {showPlanModal && generatedPlan && (
-        <PlanOutput
-          plan={generatedPlan}
-          assessment={assessment}
-          onClose={closePlanModal}
         />
       )}
 
