@@ -312,9 +312,11 @@ export function TrackLevelAssessment({
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  // Options that negate all others when selected (e.g. "None of these", "No significant blockers")
+  // Options that negate all others when selected
+  // Covers: "None of these", "No significant blockers", "No partner program planned",
+  //         "Not applicable", "Not a priority", "Not sure yet", "Not yet defined", etc.
   const isExclusiveOption = (option: string) =>
-    /^None/i.test(option) || /^No significant/i.test(option) || /^Not sure/i.test(option);
+    /^None/i.test(option) || /^No /i.test(option) || /^Not /i.test(option);
 
   const handleMultiSelectToggle = (questionId: string, option: string) => {
     setAnswers((prev) => {
