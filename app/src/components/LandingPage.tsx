@@ -15,10 +15,16 @@ import {
   Mail,
   ChevronDown,
   ChevronUp,
+  Users,
+  Building2,
+  Network,
+  Layers,
+  Briefcase,
+  HeartHandshake,
 } from 'lucide-react';
-import type { IndustryType, DisciplineType, MerkleOfferingType, GlobalAssessmentInputs } from '../types';
+import type { IndustryType, DisciplineType, BusinessModelType, MerkleOfferingType, GlobalAssessmentInputs } from '../types';
 import { INDUSTRIES } from '../data/industries';
-import { DISCIPLINES } from '../data/constants';
+import { BUSINESS_MODELS, getDisciplinesForBusinessModel } from '../data/constants';
 import { useAssessment } from '../context/AssessmentContext';
 import { AssessmentListModal } from './AssessmentListModal';
 
@@ -67,6 +73,16 @@ const disciplineIcons: Record<string, React.ElementType> = {
   Award,
   ShoppingCart,
   Headphones,
+  Target,
+  Briefcase,
+  HeartHandshake,
+};
+
+const businessModelIcons: Record<string, React.ElementType> = {
+  Users,
+  Building2,
+  Network,
+  Layers,
 };
 
 export function LandingPage({ onStartAssessment }: LandingPageProps) {
@@ -75,6 +91,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
   const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineType[]>(['messaging-personalization']);
+  const [selectedBusinessModel, setSelectedBusinessModel] = useState<BusinessModelType | null>(null);
   const [showLoadModal, setShowLoadModal] = useState(false);
 
   // Optional plan context
@@ -91,7 +108,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   };
 
   const handleBeginAssessment = async () => {
-    if (clientName.trim() && selectedIndustry && selectedDisciplines.length > 0 && isValidEmail(email)) {
+    if (clientName.trim() && selectedIndustry && selectedBusinessModel && selectedDisciplines.length > 0 && isValidEmail(email)) {
       // Set user email first so it's available for assessment creation
       const trimmedEmail = email.trim().toLowerCase();
       await setUserEmail(trimmedEmail);
@@ -111,7 +128,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
         };
       }
 
-      await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines, globalInputs);
+      await startAssessment(clientName.trim(), selectedIndustry, null, undefined, selectedDisciplines, globalInputs, selectedBusinessModel);
       onStartAssessment();
     }
   };
@@ -127,6 +144,21 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
       prev.includes(driver) ? prev.filter(d => d !== driver) : [...prev, driver]
     );
   };
+
+  const handleBusinessModelSelect = (modelId: BusinessModelType) => {
+    setSelectedBusinessModel(modelId);
+    // Auto-select available disciplines for this business model
+    const availableDisciplines = getDisciplinesForBusinessModel(modelId);
+    const defaultDisciplines = availableDisciplines
+      .filter(d => d.available)
+      .map(d => d.id);
+    setSelectedDisciplines(defaultDisciplines.length > 0 ? defaultDisciplines : []);
+  };
+
+  // Get disciplines filtered by selected business model
+  const visibleDisciplines = selectedBusinessModel
+    ? getDisciplinesForBusinessModel(selectedBusinessModel)
+    : [];
 
   const toggleDiscipline = (disciplineId: DisciplineType, available: boolean) => {
     // Don't allow toggling locked disciplines
@@ -356,68 +388,103 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
               </div>
             </div>
 
-            {/* Discipline Selection */}
+            {/* Business Model Selection */}
             <div>
               <label className="block font-medium text-gray-900 mb-2">
-                Salesforce Clouds to Assess <span className="text-red-500">*</span>
+                Business Model <span className="text-red-500">*</span>
               </label>
               <p className="text-sm text-gray-500 mb-3">
-                Select one or more clouds. You can assess multiple clouds to see adjacencies and cross-cloud opportunities.
+                This determines which Salesforce clouds and capabilities are relevant for assessment.
               </p>
-              <div className="space-y-2">
-                {DISCIPLINES.map((discipline) => {
-                  const Icon = disciplineIcons[discipline.icon];
-                  const isSelected = selectedDisciplines.includes(discipline.id);
-                  const isLocked = !discipline.available;
+              <div className="grid grid-cols-2 gap-3">
+                {BUSINESS_MODELS.map((model) => {
+                  const Icon = businessModelIcons[model.icon];
+                  const isSelected = selectedBusinessModel === model.id;
                   return (
                     <button
-                      key={discipline.id}
-                      onClick={() => toggleDiscipline(discipline.id, discipline.available)}
-                      disabled={isLocked}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${
-                        isLocked
-                          ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                          : isSelected
-                            ? 'border-merkle-blue bg-merkle-blue/5'
-                            : 'border-gray-200 hover:border-gray-300'
+                      key={model.id}
+                      onClick={() => handleBusinessModelSelect(model.id)}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${
+                        isSelected
+                          ? 'border-merkle-blue bg-merkle-blue/5'
+                          : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                        isLocked
-                          ? 'bg-gray-200 text-gray-400'
-                          : isSelected
-                            ? 'bg-merkle-blue text-white'
-                            : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {Icon && <Icon className="w-5 h-5" />}
+                      <div className="flex items-center gap-2 mb-1">
+                        {Icon && <Icon className={`w-5 h-5 ${isSelected ? 'text-merkle-blue' : 'text-gray-500'}`} />}
+                        <span className="font-medium text-gray-900">{model.shortName}</span>
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900">{discipline.name}</span>
-                          {isLocked && (
-                            <span className="inline-flex items-center gap-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
-                              <Lock className="w-3 h-3" />
-                              Coming Soon
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {discipline.description}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          {discipline.salesforceCloud}
-                        </div>
-                      </div>
-                      {isSelected && !isLocked && (
-                        <div className="flex-shrink-0">
-                          <ClipboardCheck className="w-5 h-5 text-merkle-blue" />
-                        </div>
-                      )}
+                      <div className="text-xs text-gray-500 line-clamp-2">{model.description}</div>
                     </button>
                   );
                 })}
               </div>
             </div>
+
+            {/* Discipline Selection (shown after business model is selected) */}
+            {selectedBusinessModel && (
+              <div>
+                <label className="block font-medium text-gray-900 mb-2">
+                  Salesforce Clouds to Assess <span className="text-red-500">*</span>
+                </label>
+                <p className="text-sm text-gray-500 mb-3">
+                  Select one or more clouds. You can assess multiple clouds to see adjacencies and cross-cloud opportunities.
+                </p>
+                <div className="space-y-2">
+                  {visibleDisciplines.map((discipline) => {
+                    const Icon = disciplineIcons[discipline.icon];
+                    const isSelected = selectedDisciplines.includes(discipline.id);
+                    const isLocked = !discipline.available;
+                    return (
+                      <button
+                        key={discipline.id}
+                        onClick={() => toggleDiscipline(discipline.id, discipline.available)}
+                        disabled={isLocked}
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${
+                          isLocked
+                            ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                            : isSelected
+                              ? 'border-merkle-blue bg-merkle-blue/5'
+                              : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isLocked
+                            ? 'bg-gray-200 text-gray-400'
+                            : isSelected
+                              ? 'bg-merkle-blue text-white'
+                              : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {Icon && <Icon className="w-5 h-5" />}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900">{discipline.name}</span>
+                            {isLocked && (
+                              <span className="inline-flex items-center gap-1 text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                                <Lock className="w-3 h-3" />
+                                Coming Soon
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {discipline.description}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-1">
+                            {discipline.salesforceCloud}
+                          </div>
+                        </div>
+                        {isSelected && !isLocked && (
+                          <div className="flex-shrink-0">
+                            <ClipboardCheck className="w-5 h-5 text-merkle-blue" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Plan Context (Optional) */}
             <div className="border border-gray-200 rounded-xl overflow-hidden">
@@ -539,7 +606,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
             </button>
             <button
               onClick={handleBeginAssessment}
-              disabled={!clientName.trim() || !selectedIndustry || selectedDisciplines.length === 0 || !isValidEmail(email)}
+              disabled={!clientName.trim() || !selectedIndustry || !selectedBusinessModel || selectedDisciplines.length === 0 || !isValidEmail(email)}
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-merkle-blue to-salesforce-blue text-white font-semibold rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ClipboardCheck className="w-5 h-5" />

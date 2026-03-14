@@ -9,13 +9,33 @@ export interface MaturityStage {
   color: string;
 }
 
+// Business model - determines which disciplines are visible and how questions are framed
+export type BusinessModelType = 'b2c' | 'b2b' | 'b2b2c' | 'hybrid';
+
+export interface BusinessModel {
+  id: BusinessModelType;
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+  // Which discipline groups are available for this business model
+  availableDisciplines: DisciplineType[];
+}
+
 // Disciplines/Clouds that can have maturity matrices
-// Now supporting M&P (others coming soon)
-export type DisciplineType = 'messaging-personalization' | 'loyalty' | 'commerce' | 'service';
+export type DisciplineType =
+  // B2C-primary
+  | 'messaging-personalization'
+  | 'loyalty'
+  | 'commerce'
+  | 'service'
+  // B2B-primary (ABX pillars)
+  | 'abm'    // Account-Based Marketing → MC Account Engagement
+  | 'abs'    // Account-Based Selling → Sales Cloud
+  | 'absa';  // Account-Based Service & Advocacy → Service Cloud
 
 // Future disciplines (not yet implemented)
 export type FutureDisciplineType =
-  | 'b2b'
   | 'data-cloud';
 
 export interface Discipline {
@@ -334,6 +354,8 @@ export interface OpportunityAssessment {
   userEmail?: string;
   // NEW: Selected disciplines for multi-discipline assessments
   disciplines?: DisciplineType[];
+  // NEW: Business model (B2B, B2C, B2B2C, Hybrid)
+  businessModel?: BusinessModelType;
   // NEW: Service recommendations
   serviceRecommendations?: {
     serviceId: string;

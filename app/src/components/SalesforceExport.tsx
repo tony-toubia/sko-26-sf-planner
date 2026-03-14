@@ -16,10 +16,12 @@ import {
   Zap,
 } from 'lucide-react';
 import type { GeneratedPlan, OpportunityAssessment } from '../types';
+import type { ServiceRecommendation } from '../utils/serviceRecommendations';
 
 interface SalesforceExportProps {
   plan: GeneratedPlan;
   assessment?: OpportunityAssessment | null;
+  selectedServices?: ServiceRecommendation[];
 }
 
 // Salesforce Opportunity data structure
@@ -64,25 +66,52 @@ function estimateCloseDate(phaseNumber: number): string {
   return today.toISOString().split('T')[0];
 }
 
-// Generate opportunities from plan
-function generateOpportunities(plan: GeneratedPlan, assessment?: OpportunityAssessment | null): SalesforceOpportunity[] {
-  const opportunities: SalesforceOpportunity[] = [];
+// Generate opportunities from selected services (preferred) or fall back to plan phases
+function generateOpportunities(
+  plan: GeneratedPlan,
+  assessment?: OpportunityAssessment | null,
+  selectedServices?: ServiceRecommendation[]
+): SalesforceOpportunity[] {
   const clientName = plan.executiveSummary.clientName || 'Unknown Client';
   const industry = assessment?.industry || 'Technology';
 
-  // Option 1: Create one opportunity per phase
+  // If we have selected services, generate one opportunity per service
+  if (selectedServices && selectedServices.length > 0) {
+    return selectedServices.map((rec, index) => {
+      const midpointAmount = Math.round((rec.estimatedCost.min + rec.estimatedCost.max) / 2);
+      const priorityMap: Record<string, 'Critical' | 'High' | 'Medium' | 'Low'> = {
+        critical: 'Critical', high: 'High', medium: 'Medium', low: 'Low',
+      };
+
+      return {
+        name: `${clientName} - ${rec.service.name}`,
+        accountName: clientName,
+        industry: industry,
+        stage: getDefaultOpportunityStage(),
+        amount: midpointAmount.toLocaleString(),
+        closeDate: estimateCloseDate(index < 3 ? 1 : index < 6 ? 2 : 3),
+        description: `${rec.rationale}\n\nService: ${rec.service.name}\nSize: ${rec.recommendedSize}\nEstimate: $${(rec.estimatedCost.min / 1000).toFixed(0)}K – $${(rec.estimatedCost.max / 1000).toFixed(0)}K`,
+        type: 'New Business',
+        leadSource: 'Maturity Assessment Tool',
+        products: [rec.service.name],
+        phase: `${rec.recommendedSize} engagement`,
+        priority: priorityMap[rec.priority] || 'Medium',
+      };
+    });
+  }
+
+  // Fallback: Create one opportunity per phase from the plan
+  const opportunities: SalesforceOpportunity[] = [];
   plan.phases.forEach((phase) => {
     if (phase.capabilities.length === 0) return;
 
     const criticalCapabilities = phase.capabilities.filter(c => c.priority === 'critical');
     const highCapabilities = phase.capabilities.filter(c => c.priority === 'high');
 
-    // Determine priority based on phase capabilities
     let priority: 'Critical' | 'High' | 'Medium' | 'Low' = 'Medium';
     if (criticalCapabilities.length > 0) priority = 'Critical';
     else if (highCapabilities.length > 0) priority = 'High';
 
-    // Estimate amount based on phase (placeholder values)
     const baseAmount = phase.phaseNumber === 1 ? 150000 :
                        phase.phaseNumber === 2 ? 200000 :
                        phase.phaseNumber === 3 ? 175000 : 125000;
@@ -106,12 +135,12 @@ function generateOpportunities(plan: GeneratedPlan, assessment?: OpportunityAsse
   return opportunities;
 }
 
-export function SalesforceExport({ plan, assessment }: SalesforceExportProps) {
+export function SalesforceExport({ plan, assessment, selectedServices }: SalesforceExportProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [expandedOpp, setExpandedOpp] = useState<number | null>(0);
   const [showApiInfo, setShowApiInfo] = useState(false);
 
-  const opportunities = useMemo(() => generateOpportunities(plan, assessment), [plan, assessment]);
+  const opportunities = useMemo(() => generateOpportunities(plan, assessment, selectedServices), [plan, assessment, selectedServices]);
 
   const handleCopy = async (text: string, type: string) => {
     await navigator.clipboard.writeText(text);
