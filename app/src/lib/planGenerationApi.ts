@@ -59,21 +59,39 @@ export async function generateAIPlan(
     ? '/api/generate-plan'
     : 'http://localhost:3001/api/generate-plan'; // For local dev with separate API server
 
-  const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
-  });
+  // Retry with exponential backoff for transient errors (429, 529, 5xx)
+  const maxRetries = 3;
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (response.ok) {
+      const result: PlanGenerationResponse = await response.json();
+      return { markdown: result.plan, trace: result.trace };
+    }
+
     const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `API error: ${response.status}`);
+    lastError = new Error(error.error || `API error: ${response.status}`);
+
+    // Only retry on transient errors
+    if (response.status !== 429 && response.status !== 529 && response.status < 500) {
+      throw lastError;
+    }
   }
 
-  const result: PlanGenerationResponse = await response.json();
-  return { markdown: result.plan, trace: result.trace };
+  throw lastError || new Error('API request failed after retries');
 }
 
 /**

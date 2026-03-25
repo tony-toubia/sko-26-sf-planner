@@ -395,27 +395,34 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       }
 
       // Fallback to template-based generation
-      const plan = generatePlan(updatedAssessment, inputs);
+      try {
+        const plan = generatePlan(updatedAssessment, inputs);
 
-      // Save plan to assessment state
-      setAssessment((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          generatedPlan: plan,
-          updatedAt: new Date(),
-        };
-      });
+        // Save plan to assessment state
+        setAssessment((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            generatedPlan: plan,
+            updatedAt: new Date(),
+          };
+        });
 
-      // Persist plan to database
-      if (isSupabaseAvailable) {
-        await assessmentService.saveGeneratedPlan(assessment.id, plan);
+        // Persist plan to database
+        if (isSupabaseAvailable) {
+          await assessmentService.saveGeneratedPlan(assessment.id, plan);
+        }
+
+        setGeneratedPlan(plan);
+        setShowPlanModal(true);
+        window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
+        return plan;
+      } catch (fallbackError) {
+        console.error('Template plan generation failed:', fallbackError);
+        setPlanGenerationError('Plan generation failed. Please try again.');
+        setIsGeneratingPlan(false);
+        return null;
       }
-
-      setGeneratedPlan(plan);
-      setShowPlanModal(true);
-      window.history.pushState({ planId: assessment.id }, '', `/plan/${assessment.id}`);
-      return plan;
     },
     [assessment, isAIPlanAvailable, isSupabaseAvailable]
   );

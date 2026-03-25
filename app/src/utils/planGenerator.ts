@@ -181,11 +181,16 @@ export function generatePlan(
 
   // Build dependency graph and determine sequencing
   // Pass complete and in-progress items so they're factored into foundation requirements
+  const withCapability = <T extends { capabilityId: string }>(items: T[]) =>
+    items
+      .map((a) => ({ ...a, capability: getCapability(a.capabilityId) }))
+      .filter((a): a is typeof a & { capability: NonNullable<typeof a.capability> } => a.capability != null);
+
   const { phases, foundationRequirements } = buildPhasedPlan(
-    immediateCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
-    nearFutureCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
-    completeCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
-    inProgressCapabilities.map((a) => ({ ...a, capability: getCapability(a.capabilityId)! })),
+    withCapability(immediateCapabilities),
+    withCapability(nearFutureCapabilities),
+    withCapability(completeCapabilities),
+    withCapability(inProgressCapabilities),
     globalInputs
   );
 
