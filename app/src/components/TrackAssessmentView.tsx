@@ -773,6 +773,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
           initialNotes={
             getTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level)?.notes || ''
           }
+          marketingFoundation={marketingFoundation}
           onAutoSave={(status, answers, notes) => {
             saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers, notes);
           }}

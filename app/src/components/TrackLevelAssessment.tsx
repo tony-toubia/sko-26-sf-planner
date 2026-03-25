@@ -69,6 +69,7 @@ interface TrackLevelAssessmentProps {
   initialAnswers?: AssessmentAnswer[];
   initialStatus?: TrackLevelStatus;
   initialNotes?: string;
+  marketingFoundation?: string | null;
   onComplete: (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => void;
   onAutoSave?: (status: TrackLevelStatus, answers: AssessmentAnswer[], notes: string) => void;
   onCancel: () => void;
@@ -248,6 +249,7 @@ export function TrackLevelAssessment({
   initialAnswers = [],
   initialStatus = 'not-started',
   initialNotes = '',
+  marketingFoundation,
   onComplete,
   onAutoSave,
   onCancel,
@@ -303,11 +305,38 @@ export function TrackLevelAssessment({
   const colors = TRACK_COLORS[trackId] || DEFAULT_COLORS;
   const Icon = TRACK_ICONS[trackId] || Target;
 
-  // Apply industry-specific question variants
-  const questions = useMemo(
-    () => applyIndustryVariants(trackLevel?.assessmentQuestions || [], industry),
-    [trackLevel, industry]
-  );
+  // Apply industry-specific question variants, then adapt for marketing foundation
+  const questions = useMemo(() => {
+    let qs = applyIndustryVariants(trackLevel?.assessmentQuestions || [], industry);
+
+    // For Data & Identity L1, adapt questions based on selected marketing foundation
+    if (trackId === 'data-identity' && level === 1 && marketingFoundation) {
+      qs = qs.map(q => {
+        if (q.id === 'current-platform') {
+          if (marketingFoundation === 'mc-engagement') {
+            // On MCE track: remove MCA option, keep relevant ones
+            return { ...q, options: q.options?.filter(o => o !== 'Marketing Cloud Advanced already deployed') };
+          } else if (marketingFoundation === 'mc-advanced') {
+            // On MCA track: remove MCE option
+            return { ...q, options: q.options?.filter(o => o !== 'Marketing Cloud Engagement (classic)') };
+          }
+        }
+        if (q.id === 'migration-posture') {
+          if (marketingFoundation === 'mc-advanced') {
+            // Already on MCA — skip this question entirely
+            return null;
+          }
+          if (marketingFoundation === 'mc-engagement') {
+            // On MCE: remove "Already on MC Advanced" option
+            return { ...q, options: q.options?.filter(o => !o.startsWith('Already on MC Advanced')) };
+          }
+        }
+        return q;
+      }).filter(Boolean) as typeof qs;
+    }
+
+    return qs;
+  }, [trackLevel, industry, trackId, level, marketingFoundation]);
 
   // Get industry-specific description
   const levelDescription = useMemo(() => {
