@@ -186,45 +186,39 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
     };
   }, [ALL_TRACKS, trackStatuses, assessedLevels]);
 
-  // Get next recommended action - find next level NOT YET ASSESSED
+  // Check if the active discipline tab is fully assessed
+  const activeDisciplineComplete = useMemo(() => {
+    return ACTIVE_TRACKS.every(track =>
+      track.levels.every((l: any) => assessedLevels.has(`${track.id}-${l.level}`))
+    );
+  }, [ACTIVE_TRACKS, assessedLevels]);
+
+  // Get next recommended action — scoped to the active discipline
   const nextRecommendation = useMemo(() => {
     const disciplines = assessment?.disciplines || ['messaging-personalization'];
     const order = getAssessmentOrder(disciplines);
+    const activeDisciplineTrackIds = ACTIVE_TRACKS.map(t => t.id);
 
-    // First, check Data L1 (always first) - if not assessed yet
-    if (!assessedLevels.has('data-identity-1')) {
-      return {
-        trackId: 'data-identity' as TrackId,
-        level: 1 as TrackLevel,
-        message: 'Start with your platform foundation',
-        isFirstAssessment: assessedLevels.size === 0,
-      };
-    }
-
-    // Then look for the next level that hasn't been assessed yet
-    // Simply follow the predefined order - it already respects dependencies
+    // Only look within the active discipline
     for (const key of order) {
-      if (assessedLevels.has(key)) continue; // Skip already assessed
-
-      // Parse track-level key - handle multi-hyphen track IDs like "content-channels"
-      // Format: "track-id-level" where level is always the last segment
+      if (assessedLevels.has(key)) continue;
       const lastDashIndex = key.lastIndexOf('-');
       const trackId = key.substring(0, lastDashIndex);
-      const levelStr = key.substring(lastDashIndex + 1);
-      const level = parseInt(levelStr);
+      if (!activeDisciplineTrackIds.includes(trackId)) continue;
 
+      const level = parseInt(key.substring(lastDashIndex + 1));
       const track = getTrackById(trackId, disciplines);
       const trackLevel = track?.levels.find((l: any) => l.level === level);
       return {
         trackId: trackId as TrackId,
         level: level as TrackLevel,
         message: `Assess ${track?.shortName} Level ${level}: ${trackLevel?.shortName}`,
-        isFirstAssessment: false,
+        isFirstAssessment: assessedLevels.size === 0,
       };
     }
 
     return null;
-  }, [assessedLevels, assessment?.disciplines]);
+  }, [assessedLevels, assessment?.disciplines, ACTIVE_TRACKS]);
 
   const handleLevelClick = useCallback((trackId: TrackId, level: TrackLevel) => {
     setAssessingLevel({ trackId, level });
@@ -514,26 +508,47 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         <div className="space-y-4 order-1 lg:order-2">
           {/* Marketing Foundation Selection moved inline into the main content area (Fix #3) */}
 
-          {/* Next Step Card - show if foundation selected (M&P) OR on Loyalty tab */}
-          {(marketingFoundation || activeDiscipline === 'loyalty') && nextRecommendation && !completionStats.isComplete && (
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
-              <div className="flex items-center gap-2 mb-3">
-                <Pencil className="w-4 h-4" />
-                <span className="text-sm font-medium text-slate-300">
-                  {nextRecommendation.isFirstAssessment ? 'Get Started' : 'Continue Assessment'}
-                </span>
+          {/* Next Step Card — context-aware based on discipline completion */}
+          {(marketingFoundation || activeDiscipline !== 'messaging-personalization') && !completionStats.isComplete && (
+            activeDisciplineComplete ? (
+              /* Active discipline fully assessed — prompt to switch */
+              <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-xl p-5 text-white">
+                <div className="flex items-center gap-2 mb-3">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-sm font-medium text-emerald-200">
+                    {selectedDisciplines.find(d => d.id === activeDiscipline)?.shortName || 'Section'} Complete
+                  </span>
+                </div>
+                <p className="text-lg font-semibold mb-2">
+                  All {selectedDisciplines.find(d => d.id === activeDiscipline)?.shortName} tracks are assessed.
+                </p>
+                {selectedDisciplines.length > 1 && (
+                  <p className="text-sm text-emerald-100 mb-4">
+                    Switch to another discipline tab to continue your assessment.
+                  </p>
+                )}
               </div>
-              <p className="text-lg font-semibold mb-4">{nextRecommendation.message}</p>
-              <button
-                onClick={() =>
-                  handleLevelClick(nextRecommendation.trackId, nextRecommendation.level)
-                }
-                className="w-full py-2.5 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-              >
-                {nextRecommendation.isFirstAssessment ? 'Begin' : 'Assess This Level'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            ) : nextRecommendation ? (
+              /* Has next level to assess in this discipline */
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-5 text-white">
+                <div className="flex items-center gap-2 mb-3">
+                  <Pencil className="w-4 h-4" />
+                  <span className="text-sm font-medium text-slate-300">
+                    {nextRecommendation.isFirstAssessment ? 'Get Started' : 'Continue Assessment'}
+                  </span>
+                </div>
+                <p className="text-lg font-semibold mb-4">{nextRecommendation.message}</p>
+                <button
+                  onClick={() =>
+                    handleLevelClick(nextRecommendation.trackId, nextRecommendation.level)
+                  }
+                  className="w-full py-2.5 bg-white text-slate-900 rounded-lg font-medium hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  {nextRecommendation.isFirstAssessment ? 'Begin' : 'Assess This Level'}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            ) : null
           )}
 
           {/* Progress Summary */}
