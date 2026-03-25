@@ -13,6 +13,7 @@ interface PlanGenerationRequest {
   clientName: string;
   industry?: string;
   marketingFoundation?: string;
+  disciplines?: string[];
   trackAssessments: TrackLevelAssessment[];
   globalInputs: GlobalAssessmentInputs;
 }
@@ -50,6 +51,7 @@ export async function generateAIPlan(
     clientName: assessment.clientName,
     industry: assessment.industry,
     marketingFoundation: assessment.marketingFoundation,
+    disciplines: assessment.disciplines || ['messaging-personalization'],
     trackAssessments,
     globalInputs,
   };

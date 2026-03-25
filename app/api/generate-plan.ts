@@ -51,6 +51,7 @@ interface PlanGenerationRequest {
   clientName: string;
   industry?: string;
   marketingFoundation?: string;
+  disciplines?: string[];
   trackAssessments: TrackLevelAssessment[];
   globalInputs: GlobalAssessmentInputs;
 }
@@ -505,7 +506,8 @@ function buildSystemPrompt(request: PlanGenerationRequest, dbRefData?: { kpis: s
     : buildIndustryContext(request.industry);
 
   // Get PDF-sourced knowledge (offerings, sales intelligence, methodology)
-  const pdfKnowledge = getPlanKnowledge(['messaging-personalization']); // TODO: pass disciplines from request
+  const disciplines = request.disciplines?.length ? request.disciplines : ['messaging-personalization'];
+  const pdfKnowledge = getPlanKnowledge(disciplines);
 
   return `You are a senior Salesforce Marketing Cloud consultant at Merkle, creating a strategic implementation plan for ${request.clientName}.
 
@@ -786,11 +788,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? Math.round(request.trackAssessments.filter(ta => ta.status === 'complete').length / Math.max(request.trackAssessments.length, 1) * 3)
       : 1;
 
+    const disciplines = request.disciplines?.length ? request.disciplines : ['messaging-personalization'];
     let dbRefData: Awaited<ReturnType<typeof fetchFormattedReferenceData>> = null;
     try {
       dbRefData = await fetchFormattedReferenceData({
         industry: industryId || undefined,
-        disciplines: ['messaging-personalization'], // TODO: pass from request when multi-discipline
+        disciplines,
         maturityLevel,
       });
     } catch (err) {
@@ -803,7 +806,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userPrompt = buildUserPrompt(request);
 
     // Build reference chunks for trace (mirrors what buildSystemPrompt injected)
-    const pdfKnowledgeForTrace = getPlanKnowledge(['messaging-personalization']);
+    const pdfKnowledgeForTrace = getPlanKnowledge(disciplines);
     const hardcodedIndustryContext = dbRefData ? '' : buildIndustryContext(request.industry);
     const referenceChunks = buildReferenceChunks(dbRefData, hardcodedIndustryContext, pdfKnowledgeForTrace);
 
