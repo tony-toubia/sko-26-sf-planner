@@ -28,7 +28,7 @@ export const TRACKS: Track[] = [
         level: 1,
         name: 'Platform Foundation',
         shortName: 'Foundation',
-        description: 'Stand up Data Cloud and Marketing Cloud Advanced as your unified marketing foundation',
+        description: 'Assess and optimize your marketing platform foundation — whether staying on MC Engagement or moving to MC Advanced + Data Cloud',
         capabilities: ['migrate-sfmc'],
         assessmentQuestions: [
           {
@@ -56,6 +56,19 @@ export const TRACKS: Track[] = [
             required: true,
           },
           {
+            id: 'migration-posture',
+            question: 'What is the posture toward MC Advanced / Data Cloud adoption?',
+            type: 'single-select',
+            options: [
+              'Actively planning migration to MC Advanced',
+              'Open to evaluating but no timeline',
+              'Staying on MC Engagement for now — not considering migration',
+              'Already on MC Advanced / Data Cloud',
+            ],
+            required: true,
+            helpText: 'This shapes whether the plan anchors around migration or optimizing the current platform',
+          },
+          {
             id: 'platform-goals',
             question: 'What are the primary goals for the platform foundation?',
             type: 'multi-select',
@@ -65,6 +78,7 @@ export const TRACKS: Track[] = [
               'Agentforce readiness',
               'Cross-cloud integration',
               'AI/Einstein capabilities',
+              'Maximize value on current platform',
             ],
             helpText: 'Select all that apply',
           },

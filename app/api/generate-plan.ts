@@ -61,7 +61,7 @@ const ROI_BENCHMARKS = `
 ## Merkle-Validated ROI Benchmarks
 
 ### Phase 1: Foundation
-- Operational Efficiency: 3X improvement from platform migration
+- Operational Efficiency: 3X improvement from platform optimization or migration
 - Digital Channel Penetration: +111% increase in reach
 
 ### Phase 2: Activation
@@ -113,7 +113,7 @@ const TRACK_DESCRIPTIONS = `
 ## Maturity Tracks
 
 ### Data & Identity Track
-- Level 1 (Platform Foundation): Migrate to Data Cloud & MC Advanced
+- Level 1 (Platform Foundation): Establish or optimize marketing data foundation (MCE optimization OR migration to MC Advanced + Data Cloud, depending on client posture)
 - Level 2 (Extended Integration): Connect POS, loyalty, e-commerce data
 - Level 3 (Identity & Enrichment): Cross-device/channel identity resolution
 
@@ -518,8 +518,12 @@ Your role is to create a compelling, narrative-driven recommendation plan that:
 4. Skips empty phases - if they've completed Phase 1 work, start the plan at Phase 2
 5. Provides specific, actionable recommendations grounded in data
 
-IMPORTANT - Assumptions to AVOID:
-- Do NOT assume the client has already implemented any platform. The "Marketing Foundation" field indicates their TARGET platform choice, not what they currently have.
+IMPORTANT - Platform & Migration Assumptions:
+- The "Marketing Foundation" field indicates what platform the client is CURRENTLY ON or TARGETING.
+- Check the "migration-posture" assessment answer to understand whether the client is planning to migrate to MC Advanced, evaluating, or explicitly staying on MC Engagement.
+- If the client is staying on MC Engagement: Do NOT frame the plan around migration. Instead, articulate the value Merkle can drive *within* MCE — journey optimization, segmentation, content personalization, channel expansion, and operational maturity. Only mention MC Advanced/Data Cloud as a future consideration, not a prerequisite.
+- If the client is on MCE and open to evaluating: Present migration as one strategic option with clear ROI justification, but also show what can be achieved on MCE in the interim. Let the plan stand on its own without migration.
+- If the client is actively planning migration: Anchor the foundation phase around the migration path.
 - Only reference "current state" or "already implemented" if the maturity assessment explicitly shows completed capabilities.
 - The assessment tracks show what level they are WORKING TOWARD, not what they have completed (unless status is "complete").
 - When a track shows "not-started", assume they have no capabilities in that area yet.
@@ -620,12 +624,20 @@ function buildUserPrompt(request: PlanGenerationRequest): string {
   if (strat.executiveSponsor) strategicSummary += `\nExecutive Sponsor: ${strat.executiveSponsor}`;
   if (strat.additionalContext) strategicSummary += `\nAdditional Context: ${strat.additionalContext}`;
 
-  // Determine marketing foundation
-  const foundationNote = request.marketingFoundation
-    ? `Marketing Foundation: ${request.marketingFoundation === 'mc-advanced'
-        ? 'MC Advanced with Data Cloud (Agentforce-ready) - This is the TARGET platform, not currently implemented'
-        : 'MC Engagement (standard) - This is the TARGET platform, not currently implemented'}`
-    : 'Marketing Foundation: Not specified';
+  // Determine marketing foundation — extract migration posture from assessment answers
+  const migrationPosture = (request.trackAssessments || [])
+    .flatMap(ta => ta.answers || [])
+    .find(a => a.questionId === 'migration-posture')?.value as string | undefined;
+
+  let foundationNote = 'Marketing Foundation: Not specified';
+  if (request.marketingFoundation === 'mc-advanced') {
+    foundationNote = 'Marketing Foundation: MC Advanced with Data Cloud (Agentforce-ready)';
+  } else if (request.marketingFoundation === 'mc-engagement') {
+    foundationNote = 'Marketing Foundation: MC Engagement (standard)';
+    if (migrationPosture) {
+      foundationNote += `\nMigration Posture: ${migrationPosture}`;
+    }
+  }
 
   return `Generate a strategic implementation plan for ${request.clientName}.
 
