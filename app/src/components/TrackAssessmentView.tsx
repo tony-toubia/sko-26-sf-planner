@@ -23,6 +23,10 @@ import {
   Users,
   Gift,
   TrendingUp,
+  ShoppingCart,
+  Search,
+  Package,
+  BarChart3,
 } from 'lucide-react';
 import { TrackProgress } from './TrackProgress';
 import { TrackLevelAssessment } from './TrackLevelAssessment';
@@ -50,6 +54,11 @@ const TRACK_ICONS: Record<string, React.ElementType> = {
   'member-engagement': Users,
   'rewards-offers': Gift,
   'loyalty-intelligence': TrendingUp,
+  // Commerce tracks
+  'commerce-platform': ShoppingCart,
+  'shopping-experience': Search,
+  'order-fulfillment': Package,
+  'commerce-intelligence': BarChart3,
 };
 
 const TRACK_GRADIENTS: Record<string, string> = {

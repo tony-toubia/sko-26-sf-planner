@@ -90,7 +90,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
   const [clientName, setClientName] = useState('');
   const [email, setEmail] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<IndustryType | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineType[]>(['messaging-personalization']);
   const [selectedBusinessModel, setSelectedBusinessModel] = useState<BusinessModelType | null>(null);
   const [showLoadModal, setShowLoadModal] = useState(false);
@@ -116,11 +116,11 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
 
       // Build optional plan context if any fields were filled
       let globalInputs: GlobalAssessmentInputs | undefined;
-      if (companySize || budgetRange || selectedEngagementModels.length > 0 || selectedDrivers.length > 0 || selectedSubcategory) {
+      if (companySize || budgetRange || selectedEngagementModels.length > 0 || selectedDrivers.length > 0 || selectedSubcategories.length > 0) {
         globalInputs = {
           clientContext: {
             companySize: companySize as GlobalAssessmentInputs['clientContext']['companySize'] || undefined,
-            industrySegment: selectedSubcategory || undefined,
+            industrySegment: selectedSubcategories.length > 0 ? selectedSubcategories.join(', ') : undefined,
           },
           commercialPreferences: {
             budgetRange: budgetRange as GlobalAssessmentInputs['commercialPreferences']['budgetRange'] || undefined,
@@ -376,7 +376,7 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
                 {industries.map((industry) => (
                   <button
                     key={industry.id}
-                    onClick={() => { setSelectedIndustry(industry.id); setSelectedSubcategory(null); }}
+                    onClick={() => { setSelectedIndustry(industry.id); setSelectedSubcategories([]); }}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
                       selectedIndustry === industry.id
                         ? 'border-merkle-blue bg-merkle-blue/5'
@@ -393,21 +393,26 @@ export function LandingPage({ onStartAssessment }: LandingPageProps) {
               {/* Subcategory selector — appears when an industry with subcategories is selected */}
               {selectedIndustry && INDUSTRIES[selectedIndustry]?.subcategories && (
                 <div className="mt-3">
-                  <label className="block text-sm text-gray-600 mb-1.5">Segment (optional)</label>
+                  <label className="block text-sm text-gray-600 mb-1.5">Segment (optional, select all that apply)</label>
                   <div className="flex flex-wrap gap-2">
-                    {INDUSTRIES[selectedIndustry].subcategories!.map((sub) => (
-                      <button
-                        key={sub}
-                        onClick={() => setSelectedSubcategory(selectedSubcategory === sub ? null : sub)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                          selectedSubcategory === sub
-                            ? 'bg-merkle-blue text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        {sub}
-                      </button>
-                    ))}
+                    {INDUSTRIES[selectedIndustry].subcategories!.map((sub) => {
+                      const isSelected = selectedSubcategories.includes(sub);
+                      return (
+                        <button
+                          key={sub}
+                          onClick={() => setSelectedSubcategories(prev =>
+                            isSelected ? prev.filter(s => s !== sub) : [...prev, sub]
+                          )}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            isSelected
+                              ? 'bg-merkle-blue text-white'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
