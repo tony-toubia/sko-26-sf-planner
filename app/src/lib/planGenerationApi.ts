@@ -40,7 +40,8 @@ export interface AIPlanResult {
  */
 export async function generateAIPlan(
   assessment: OpportunityAssessment,
-  globalInputs: GlobalAssessmentInputs
+  globalInputs: GlobalAssessmentInputs,
+  options?: { skipCache?: boolean }
 ): Promise<AIPlanResult> {
   // Convert track assessments to array format
   const trackAssessments: TrackLevelAssessment[] = assessment.trackAssessments
@@ -76,7 +77,7 @@ export async function generateAIPlan(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(request),
+      body: JSON.stringify({ ...request, skipCache: options?.skipCache }),
     });
 
     if (response.ok) {

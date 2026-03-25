@@ -354,7 +354,9 @@ export function AssessmentProvider({ children, totalCapabilities }: AssessmentPr
       if (useAI && isAIPlanAvailable) {
         setIsGeneratingPlan(true);
         try {
-          const { markdown: aiMarkdown, trace } = await generateAIPlan(updatedAssessment, inputs);
+          // Skip cache if regenerating (plan already exists)
+          const isRegeneration = !!generatedPlan;
+          const { markdown: aiMarkdown, trace } = await generateAIPlan(updatedAssessment, inputs, { skipCache: isRegeneration });
 
           // Create a plan object that includes both structured data and AI content
           const plan: GeneratedPlan = {

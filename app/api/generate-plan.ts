@@ -768,30 +768,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ===== CACHING: Check for cached plan =====
+    const skipCache = req.body.skipCache === true;
     const normalizedRequest = JSON.stringify({
       clientName: request.clientName,
       industry: request.industry,
       marketingFoundation: request.marketingFoundation,
       trackAssessments: (request.trackAssessments || [])
-        .map(ta => ({ trackId: ta.trackId, level: ta.level, status: ta.status }))
+        .map(ta => ({ trackId: ta.trackId, level: ta.level, status: ta.status, answers: ta.answers }))
         .sort((a, b) => `${a.trackId}-${a.level}`.localeCompare(`${b.trackId}-${b.level}`)),
       globalInputs: request.globalInputs,
       quality,
     });
     const cacheKey = await sha256(normalizedRequest);
 
-    try {
-      const cached = await getCachedPlan(cacheKey);
-      if (cached) {
-        return res.status(200).json({
-          plan: cached.plan,
-          usage: cached.usage,
-          cached: true,
-          trace: (cached.usage as any)?.trace || null,
-        });
+    if (!skipCache) {
+      try {
+        const cached = await getCachedPlan(cacheKey);
+        if (cached) {
+          return res.status(200).json({
+            plan: cached.plan,
+            usage: cached.usage,
+            cached: true,
+            trace: (cached.usage as any)?.trace || null,
+          });
+        }
+      } catch (err) {
+        console.error('[generate-plan] Cache lookup failed:', err);
       }
-    } catch (err) {
-      console.error('[generate-plan] Cache lookup failed:', err);
     }
 
     // ===== CHUNKING: Fetch targeted reference data from DB =====
