@@ -90,7 +90,7 @@ export const DISCIPLINES: Discipline[] = [
     icon: 'ShoppingCart',
     salesforceCloud: 'Commerce Cloud',
     color: '#FF6B35',
-    available: false, // Locked for now
+    available: true,
   },
   {
     id: 'service',

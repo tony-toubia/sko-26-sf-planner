@@ -63,10 +63,15 @@ const TRACK_GRADIENTS: Record<string, string> = {
   'member-engagement': 'from-purple-500 to-purple-600',
   'rewards-offers': 'from-pink-500 to-pink-600',
   'loyalty-intelligence': 'from-rose-500 to-rose-600',
+  // Commerce tracks
+  'commerce-platform': 'from-orange-500 to-orange-600',
+  'shopping-experience': 'from-pink-500 to-pink-600',
+  'order-fulfillment': 'from-teal-500 to-teal-600',
+  'commerce-intelligence': 'from-amber-500 to-amber-600',
 };
 
 export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPlanContext, hasGlobalInputs }: TrackAssessmentViewProps) {
-  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
+  const { assessment, saveTrackLevelAssessment, getTrackLevelAssessment, marketingFoundation, setMarketingFoundation, businessModel, isSaving, lastSaved, isSupabaseAvailable, userEmail, generatedPlan, openPlanModal } = useAssessment();
 
   // Active discipline tab - defaults to first selected discipline
   const [activeDiscipline, setActiveDiscipline] = useState<string>(() => {
@@ -774,6 +779,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
             getTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level)?.notes || ''
           }
           marketingFoundation={marketingFoundation}
+          businessModel={businessModel}
           onAutoSave={(status, answers, notes) => {
             saveTrackLevelAssessment(assessingLevel.trackId, assessingLevel.level, status, answers, notes);
           }}

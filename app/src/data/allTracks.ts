@@ -6,15 +6,16 @@
 import type { DisciplineType, TrackId, TrackLevel } from '../types';
 import { TRACKS as MP_TRACKS, getTrackById as getMPTrackById, canStartLevel as mpCanStartLevel } from './tracks';
 import { LOYALTY_TRACKS, type LoyaltyTrackId, type LoyaltyTrackLevel } from './loyaltyTracks';
+import { COMMERCE_TRACKS, type CommerceTrackId, type CommerceTrackLevel } from './commerceTracks';
 
-// Unified track type that combines both M&P and Loyalty tracks
-export type UnifiedTrackId = TrackId | LoyaltyTrackId;
+// Unified track type that combines both M&P, Loyalty, and Commerce tracks
+export type UnifiedTrackId = TrackId | LoyaltyTrackId | CommerceTrackId;
 
 // Map discipline types to their track arrays
 const DISCIPLINE_TRACKS_MAP: Record<string, any[]> = {
   'messaging-personalization': MP_TRACKS,
   'loyalty': LOYALTY_TRACKS as any[], // Cast to match Track[] type
-  'commerce': [], // Coming soon
+  'commerce': COMMERCE_TRACKS as any[],
   'service': [], // Coming soon
   'abm': [],     // ABX: Account-Based Marketing - tracks pending
   'abs': [],     // ABX: Account-Based Selling - tracks pending
@@ -57,6 +58,9 @@ export function getTrackById(trackId: string, disciplines?: DisciplineType[]): a
 
   const loyaltyTrack = LOYALTY_TRACKS.find(t => t.id === trackId);
   if (loyaltyTrack) return { ...loyaltyTrack, discipline: 'loyalty' as DisciplineType };
+
+  const commerceTrack = COMMERCE_TRACKS.find(t => t.id === trackId);
+  if (commerceTrack) return { ...commerceTrack, discipline: 'commerce' as DisciplineType };
 
   return undefined;
 }
@@ -156,7 +160,19 @@ export function getAssessmentOrder(disciplines: DisciplineType[]): string[] {
     }
   }
 
-  // Future: Add Commerce and Service ordering here as they're implemented
+  const hasCommerceDiscipline = disciplines.includes('commerce');
+  if (hasCommerceDiscipline) {
+    const commerceTracks = tracks.filter(t => t.discipline === 'commerce');
+    for (let level = 1; level <= 3; level++) {
+      for (const track of commerceTracks) {
+        if (track.levels.some((l: any) => l.level === level)) {
+          order.push(`${track.id}-${level}`);
+        }
+      }
+    }
+  }
+
+  // Future: Add Service ordering here as it's implemented
 
   return order;
 }

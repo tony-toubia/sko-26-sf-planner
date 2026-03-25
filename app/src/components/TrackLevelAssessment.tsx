@@ -23,6 +23,9 @@ import {
   Users,
   Gift,
   BarChart3,
+  ShoppingCart,
+  Search,
+  Package,
 } from 'lucide-react';
 import { getTrackById, getTrackLevel, getCapabilitiesForTrackLevel, getRequiredDependencies } from '../data/allTracks';
 import { getCapabilityById } from '../data/capabilities';
@@ -37,29 +40,48 @@ import type {
   AssessmentAnswer,
   Capability,
   IndustryType,
+  BusinessModelType,
 } from '../types';
 
-// Helper to apply industry variants to questions
-function applyIndustryVariants(
+// Helper to apply industry and business model variants to questions
+function applyQuestionVariants(
   questions: TrackAssessmentQuestion[],
-  industry: string | null
+  industry: string | null,
+  businessModel: string | null
 ): TrackAssessmentQuestion[] {
-  if (!industry) return questions;
-
-  const industryId = industry as IndustryType;
-
   return questions.map((q) => {
-    if (!q.industryVariants || !q.industryVariants[industryId]) {
-      return q;
+    let result = { ...q };
+
+    // Apply industry variants first
+    if (industry) {
+      const industryId = industry as IndustryType;
+      if (q.industryVariants?.[industryId]) {
+        const variant = q.industryVariants[industryId];
+        result = {
+          ...result,
+          question: variant.question || result.question,
+          options: variant.options || result.options,
+          helpText: variant.helpText || result.helpText,
+        };
+      }
     }
 
-    const variant = q.industryVariants[industryId];
-    return {
-      ...q,
-      question: variant.question || q.question,
-      options: variant.options || q.options,
-      helpText: variant.helpText || q.helpText,
-    };
+    // Apply business model variants (override industry if both exist)
+    if (businessModel) {
+      const bmId = businessModel as BusinessModelType;
+      const bmVariants = (q as any).businessModelVariants;
+      if (bmVariants?.[bmId]) {
+        const variant = bmVariants[bmId];
+        result = {
+          ...result,
+          question: variant.question || result.question,
+          options: variant.options || result.options,
+          helpText: variant.helpText || result.helpText,
+        };
+      }
+    }
+
+    return result;
   });
 }
 
@@ -70,6 +92,7 @@ interface TrackLevelAssessmentProps {
   initialStatus?: TrackLevelStatus;
   initialNotes?: string;
   marketingFoundation?: string | null;
+  businessModel?: string | null;
   onComplete: (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => void;
   onAutoSave?: (status: TrackLevelStatus, answers: AssessmentAnswer[], notes: string) => void;
   onCancel: () => void;
@@ -89,6 +112,11 @@ const TRACK_ICONS: Record<string, React.ElementType> = {
   'member-engagement': Users,
   'rewards-offers': Gift,
   'loyalty-intelligence': BarChart3,
+  // Commerce tracks
+  'commerce-platform': ShoppingCart,
+  'shopping-experience': Search,
+  'order-fulfillment': Package,
+  'commerce-intelligence': BarChart3,
 };
 
 const DEFAULT_COLORS = {
@@ -152,6 +180,35 @@ const TRACK_COLORS: Record<string, { gradient: string; text: string; border: str
     lightBg: 'bg-emerald-50',
   },
   'loyalty-intelligence': {
+    gradient: 'from-amber-600 to-amber-700',
+    text: 'text-amber-600',
+    border: 'border-amber-200',
+    bg: 'bg-amber-600',
+    lightBg: 'bg-amber-50',
+  },
+  // Commerce tracks
+  'commerce-platform': {
+    gradient: 'from-orange-600 to-orange-700',
+    text: 'text-orange-600',
+    border: 'border-orange-200',
+    bg: 'bg-orange-600',
+    lightBg: 'bg-orange-50',
+  },
+  'shopping-experience': {
+    gradient: 'from-pink-600 to-pink-700',
+    text: 'text-pink-600',
+    border: 'border-pink-200',
+    bg: 'bg-pink-600',
+    lightBg: 'bg-pink-50',
+  },
+  'order-fulfillment': {
+    gradient: 'from-teal-600 to-teal-700',
+    text: 'text-teal-600',
+    border: 'border-teal-200',
+    bg: 'bg-teal-600',
+    lightBg: 'bg-teal-50',
+  },
+  'commerce-intelligence': {
     gradient: 'from-amber-600 to-amber-700',
     text: 'text-amber-600',
     border: 'border-amber-200',
@@ -250,6 +307,7 @@ export function TrackLevelAssessment({
   initialStatus = 'not-started',
   initialNotes = '',
   marketingFoundation,
+  businessModel,
   onComplete,
   onAutoSave,
   onCancel,
@@ -305,9 +363,9 @@ export function TrackLevelAssessment({
   const colors = TRACK_COLORS[trackId] || DEFAULT_COLORS;
   const Icon = TRACK_ICONS[trackId] || Target;
 
-  // Apply industry-specific question variants, then adapt for marketing foundation
+  // Apply industry + business model question variants, then adapt for marketing foundation
   const questions = useMemo(() => {
-    let qs = applyIndustryVariants(trackLevel?.assessmentQuestions || [], industry);
+    let qs = applyQuestionVariants(trackLevel?.assessmentQuestions || [], industry, businessModel || null);
 
     // For Data & Identity L1, adapt questions based on selected marketing foundation
     if (trackId === 'data-identity' && level === 1 && marketingFoundation) {
@@ -336,7 +394,7 @@ export function TrackLevelAssessment({
     }
 
     return qs;
-  }, [trackLevel, industry, trackId, level, marketingFoundation]);
+  }, [trackLevel, industry, businessModel, trackId, level, marketingFoundation]);
 
   // Get industry-specific description
   const levelDescription = useMemo(() => {
