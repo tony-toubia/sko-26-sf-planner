@@ -92,7 +92,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
     id: 'commerce-platform',
     name: 'Commerce Platform',
     shortName: 'Platform',
-    description: 'Assess your Commerce Cloud foundation — product variant, architecture, and cross-cloud integrations',
+    description: 'Assess and evolve your Commerce Cloud foundation — from identifying the right product variant (B2C/B2B Commerce) and architecture pattern (SFRA, Composable, Lightning) through API strategy and composable/multi-site maturity',
     icon: 'ShoppingCart',
     color: 'orange',
     journeyType: 'below-the-line',
@@ -101,7 +101,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 1,
         name: 'Platform Assessment',
         shortName: 'Assessment',
-        description: 'Understand the current Commerce Cloud deployment, architecture choices, and integration baseline',
+        description: 'Assess the current Commerce Cloud deployment — which product is in use (B2C, B2B, or both), the storefront architecture (SiteGenesis, SFRA, Composable/PWA Kit, B2B Lightning), existing cross-cloud integrations, and the platform direction going forward',
         businessModelDescriptions: {
           b2b: 'Understand the current B2B Commerce deployment, account-based storefront, and integration baseline',
           b2c: 'Understand the current B2C Commerce deployment, storefront architecture, and integration baseline',
@@ -223,7 +223,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 2,
         name: 'Architecture & Integration',
         shortName: 'Architecture',
-        description: 'Evolve toward composable architecture with robust API strategy and cross-cloud data flows',
+        description: 'Mature the commerce architecture with a robust API strategy (SCAPI, Connect API), cross-cloud data flows into Data Cloud and Marketing Cloud, CMS integration, and resolution of key architectural blockers like legacy customizations or performance constraints',
         businessModelDescriptions: {
           b2b: 'Deepen integration between B2B Commerce, Sales Cloud, and back-office systems with API-first architecture',
           b2c: 'Evolve toward composable/headless architecture with SCAPI and cross-cloud data flows',
@@ -323,7 +323,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 3,
         name: 'Composable & Multi-Site',
         shortName: 'Composable',
-        description: 'Full composable commerce: multi-site, multi-brand, internationalization, and microservices architecture',
+        description: 'Achieve full composable commerce maturity — multi-site/multi-brand management, internationalization (multi-locale, multi-currency), micro-frontend architecture, and advanced capabilities like PWA storefronts, punchout catalogs, or marketplace integrations',
         businessModelDescriptions: {
           b2b: 'Advanced B2B Commerce: multi-division portals, complex account hierarchies, and enterprise-grade integrations',
           b2c: 'Full composable commerce: multi-site, multi-brand, internationalization, and microservices architecture',
@@ -420,7 +420,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
     id: 'shopping-experience',
     name: 'Shopping Experience',
     shortName: 'Experience',
-    description: 'Optimize the digital shopping journey — from product discovery and search to personalized merchandising',
+    description: 'Optimize the end-to-end digital shopping journey — from product data quality and search relevance through Einstein-powered personalization and dynamic merchandising to advanced experiences like social commerce, clienteling, and conversational buying',
     icon: 'Search',
     color: 'pink',
     journeyType: 'above-the-line',
@@ -429,7 +429,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 1,
         name: 'Catalog & Search',
         shortName: 'Catalog',
-        description: 'Establish strong product data foundations, search experience, and core catalog management',
+        description: 'Establish strong product data foundations — catalog structure, attribute completeness, image quality, and search/navigation experience — ensuring customers can discover and evaluate products efficiently whether browsing or searching by SKU',
         businessModelDescriptions: {
           b2b: 'Establish B2B catalog structure with account-specific pricing, entitlements, and product visibility',
           b2c: 'Establish strong product data foundations, search experience, and core catalog management',
@@ -526,7 +526,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 2,
         name: 'Personalization & Merchandising',
         shortName: 'Personalization',
-        description: 'Deploy Einstein-powered product recommendations, predictive sort, and dynamic merchandising',
+        description: 'Deploy Einstein-powered product recommendations on PDP and cart, predictive sort on category pages, dynamic promotion merchandising with Page Designer, and personalized content — turning every browse session into a tailored shopping experience',
         businessModelDescriptions: {
           b2b: 'Deploy account-aware product recommendations, reorder suggestions, and personalized B2B catalog views',
           b2c: 'Deploy Einstein-powered product recommendations, predictive sort, and dynamic merchandising',
@@ -613,7 +613,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 3,
         name: 'Advanced Experiences',
         shortName: 'Advanced',
-        description: 'Deliver 1:1 commerce experiences with AI-driven merchandising, social commerce, and clienteling',
+        description: 'Deliver differentiated commerce experiences — social commerce (Instagram, TikTok Shop), marketplace integrations, clienteling and assisted selling, conversational commerce via chat, and Agentforce-powered AI shopping assistance',
         businessModelDescriptions: {
           b2b: 'Deliver sophisticated B2B buying experiences with guided selling, complex configuration, and multi-stakeholder workflows',
           b2c: 'Deliver 1:1 commerce experiences with AI-driven merchandising, social commerce, and assisted selling',
@@ -697,7 +697,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
     id: 'order-fulfillment',
     name: 'Order & Fulfillment',
     shortName: 'Orders',
-    description: 'Manage the complete order lifecycle — from checkout and payments to fulfillment, returns, and post-purchase',
+    description: 'Manage the complete order lifecycle — from checkout optimization and payment processing through distributed fulfillment (BOPIS, ship-from-store), returns management, and advanced capabilities like subscriptions and marketplace operations',
     icon: 'Package',
     color: 'teal',
     journeyType: 'above-the-line',
@@ -706,7 +706,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 1,
         name: 'Order Management',
         shortName: 'Orders',
-        description: 'Establish core order processing, payment handling, and basic order lifecycle management',
+        description: 'Establish core order processing with reliable payment handling (credit cards, digital wallets, BNPL), streamlined checkout flows that minimize abandonment, and basic order lifecycle management from placement through confirmation and delivery',
         businessModelDescriptions: {
           b2b: 'Establish B2B order processing with purchase orders, invoicing, and account-based checkout',
           b2c: 'Establish core order processing, payment handling, and consumer checkout optimization',
@@ -797,7 +797,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 2,
         name: 'Fulfillment & Inventory',
         shortName: 'Fulfillment',
-        description: 'Deploy distributed order management with BOPIS, ship-from-store, and real-time inventory visibility',
+        description: 'Deploy distributed order management — enable BOPIS, ship-from-store, curbside pickup, and intelligent order routing with real-time inventory visibility across all locations, reducing delivery times and maximizing fulfillment efficiency',
         businessModelDescriptions: {
           b2b: 'Deploy sophisticated B2B fulfillment with split shipments, scheduled delivery, and warehouse integration',
           b2c: 'Deploy distributed order management with BOPIS, ship-from-store, and real-time inventory visibility',
@@ -875,7 +875,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 3,
         name: 'Advanced Commerce Ops',
         shortName: 'Advanced Ops',
-        description: 'Subscription commerce, marketplace enablement, advanced returns, and operational excellence',
+        description: 'Activate advanced commerce operations — subscription/auto-replenishment models, marketplace and third-party seller enablement, intelligent returns management with instant exchanges, fraud prevention, and pre-order/backorder workflows',
         businessModelDescriptions: {
           b2b: 'Subscription / recurring orders, complex returns handling, and advanced B2B operational workflows',
           b2c: 'Subscription commerce, marketplace enablement, advanced returns, and fraud management',
@@ -966,7 +966,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
     id: 'commerce-intelligence',
     name: 'Commerce Intelligence',
     shortName: 'Intelligence',
-    description: 'Measure, optimize, and predict commerce performance — from conversion analytics to demand forecasting',
+    description: 'Measure, optimize, and predict commerce performance — from foundational conversion tracking and KPI dashboards through systematic A/B testing and merchandising analytics to predictive models for demand forecasting, dynamic pricing, and customer lifetime value',
     icon: 'BarChart3',
     color: 'amber',
     journeyType: 'below-the-line',
@@ -975,7 +975,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 1,
         name: 'Commerce Analytics Foundation',
         shortName: 'Analytics',
-        description: 'Establish core commerce dashboards, conversion tracking, and revenue attribution',
+        description: 'Establish core commerce analytics — conversion rate tracking, AOV and revenue-per-visitor monitoring, cart abandonment funnel analysis, CAC measurement, and revenue attribution dashboards that connect marketing spend to commerce outcomes',
         capabilities: ['commerce-analytics', 'conversion-tracking'],
         assessmentQuestions: [
           {
@@ -1043,7 +1043,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 2,
         name: 'Optimization & Testing',
         shortName: 'Optimization',
-        description: 'Deploy A/B testing, merchandising analytics, and data-driven optimization workflows',
+        description: 'Deploy systematic A/B and multivariate testing, merchandising performance analytics (Einstein recommendation effectiveness, promotion ROI), checkout conversion optimization, and search relevance tuning — building a culture of data-driven commerce improvement',
         capabilities: ['ab-testing', 'merchandising-analytics'],
         assessmentQuestions: [
           {
@@ -1115,7 +1115,7 @@ export const COMMERCE_TRACKS: CommerceTrack[] = [
         level: 3,
         name: 'Predictive Commerce',
         shortName: 'Predictive',
-        description: 'Implement demand forecasting, dynamic pricing, and predictive customer lifetime value for commerce',
+        description: 'Implement predictive commerce capabilities — demand forecasting for inventory optimization, dynamic pricing models, customer lifetime value prediction, churn risk scoring, and next-product-to-buy recommendations that drive proactive merchandising and personalization decisions',
         capabilities: ['demand-forecasting', 'dynamic-pricing', 'commerce-clv'],
         assessmentQuestions: [
           {

@@ -78,7 +78,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
     id: 'program-foundation',
     name: 'Program Foundation',
     shortName: 'Foundation',
-    description: 'Build the technical foundation for your loyalty program - from basic setup to sophisticated multi-tier architecture',
+    description: 'Build the Salesforce Loyalty Management foundation — from initial program setup and member enrollment through multi-tier architecture, currency management, and advanced coalition/multi-brand program structures',
     icon: 'Building2',
     color: 'blue',
     journeyType: 'below-the-line',
@@ -87,7 +87,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 1,
         name: 'Program Setup',
         shortName: 'Setup',
-        description: 'Stand up Salesforce Loyalty Management with basic program configuration, member enrollment, and core data model',
+        description: 'Deploy Salesforce Loyalty Management with core program configuration, member enrollment flows across all channels (web, app, in-store, POS), integration with CRM and marketing systems, and the foundational data model that supports future program expansion',
         descriptionVariants: {
           'retail-cpg-qsr': 'Stand up Salesforce Loyalty Management integrated with commerce and POS for unified retail loyalty',
           'financial-services': 'Stand up Salesforce Loyalty Management for banking rewards or credit card loyalty programs',
@@ -223,7 +223,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 2,
         name: 'Tier & Currency Architecture',
         shortName: 'Tiers & Currency',
-        description: 'Implement sophisticated tier structures, multiple currency types, and flexible earning/redemption rules',
+        description: 'Design and implement sophisticated tier structures with clear progression paths, multiple currency types (points, status credits, bonus currencies), and flexible earning/redemption rules that drive the right member behaviors and program economics',
         descriptionVariants: {
           'retail-cpg-qsr': 'Implement spend-based tiers and flexible points currencies for retail loyalty',
           'financial-services': 'Implement card-tier integration and flexible rewards currencies',
@@ -313,7 +313,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 3,
         name: 'Advanced Program Architecture',
         shortName: 'Advanced',
-        description: 'Implement multi-brand programs, coalition partnerships, and sophisticated program rules engine',
+        description: 'Architect advanced multi-brand loyalty programs, coalition partnerships with external earn/burn capabilities, and a sophisticated rules engine that supports real-time decisioning, A/B testing of program mechanics, and ML-optimized rules',
         descriptionVariants: {
           'retail-cpg-qsr': 'Implement multi-brand loyalty, franchise programs, and CPG partner integrations',
           'travel-hospitality': 'Implement alliance partnerships, hotel portfolio programs, and partner earning/burning',
@@ -371,7 +371,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
     id: 'member-engagement',
     name: 'Member Engagement',
     shortName: 'Engagement',
-    description: 'Create compelling member experiences from basic administration to personalized, gamified engagement',
+    description: 'Create compelling member experiences — from core profile management and self-service portals through gamification mechanics (challenges, badges, streaks) to fully personalized, AI-driven loyalty journeys that adapt to individual member behavior',
     icon: 'Users',
     color: 'violet',
     journeyType: 'above-the-line',
@@ -380,7 +380,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 1,
         name: 'Member Administration',
         shortName: 'Admin',
-        description: 'Establish core member management: profiles, preferences, account management, and service capabilities',
+        description: 'Establish core member management capabilities — member profiles with preference capture, self-service account management (balance, history, tier status), and multi-channel service integration so members can get support wherever they engage',
         capabilities: ['member-administration', 'member-portal'],
         assessmentQuestions: [
           {
@@ -445,7 +445,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 2,
         name: 'Engagement & Gamification',
         shortName: 'Gamification',
-        description: 'Add gamification elements, challenges, badges, and engagement mechanics to drive program participation',
+        description: 'Layer in gamification mechanics — challenges, missions, badges, achievement streaks, and surprise-and-delight moments — that drive incremental engagement beyond transactions and turn passive members into active program participants',
         descriptionVariants: {
           'retail-cpg-qsr': 'Add challenges, streaks, badges, and gamified promotions to drive repeat purchases',
           'travel-hospitality': 'Add stay challenges, milestone celebrations, and gamified elite qualification',
@@ -514,7 +514,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 3,
         name: 'Personalized Member Journeys',
         shortName: 'Personalized',
-        description: 'Deliver contextual, personalized loyalty experiences powered by real-time data and AI',
+        description: 'Deliver hyper-personalized loyalty experiences powered by real-time behavioral signals and AI — contextual offers based on location and time, predictive next-best-action recommendations, and dynamic tier benefits that adapt to each member\'s value and engagement pattern',
         descriptionVariants: {
           'retail-cpg-qsr': 'Deliver personalized offers, recommendations, and experiences based on purchase behavior',
           'travel-hospitality': 'Deliver personalized trip recommendations, room preferences, and elite recognition',
@@ -585,7 +585,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
     id: 'rewards-offers',
     name: 'Rewards & Offers',
     shortName: 'Rewards',
-    description: 'Evolve from basic earn/burn to sophisticated offers, partner rewards, and experiential redemptions',
+    description: 'Evolve reward mechanics from basic earn-and-burn points to dynamic, targeted offers, partner reward networks, and experiential redemptions — optimizing program economics while increasing perceived member value',
     icon: 'Gift',
     color: 'emerald',
     journeyType: 'above-the-line',
@@ -594,7 +594,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 1,
         name: 'Accruals & Redemptions',
         shortName: 'Earn & Burn',
-        description: 'Implement core earn and burn mechanics with basic rewards catalog and redemption workflows',
+        description: 'Implement foundational earn-and-burn mechanics — define accrual rules (points per dollar, category bonuses, non-purchase earning), build the rewards catalog, and deploy redemption workflows across web, app, and POS channels',
         capabilities: ['accruals-management', 'redemptions-management', 'rewards-catalog'],
         assessmentQuestions: [
           {
@@ -671,7 +671,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 2,
         name: 'Dynamic Offers & Promotions',
         shortName: 'Offers',
-        description: 'Implement targeted promotions, personalized offers, and sophisticated promotion management',
+        description: 'Deploy targeted promotional capabilities — segment-based and behavioral offers, bonus points campaigns, tier acceleration promotions, and personalized incentives with sophisticated stacking rules, A/B testing, and offer funding management',
         descriptionVariants: {
           'retail-cpg-qsr': 'Implement personalized offers, dynamic promotions, and CPG-funded offers',
           'financial-services': 'Implement card-linked offers, merchant-funded promotions, and personalized rewards',
@@ -749,7 +749,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 3,
         name: 'Partner Ecosystem & Experiential',
         shortName: 'Partners',
-        description: 'Build partner reward networks, experiential rewards, and advanced redemption capabilities',
+        description: 'Build partner reward networks with cross-brand earn/burn, experiential rewards (VIP access, events, unique experiences), referral programs, and advanced redemption capabilities that extend program value beyond your own properties',
         descriptionVariants: {
           'travel-hospitality': 'Build airline/hotel partnerships, transfer partners, and unique experience rewards',
           'retail-cpg-qsr': 'Build CPG partnerships, coalition earning/burning, and lifestyle rewards',
@@ -819,7 +819,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
     id: 'loyalty-intelligence',
     name: 'Loyalty Intelligence',
     shortName: 'Intelligence',
-    description: 'Evolve from basic reporting to advanced analytics and predictive loyalty insights',
+    description: 'Evolve loyalty measurement from basic program reporting to advanced member analytics, financial modeling, and predictive intelligence — enabling data-driven decisions about program design, offer strategy, and member investment',
     icon: 'BarChart3',
     color: 'amber',
     journeyType: 'below-the-line',
@@ -828,7 +828,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 1,
         name: 'Reporting Foundation',
         shortName: 'Reporting',
-        description: 'Establish core loyalty dashboards, program metrics, and member analytics',
+        description: 'Establish core loyalty dashboards covering enrollment rates, active member counts, redemption rates, points liability, tier progression, and engagement scores — creating the visibility needed to prove program ROI and optimize performance',
         capabilities: ['loyalty-reporting', 'program-dashboards'],
         assessmentQuestions: [
           {
@@ -892,7 +892,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 2,
         name: 'Advanced Analytics',
         shortName: 'Analytics',
-        description: 'Implement member value analysis, cohort analytics, and program financial modeling',
+        description: 'Deploy advanced member value analysis, enrollment cohort analytics, promotion effectiveness measurement, breakage forecasting, and program P&L modeling — turning loyalty data into actionable financial and strategic insights',
         capabilities: ['member-analytics', 'cohort-analysis', 'financial-analytics'],
         assessmentQuestions: [
           {
@@ -953,7 +953,7 @@ export const LOYALTY_TRACKS: LoyaltyTrack[] = [
         level: 3,
         name: 'Predictive Loyalty',
         shortName: 'Predictive',
-        description: 'Implement churn prediction, next-best-reward, propensity models, and member CLV',
+        description: 'Implement predictive loyalty models — churn/lapse prediction to intervene before members disengage, next-best-reward recommendations, offer response propensity scoring, and predictive member CLV to drive value-based program decisions',
         capabilities: ['churn-prediction', 'next-best-reward', 'loyalty-clv'],
         assessmentQuestions: [
           {

@@ -19,7 +19,7 @@ export const TRACKS: Track[] = [
     id: 'data-identity',
     name: 'Data & Identity',
     shortName: 'Data',
-    description: 'Build the foundation that powers everything else - from platform setup to unified customer identity',
+    description: 'Build the data and identity foundation that powers every downstream capability — from platform deployment and data unification to cross-device identity resolution and enriched customer profiles',
     icon: 'Database',
     color: 'blue',
     journeyType: 'below-the-line',
@@ -28,7 +28,7 @@ export const TRACKS: Track[] = [
         level: 1,
         name: 'Platform Foundation',
         shortName: 'Foundation',
-        description: 'Assess and optimize your marketing platform foundation — whether staying on MC Engagement or moving to MC Advanced + Data Cloud',
+        description: 'Assess your current marketing platform deployment — evaluate whether to optimize on MC Engagement or migrate to MC Advanced with Data Cloud for unified data, real-time segmentation, and Agentforce readiness',
         capabilities: ['migrate-sfmc'],
         assessmentQuestions: [
           {
@@ -88,7 +88,7 @@ export const TRACKS: Track[] = [
         level: 2,
         name: 'Extended Integration',
         shortName: 'Integration',
-        description: 'Integrate commerce, loyalty, and behavioral data to power personalization and purchase-driven journeys',
+        description: 'Connect commerce, loyalty, behavioral, and transactional data sources into Data Cloud to create unified customer profiles that power personalized journeys, real-time segmentation, and purchase-driven automation',
         descriptionVariants: {
           'retail-cpg-qsr': 'Integrate commerce, loyalty, and behavioral data to power personalization and purchase-driven journeys',
           'financial-services': 'Integrate account, application, and behavioral data to power personalization and lifecycle journeys',
@@ -225,7 +225,7 @@ export const TRACKS: Track[] = [
         level: 3,
         name: 'Identity & Enrichment',
         shortName: 'Identity',
-        description: 'Resolve identity across touchpoints with dentsu.Identity (formerly Merkury) and enrich profiles with third-party data for a true golden record',
+        description: 'Resolve customer identity across online, offline, and anonymous touchpoints using dentsu.Identity (formerly Merkury) — enrich profiles with third-party data, build a true golden record, and enable cross-device/cross-channel personalization at scale',
         capabilities: ['identity-resolution'],
         assessmentQuestions: [
           {
@@ -279,7 +279,7 @@ export const TRACKS: Track[] = [
     id: 'journeys',
     name: 'Journeys',
     shortName: 'Journeys',
-    description: 'Build automated customer experiences from basic lifecycle to predictive, insight-driven moments',
+    description: 'Build automated, always-on customer journeys — from foundational lifecycle communications (welcome, birthday, re-engagement) through purchase-driven automation to predictive, AI-powered experiences that anticipate customer needs',
     icon: 'Route',
     color: 'violet',
     journeyType: 'above-the-line',
@@ -288,7 +288,7 @@ export const TRACKS: Track[] = [
         level: 1,
         name: 'Subscriber Journeys',
         shortName: 'Subscriber',
-        description: 'Deploy the foundational lifecycle journeys every consumer expects: welcome, birthday, and re-engagement',
+        description: 'Deploy the foundational always-on journeys every consumer expects — welcome/onboarding series, birthday celebrations, and re-engagement campaigns — establishing the baseline automation that drives consistent subscriber engagement and sets the stage for more advanced lifecycle journeys',
         descriptionVariants: {
           'retail-cpg-qsr': 'Deploy the foundational journeys every consumer expects: welcome, birthday, and re-engagement',
           'financial-services': 'Deploy foundational relationship journeys: welcome, account onboarding, and milestone recognition',
@@ -344,7 +344,7 @@ export const TRACKS: Track[] = [
         level: 2,
         name: 'Customer Lifecycle',
         shortName: 'Lifecycle',
-        description: 'Build purchase-driven journeys: cart abandonment, post-purchase, replenishment, and win-back',
+        description: 'Activate purchase-event-driven automation — cart and browse abandonment recovery, post-purchase follow-up, replenishment reminders, and lapsed customer win-back — leveraging transactional data to drive revenue through the full customer lifecycle',
         descriptionVariants: {
           'retail-cpg-qsr': 'Build purchase-driven journeys: cart abandonment, post-purchase, replenishment, and win-back',
           'financial-services': 'Build customer lifecycle journeys: application abandonment, onboarding completion, cross-sell, and reactivation',
@@ -527,7 +527,7 @@ export const TRACKS: Track[] = [
         level: 3,
         name: 'Insight-Driven Experiences',
         shortName: 'Insight-Driven',
-        description: 'Build brand-unique experiences powered by predictive models and next-best-action decisioning',
+        description: 'Create differentiated, brand-unique experiences powered by predictive models, next-best-action decisioning, and real-time behavioral triggers — moving from rule-based automation to AI-driven personalization that adapts to each customer in the moment',
         descriptionVariants: {
           'retail-cpg-qsr': 'Build brand-unique experiences powered by predictive models, next-best-product, and CLV-based decisioning',
           'financial-services': 'Build differentiated experiences powered by predictive models, life-event triggers, and next-best-action',
@@ -590,7 +590,7 @@ export const TRACKS: Track[] = [
     id: 'content-channels',
     name: 'Content & Channels',
     shortName: 'Channels',
-    description: 'Evolve from batch email to dynamic content and full cross-channel orchestration',
+    description: 'Evolve content and channel strategy from batch email campaigns to dynamic, personalized content at scale — then expand into SMS, push, paid media, and full cross-channel orchestration with coordinated suppression and AI-powered production',
     icon: 'Share2',
     color: 'emerald',
     journeyType: 'above-the-line',
@@ -599,7 +599,7 @@ export const TRACKS: Track[] = [
         level: 1,
         name: 'Campaign Optimization',
         shortName: 'Campaigns',
-        description: 'Transform batch-and-blast campaigns into orchestrated, multi-touch Flow-based journeys',
+        description: 'Transform batch-and-blast email sends into orchestrated, multi-touch Flow-based journeys with proper segmentation, send-time optimization, and consistent branding — improving deliverability, engagement rates, and campaign velocity',
         capabilities: ['enhance-planned-campaigns'],
         assessmentQuestions: [
           {
@@ -646,7 +646,7 @@ export const TRACKS: Track[] = [
         level: 2,
         name: 'Dynamic Content & Mobile',
         shortName: 'Dynamic + Mobile',
-        description: 'Scale personalization with Einstein Content Selection and activate SMS/Push channels',
+        description: 'Scale personalization using Einstein Content Selection and dynamic content blocks to deliver 1:1 messaging — and activate mobile channels (SMS, push notifications, in-app) to reach customers in real time beyond the inbox',
         capabilities: ['scale-dynamic-content', 'einstein-engagement-scoring', 'einstein-send-time-optimization'],
         assessmentQuestions: [
           {
@@ -692,7 +692,7 @@ export const TRACKS: Track[] = [
         level: 3,
         name: 'Cross-Channel Orchestration',
         shortName: 'Orchestration',
-        description: 'Full omnichannel: paid media integration, direct mail, coordinated suppression, and AI-powered production',
+        description: 'Achieve full omnichannel orchestration — integrate paid media (Facebook, Google Ads), direct mail, WhatsApp, and connected TV with coordinated suppression rules, journey-level frequency capping, and Agentforce-powered campaign production',
         capabilities: ['cross-channel-activation', 'agentic-campaign-production'],
         assessmentQuestions: [
           {
@@ -745,7 +745,7 @@ export const TRACKS: Track[] = [
     id: 'intelligence',
     name: 'Intelligence',
     shortName: 'Intelligence',
-    description: 'Evolve from basic reporting to advanced analytics and predictive modeling',
+    description: 'Evolve marketing measurement from basic email metrics to cross-channel attribution, advanced analytics, and predictive models — enabling data-driven decisions about spend allocation, audience strategy, and customer value optimization',
     icon: 'Brain',
     color: 'amber',
     journeyType: 'below-the-line',
@@ -754,7 +754,7 @@ export const TRACKS: Track[] = [
         level: 1,
         name: 'Reporting Foundation',
         shortName: 'Reporting',
-        description: 'Establish core dashboards, email metrics, and engagement visibility',
+        description: 'Establish core marketing dashboards with email delivery metrics, engagement tracking, segment performance views, and basic conversion reporting — creating the visibility foundation that drives optimization decisions across all channels',
         capabilities: ['data-exploration'],
         assessmentQuestions: [
           {
@@ -803,7 +803,7 @@ export const TRACKS: Track[] = [
         level: 2,
         name: 'Advanced Analytics',
         shortName: 'Analytics',
-        description: 'Deploy cross-channel attribution, Einstein insights, and self-service analytics',
+        description: 'Deploy cross-channel attribution modeling, Einstein Engagement Scoring insights, path analysis, and self-service analytics — moving from "what happened" reporting to "why it happened" and "what to do next" intelligence',
         capabilities: [], // Einstein features are embedded in other tracks; this is about analytics infrastructure
         assessmentQuestions: [
           {
@@ -849,7 +849,7 @@ export const TRACKS: Track[] = [
         level: 3,
         name: 'Predictive & CLV',
         shortName: 'Predictive',
-        description: 'Implement CLV modeling, churn prediction, propensity scoring, and custom models',
+        description: 'Implement predictive customer lifetime value (CLV) modeling, churn/lapse prediction, product affinity scoring, and custom propensity models — enabling proactive, value-based marketing decisions and hyper-targeted audience strategies',
         capabilities: ['clv-modeling'],
         assessmentQuestions: [
           {
