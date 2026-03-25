@@ -263,7 +263,10 @@ export function TrackLevelAssessment({
   // Single-screen state with tabs
   const [activeTab, setActiveTab] = useState<ActiveTab>('assess');
   const [selectedStatus, setSelectedStatus] = useState<TrackLevelStatus | null>(
-    initialStatus !== 'not-started' ? initialStatus : null
+    // If status is 'not-started' but answers/notes exist, user explicitly chose "Gap" — preserve it
+    initialStatus !== 'not-started' ? initialStatus
+      : (initialAnswers.length > 0 || initialNotes) ? 'not-started'
+      : null
   );
   const [notes, setNotes] = useState<string>(initialNotes);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>(() => {
