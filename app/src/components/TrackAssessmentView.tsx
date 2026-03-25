@@ -232,8 +232,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
       updatedAssessed.add(`${assessingLevel.trackId}-${assessingLevel.level}`);
     }
 
-    // Determine which discipline the current assessment belongs to
-    const currentTrackId = assessingLevel?.trackId || '';
+    // Determine which tracks belong to the active discipline tab
     const currentDisciplineTracks = ACTIVE_TRACKS.map(t => t.id);
 
     // First pass: find next level within the SAME discipline (active tab)

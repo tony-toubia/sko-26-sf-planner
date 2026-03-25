@@ -6,7 +6,7 @@
 import type { DisciplineType, TrackId, TrackLevel } from '../types';
 import { TRACKS as MP_TRACKS, getTrackById as getMPTrackById, canStartLevel as mpCanStartLevel } from './tracks';
 import { LOYALTY_TRACKS, type LoyaltyTrackId, type LoyaltyTrackLevel } from './loyaltyTracks';
-import { COMMERCE_TRACKS, type CommerceTrackId, type CommerceTrackLevel } from './commerceTracks';
+import { COMMERCE_TRACKS, type CommerceTrackId } from './commerceTracks';
 
 // Unified track type that combines both M&P, Loyalty, and Commerce tracks
 export type UnifiedTrackId = TrackId | LoyaltyTrackId | CommerceTrackId;

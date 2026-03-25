@@ -51,14 +51,6 @@ const TRACK_ICONS: Record<string, React.ElementType> = {
   'commerce-intelligence': BarChart3,
 };
 
-// All tracks use the same neutral color — only STATUS drives color differentiation
-const NEUTRAL_TRACK_COLORS = {
-  bg: 'bg-slate-50',
-  border: 'border-slate-200',
-  text: 'text-slate-700',
-  fill: 'bg-emerald-600', // "Mature" status fill
-};
-
 // Status-driven colors (the ONLY color system in the track cards)
 const STATUS_COLORS = {
   complete: { card: 'bg-emerald-600 border-transparent text-white', badge: 'bg-white', badgeText: 'text-emerald-700' },
