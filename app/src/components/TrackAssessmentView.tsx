@@ -108,6 +108,10 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         disc.name = 'Loyalty Management';
         disc.shortName = 'Loyalty';
         disc.icon = 'Award';
+      } else if (id === 'commerce') {
+        disc.name = 'Commerce';
+        disc.shortName = 'Commerce';
+        disc.icon = 'ShoppingCart';
       }
       return disc;
     });
@@ -217,7 +221,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
     setAssessingLevel({ trackId, level });
   }, []);
 
-  // Get the next recommended level to assess
+  // Get the next recommended level to assess — stays within the active discipline
   const getNextLevelToAssess = useCallback((): { trackId: TrackId; level: TrackLevel } | null => {
     const disciplines = assessment?.disciplines || ['messaging-personalization'];
     const order = getAssessmentOrder(disciplines);
@@ -228,31 +232,23 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
       updatedAssessed.add(`${assessingLevel.trackId}-${assessingLevel.level}`);
     }
 
-    console.log('[getNextLevelToAssess] Full order:', order);
-    console.log('[getNextLevelToAssess] Already assessed:', Array.from(updatedAssessed));
+    // Determine which discipline the current assessment belongs to
+    const currentTrackId = assessingLevel?.trackId || '';
+    const currentDisciplineTracks = ACTIVE_TRACKS.map(t => t.id);
 
-    // During initial assessment, simply follow the predefined order
-    // Don't check dependencies - the order itself respects dependencies
+    // First pass: find next level within the SAME discipline (active tab)
     for (const key of order) {
-      if (updatedAssessed.has(key)) {
-        console.log('[getNextLevelToAssess] Skipping already assessed:', key);
-        continue; // Skip already assessed
-      }
-
-      // Parse track-level key - handle multi-hyphen track IDs like "content-channels"
-      // Format: "track-id-level" where level is always the last segment
+      if (updatedAssessed.has(key)) continue;
       const lastDashIndex = key.lastIndexOf('-');
       const trackId = key.substring(0, lastDashIndex);
-      const levelStr = key.substring(lastDashIndex + 1);
-      const level = parseInt(levelStr);
-
-      console.log('[getNextLevelToAssess] Next level to assess:', key, '-> trackId:', trackId, 'level:', level);
+      if (!currentDisciplineTracks.includes(trackId)) continue;
+      const level = parseInt(key.substring(lastDashIndex + 1));
       return { trackId: trackId as TrackId, level: level as TrackLevel };
     }
 
-    console.log('[getNextLevelToAssess] No more levels to assess');
+    // If all levels in current discipline are assessed, return null (exit to overview)
     return null;
-  }, [assessedLevels, assessingLevel, assessment?.disciplines]);
+  }, [assessedLevels, assessingLevel, assessment?.disciplines, ACTIVE_TRACKS]);
 
   const handleAssessmentComplete = useCallback(
     (status: TrackLevelStatus, answers: AssessmentAnswer[], action: 'continue' | 'exit') => {
@@ -464,14 +460,35 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         <div className="lg:col-span-2 order-2 lg:order-1">
           {/* Show blocked message if M&P discipline and no foundation selected */}
           {activeDiscipline === 'messaging-personalization' && !marketingFoundation ? (
-            <div className="bg-white rounded-xl border-2 border-dashed border-slate-300 p-8 text-center">
-              <Database className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-700 mb-2">
-                Select Marketing Platform First
-              </h3>
-              <p className="text-sm text-slate-500">
-                Please select your marketing platform (MC Engagement or MC Advanced) in the sidebar to begin the assessment.
-              </p>
+            <div className="bg-white rounded-xl border border-slate-200 p-6 md:p-8">
+              <div className="text-center mb-6">
+                <Database className="w-10 h-10 text-merkle-blue mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                  Select Your Marketing Platform
+                </h3>
+                <p className="text-sm text-slate-500">
+                  This determines which capabilities are available for your roadmap.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+                {MARKETING_FOUNDATIONS.map((foundation) => (
+                  <button
+                    key={foundation.id}
+                    onClick={() => setMarketingFoundation(foundation.id as MarketingFoundationType)}
+                    className="p-4 rounded-xl border-2 border-slate-200 hover:border-merkle-blue hover:bg-merkle-blue/5 text-left transition-all"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-slate-900">{foundation.shortName}</span>
+                      {foundation.recommended && (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
+                          Recommended
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500">{foundation.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <TrackProgress
@@ -487,56 +504,7 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
 
         {/* Right Sidebar - show first on mobile */}
         <div className="space-y-4 order-1 lg:order-2">
-          {/* Marketing Foundation Selection - show first when not selected AND on M&P tab */}
-          {!marketingFoundation && activeDiscipline === 'messaging-personalization' && (
-            <div className="bg-gradient-to-br from-merkle-blue to-salesforce-blue rounded-xl p-5 text-white">
-              <div className="flex items-center gap-2 mb-3">
-                <Database className="w-5 h-5" />
-                <span className="text-sm font-medium text-white/80">First Step</span>
-              </div>
-              <p className="text-lg font-semibold mb-4">Select Your Marketing Platform</p>
-              <p className="text-sm text-white/80 mb-4">
-                This determines which capabilities are available for your roadmap.
-              </p>
-              <div className="space-y-2">
-                {MARKETING_FOUNDATIONS.map((foundation) => (
-                  <button
-                    key={foundation.id}
-                    onClick={() => setMarketingFoundation(foundation.id as MarketingFoundationType)}
-                    className="w-full p-3 bg-white/10 hover:bg-white/20 rounded-lg text-left transition-all border border-white/20"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        foundation.id === 'mc-advanced'
-                          ? 'bg-white/20'
-                          : 'bg-white/10'
-                      }`}>
-                        {foundation.id === 'mc-advanced' ? (
-                          <Database className="w-5 h-5 text-white" />
-                        ) : (
-                          <Mail className="w-5 h-5 text-white/80" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-white">
-                            {foundation.shortName}
-                          </span>
-                          {foundation.recommended && (
-                            <span className="text-[10px] bg-emerald-400/30 text-emerald-200 px-1.5 py-0.5 rounded font-medium">
-                              Recommended
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-white/70 mt-0.5">{foundation.description}</p>
-                      </div>
-                      <ArrowRight className="w-4 h-4 text-white/60" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* Marketing Foundation Selection moved inline into the main content area (Fix #3) */}
 
           {/* Next Step Card - show if foundation selected (M&P) OR on Loyalty tab */}
           {(marketingFoundation || activeDiscipline === 'loyalty') && nextRecommendation && !completionStats.isComplete && (

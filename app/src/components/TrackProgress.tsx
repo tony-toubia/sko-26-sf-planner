@@ -15,6 +15,10 @@ import {
   Users,
   Gift,
   TrendingUp,
+  ShoppingCart,
+  Search,
+  Package,
+  BarChart3,
 } from 'lucide-react';
 import { getRequiredDependencies as getMPRequiredDependencies, getTrackById as getMPTrackById } from '../data/tracks';
 import type { TrackId, TrackLevel, TrackLevelStatus } from '../types';
@@ -40,59 +44,26 @@ const TRACK_ICONS: Record<string, React.ElementType> = {
   'member-engagement': Users,
   'rewards-offers': Gift,
   'loyalty-intelligence': TrendingUp,
+  // Commerce tracks
+  'commerce-platform': ShoppingCart,
+  'shopping-experience': Search,
+  'order-fulfillment': Package,
+  'commerce-intelligence': BarChart3,
 };
 
-const TRACK_COLORS: Record<string, { bg: string; border: string; text: string; fill: string }> = {
-  // M&P tracks
-  'data-identity': {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    text: 'text-blue-700',
-    fill: 'bg-blue-500',
-  },
-  journeys: {
-    bg: 'bg-violet-50',
-    border: 'border-violet-200',
-    text: 'text-violet-700',
-    fill: 'bg-violet-500',
-  },
-  'content-channels': {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
-    fill: 'bg-emerald-500',
-  },
-  intelligence: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    text: 'text-amber-700',
-    fill: 'bg-amber-500',
-  },
-  // Loyalty tracks
-  'program-foundation': {
-    bg: 'bg-indigo-50',
-    border: 'border-indigo-200',
-    text: 'text-indigo-700',
-    fill: 'bg-indigo-500',
-  },
-  'member-engagement': {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    text: 'text-purple-700',
-    fill: 'bg-purple-500',
-  },
-  'rewards-offers': {
-    bg: 'bg-pink-50',
-    border: 'border-pink-200',
-    text: 'text-pink-700',
-    fill: 'bg-pink-500',
-  },
-  'loyalty-intelligence': {
-    bg: 'bg-rose-50',
-    border: 'border-rose-200',
-    text: 'text-rose-700',
-    fill: 'bg-rose-500',
-  },
+// All tracks use the same neutral color — only STATUS drives color differentiation
+const NEUTRAL_TRACK_COLORS = {
+  bg: 'bg-slate-50',
+  border: 'border-slate-200',
+  text: 'text-slate-700',
+  fill: 'bg-emerald-600', // "Mature" status fill
+};
+
+// Status-driven colors (the ONLY color system in the track cards)
+const STATUS_COLORS = {
+  complete: { card: 'bg-emerald-600 border-transparent text-white', badge: 'bg-white', badgeText: 'text-emerald-700' },
+  'in-progress': { card: 'bg-amber-50 border-amber-300 text-amber-800', badge: 'bg-amber-600', badgeText: 'text-white' },
+  'not-started': { card: 'bg-slate-50 border-slate-300 text-slate-700', badge: 'bg-slate-700', badgeText: 'text-white' },
 };
 
 function getLevelStatus(
@@ -177,7 +148,6 @@ export function TrackProgress({
         <div className="grid grid-cols-4 gap-2">
           {tracks.map((track) => {
             const Icon = TRACK_ICONS[track.id];
-            const colors = TRACK_COLORS[track.id];
             const levelsAssessed = track.levels.filter(
               (l: any) => assessedLevels.has(`${track.id}-${l.level}`)
             ).length;
@@ -185,10 +155,10 @@ export function TrackProgress({
             return (
               <div
                 key={track.id}
-                className={`flex flex-col items-center p-2 rounded-lg ${colors.bg} ${colors.border} border`}
+                className="flex flex-col items-center p-2 rounded-lg bg-slate-50 border-slate-200 border"
               >
-                <Icon className={`w-4 h-4 ${colors.text} mb-1`} />
-                <span className={`text-xs font-medium ${colors.text}`}>
+                <Icon className="w-4 h-4 text-slate-600 mb-1" />
+                <span className="text-xs font-medium text-slate-600">
                   {levelsAssessed}/3
                 </span>
               </div>
@@ -219,19 +189,18 @@ export function TrackProgress({
       <div className="space-y-4">
         {tracks.map((track) => {
           const Icon = TRACK_ICONS[track.id];
-          const colors = TRACK_COLORS[track.id];
 
           return (
             <div
               key={track.id}
-              className={`rounded-lg border ${colors.border} ${colors.bg} p-4`}
+              className="rounded-lg border border-slate-200 bg-white p-4"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 rounded-lg bg-white shadow-sm`}>
-                  <Icon className={`w-5 h-5 ${colors.text}`} />
+                <div className="p-2 rounded-lg bg-slate-100">
+                  <Icon className="w-5 h-5 text-slate-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className={`font-semibold ${colors.text}`}>{track.name}</h3>
+                  <h3 className="font-semibold text-slate-900">{track.name}</h3>
                   <p className="text-xs text-slate-500">{track.description}</p>
                 </div>
               </div>
@@ -273,11 +242,7 @@ export function TrackProgress({
                             ${isCurrent ? 'ring-2 ring-offset-2 ring-slate-400' : ''}
                             ${
                               isAssessed
-                                ? status === 'complete'
-                                  ? `${colors.fill} border-transparent text-white`
-                                  : status === 'in-progress'
-                                    ? `bg-amber-50 border-amber-300 text-amber-800`
-                                    : `bg-slate-50 border-slate-300 text-slate-700`
+                                ? STATUS_COLORS[status]?.card || STATUS_COLORS['not-started'].card
                                 : isBlocked
                                   ? 'bg-slate-100 border-slate-200 text-slate-400'
                                   : `bg-white border-dashed border-slate-300 text-slate-500 hover:border-slate-400`
@@ -287,10 +252,10 @@ export function TrackProgress({
                           {/* Assessed badge */}
                           {isAssessed && (
                             <div className={`absolute -top-1.5 -right-1.5 rounded-full p-0.5 ${
-                              status === 'complete' ? 'bg-white' : 'bg-slate-700'
+                              STATUS_COLORS[status]?.badge || 'bg-slate-700'
                             }`}>
                               <ClipboardCheck className={`w-3 h-3 ${
-                                status === 'complete' ? colors.text : 'text-white'
+                                STATUS_COLORS[status]?.badgeText || 'text-white'
                               }`} />
                             </div>
                           )}
@@ -359,7 +324,7 @@ export function TrackProgress({
       <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-4 pt-4 border-t border-slate-200 text-xs text-slate-500">
         <span className="font-medium text-slate-600">Maturity:</span>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-slate-500" />
+          <div className="w-3 h-3 rounded bg-emerald-600" />
           <span>Mature</span>
         </div>
         <div className="flex items-center gap-1.5">

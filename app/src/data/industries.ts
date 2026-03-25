@@ -7,6 +7,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'Retail / CPG',
     description: 'Retailers, consumer packaged goods, QSR, and direct-to-consumer brands',
     icon: 'ShoppingBag',
+    subcategories: ['Retail', 'CPG / Consumer Goods', 'QSR / Quick Service', 'DTC / Direct-to-Consumer', 'Grocery'],
     typicalPriorities: [
       'Omnichannel customer experience',
       'Loyalty & rewards optimization',
@@ -34,6 +35,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'FinServ',
     description: 'Banking, insurance, wealth management, and fintech',
     icon: 'Landmark',
+    subcategories: ['Banking', 'Wealth Management', 'Insurance (P&C)', 'Insurance (Life)', 'Fintech', 'Capital Markets'],
     typicalPriorities: [
       'Customer onboarding & activation',
       'Cross-sell & product deepening',
@@ -62,6 +64,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'HLS',
     description: 'Healthcare providers, pharma, medical devices, and life sciences',
     icon: 'Heart',
+    subcategories: ['Pharma', 'Medical Devices', 'Healthcare Providers', 'Payers / Health Plans', 'Biotech'],
     typicalPriorities: [
       'Patient engagement & adherence',
       'HCP (healthcare professional) engagement',
@@ -90,6 +93,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'Manufacturing',
     description: 'Industrial, B2B manufacturing, and distribution',
     icon: 'Factory',
+    subcategories: ['Industrial Manufacturing', 'Distribution', 'Oil & Gas', 'Chemicals', 'Automotive', 'Aerospace & Defense'],
     typicalPriorities: [
       'Dealer/distributor enablement',
       'Account-based marketing',
@@ -111,6 +115,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'Travel',
     description: 'Airlines, hotels, cruise lines, and travel services',
     icon: 'Plane',
+    subcategories: ['Hotels & Resorts', 'Airlines', 'Cruise Lines', 'OTA / Travel Tech', 'Casinos & Gaming'],
     typicalPriorities: [
       'Loyalty program engagement',
       'Booking abandonment recovery',
@@ -132,6 +137,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     shortName: 'Media',
     description: 'Streaming, publishing, gaming, and entertainment brands',
     icon: 'Tv',
+    subcategories: ['Streaming / OTT', 'Publishing', 'Gaming', 'Sports & Live Events', 'Music'],
     typicalPriorities: [
       'Subscriber retention',
       'Content personalization',
@@ -151,6 +157,7 @@ export const INDUSTRIES: Record<IndustryType, Industry> = {
     id: 'technology',
     name: 'Technology',
     shortName: 'Tech',
+    subcategories: ['SaaS / Cloud Software', 'Hardware', 'Cybersecurity', 'AI / Data', 'Platforms & Marketplaces'],
     description: 'Software, SaaS, hardware, and technology services',
     icon: 'Cpu',
     typicalPriorities: [

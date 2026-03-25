@@ -79,6 +79,8 @@ export interface Industry {
   shortName: string;
   description: string;
   icon: string;
+  /** Optional sub-segments shown after selecting the parent industry */
+  subcategories?: string[];
   // Industry-specific priorities and context
   typicalPriorities: string[];
   commonChallenges: string[];

@@ -115,7 +115,7 @@ export function AssessmentView() {
                 <Sparkles className="w-4 h-4 flex-shrink-0" />
                 <span>{THINKING_STEPS[thinkingStep]}</span>
               </div>
-              <p className="text-xs text-gray-400 mt-3">This may take about a minute</p>
+              <p className="text-xs text-gray-400 mt-3">This typically takes 2-3 minutes — please don't close this page</p>
             </div>
           </div>
         )}
@@ -218,7 +218,7 @@ export function AssessmentView() {
             </p>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
               <Sparkles className="w-4 h-4" />
-              <span>This may take 15-30 seconds</span>
+              <span>This typically takes 2-3 minutes</span>
             </div>
           </div>
         </div>
