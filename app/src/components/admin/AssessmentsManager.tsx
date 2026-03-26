@@ -28,9 +28,7 @@ const DISCIPLINE_LABELS: Record<string, string> = {
   'loyalty': 'Loyalty',
   'commerce': 'Commerce',
   'service': 'Service Cloud',
-  'abm': 'Account-Based Marketing',
-  'abs': 'Account-Based Selling',
-  'absa': 'Account-Based Service',
+  'sales': 'Sales Cloud',
 };
 
 const INDUSTRY_LABELS: Record<string, string> = {

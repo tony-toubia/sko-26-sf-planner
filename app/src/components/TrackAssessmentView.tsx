@@ -121,6 +121,10 @@ export function TrackAssessmentView({ onSwitchToMatrix, onGeneratePlan, onEditPl
         disc.name = 'Commerce';
         disc.shortName = 'Commerce';
         disc.icon = 'ShoppingCart';
+      } else if (id === 'sales') {
+        disc.name = 'Sales Cloud';
+        disc.shortName = 'Sales';
+        disc.icon = 'Briefcase';
       }
       return disc;
     });

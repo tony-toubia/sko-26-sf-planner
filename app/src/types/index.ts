@@ -24,15 +24,11 @@ export interface BusinessModel {
 
 // Disciplines/Clouds that can have maturity matrices
 export type DisciplineType =
-  // B2C-primary
   | 'messaging-personalization'
   | 'loyalty'
   | 'commerce'
   | 'service'
-  // B2B-primary (ABX pillars)
-  | 'abm'    // Account-Based Marketing → MC Account Engagement
-  | 'abs'    // Account-Based Selling → Sales Cloud
-  | 'absa';  // Account-Based Service & Advocacy → Service Cloud
+  | 'sales';  // Sales Cloud
 
 // Future disciplines (not yet implemented)
 export type FutureDisciplineType =

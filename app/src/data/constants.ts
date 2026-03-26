@@ -102,44 +102,20 @@ export const DISCIPLINES: Discipline[] = [
     color: '#0176D3',
     available: false, // Locked for now
   },
-];
-
-// B2B ABX Disciplines
-export const ABX_DISCIPLINES: Discipline[] = [
   {
-    id: 'abm',
-    name: 'Account-Based Marketing',
-    shortName: 'ABM',
-    description: 'Lead-to-revenue process, marketing automation, campaign orchestration, lead scoring, and ABM tier strategies.',
-    icon: 'Target',
-    salesforceCloud: 'Marketing Cloud Account Engagement',
-    color: '#E85D04',
-    available: false, // Data model pending
-  },
-  {
-    id: 'abs',
-    name: 'Account-Based Selling',
-    shortName: 'ABS',
-    description: 'Opportunity management, pipeline management, CPQ, sales enablement, forecasting, and territory management.',
+    id: 'sales',
+    name: 'Sales',
+    shortName: 'Sales',
+    description: 'Opportunity management, pipeline management, CPQ, forecasting, and sales enablement.',
     icon: 'Briefcase',
     salesforceCloud: 'Sales Cloud',
     color: '#00A1E0',
     available: false, // Data model pending
   },
-  {
-    id: 'absa',
-    name: 'Account-Based Service & Advocacy',
-    shortName: 'ABS&A',
-    description: 'Case management, knowledge base, self-service portals, customer health scoring, renewal management, and advocacy.',
-    icon: 'HeartHandshake',
-    salesforceCloud: 'Service Cloud',
-    color: '#2D9F4F',
-    available: false, // Data model pending
-  },
 ];
 
-// All disciplines combined (B2C + B2B)
-export const ALL_DISCIPLINES: Discipline[] = [...DISCIPLINES, ...ABX_DISCIPLINES];
+// All disciplines
+export const ALL_DISCIPLINES: Discipline[] = DISCIPLINES;
 
 // Business Model Definitions
 export const BUSINESS_MODELS: BusinessModel[] = [
@@ -147,17 +123,17 @@ export const BUSINESS_MODELS: BusinessModel[] = [
     id: 'b2c',
     name: 'Business-to-Consumer',
     shortName: 'B2C',
-    description: 'Consumer-facing brand selling directly to individuals. Focus on Marketing Cloud, Loyalty, and Commerce.',
+    description: 'Consumer-facing brand selling directly to individuals. Focus on Marketing Cloud, Loyalty, Commerce, and Sales.',
     icon: 'Users',
-    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service'],
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'sales'],
   },
   {
     id: 'b2b',
     name: 'Business-to-Business',
     shortName: 'B2B',
-    description: 'Selling to other businesses via accounts. Focus on Account-Based Marketing, Sales Cloud, and Service.',
+    description: 'Selling to other businesses via accounts. Focus on Sales Cloud, Marketing Cloud, Commerce, and Service.',
     icon: 'Building2',
-    availableDisciplines: ['abm', 'abs', 'absa'],
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'sales'],
   },
   {
     id: 'b2b2c',
@@ -165,7 +141,7 @@ export const BUSINESS_MODELS: BusinessModel[] = [
     shortName: 'B2B2C',
     description: 'Selling through business partners to reach consumers. Combines B2B account management with B2C engagement.',
     icon: 'Network',
-    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'abm', 'abs', 'absa'],
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'sales'],
   },
   {
     id: 'hybrid',
@@ -173,7 +149,7 @@ export const BUSINESS_MODELS: BusinessModel[] = [
     shortName: 'Hybrid',
     description: 'Managing both business accounts and consumer relationships in Salesforce. Full cross-cloud opportunity.',
     icon: 'Layers',
-    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'abm', 'abs', 'absa'],
+    availableDisciplines: ['messaging-personalization', 'loyalty', 'commerce', 'service', 'sales'],
   },
 ];
 
