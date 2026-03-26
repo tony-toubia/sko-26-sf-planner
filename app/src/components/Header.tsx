@@ -1,4 +1,4 @@
-import { LayoutGrid, MessageSquare, DollarSign, Presentation, ChevronRight } from 'lucide-react';
+import { LayoutGrid, MessageSquare, ChevronRight } from 'lucide-react';
 import { useAssessment } from '../context/AssessmentContext';
 
 export type ViewType = 'capabilities' | 'assistant' | 'value';
@@ -11,13 +11,12 @@ interface HeaderProps {
   onGoToLanding?: () => void;
 }
 
-export function Header({ currentView, onViewChange, onShowSlides, showLanding, onGoToLanding }: HeaderProps) {
+export function Header({ currentView, onViewChange, showLanding, onGoToLanding }: HeaderProps) {
   const { assessment, isAssessmentMode } = useAssessment();
 
   const navItems: { id: ViewType; label: string; icon: typeof LayoutGrid }[] = [
     { id: 'capabilities', label: 'Assessment', icon: LayoutGrid },
     { id: 'assistant', label: 'AI Assistant', icon: MessageSquare },
-    { id: 'value', label: 'Value Prop', icon: DollarSign },
   ];
 
   return (
@@ -72,15 +71,6 @@ export function Header({ currentView, onViewChange, onShowSlides, showLanding, o
 
         {/* Right: Secondary actions */}
         <div className="flex items-center gap-2">
-          {onShowSlides && (
-            <button
-              onClick={onShowSlides}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <Presentation className="w-4 h-4" />
-              <span className="hidden sm:inline">Pitch Deck</span>
-            </button>
-          )}
         </div>
       </div>
     </header>
